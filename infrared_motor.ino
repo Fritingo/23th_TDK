@@ -35,20 +35,20 @@ void setup() {
   Serial.begin(115200);
   irrecv.blink13(true); // 設為true的話，當收到訊號時，腳位13的LED便會閃爍
   irrecv.enableIRIn(); // 啟動接收
-
+  Serial.println("start");
   Motor_init();
-  Motor1_Forward(220);
-  delay(2000);
-  Motor_init();
-  Motor2_Forward(220);
-  delay(2000);
-  Motor_init();
-  Motor3_Forward(220);
-  delay(2000);
-  Motor_init();
-  Motor4_Forward(220);
-  delay(2000);
-  Motor_init();
+  //  Motor1_Forward(220);
+  //  delay(2000);
+  //  Motor_init();
+  //  Motor2_Forward(220);
+  //  delay(2000);
+  //  Motor_init();
+  //  Motor3_Forward(220);
+  //  delay(2000);
+  //  Motor_init();
+  //  Motor4_Forward(220);
+  //  delay(2000);
+  //  Motor_init();
 
 
 }
@@ -71,19 +71,19 @@ void loop() {
 
         Serial.println("111");
         Serial.println(millis());
-        m_type_Forward(220);
-        delay(5000);
+        m_type_Forward(150);
+        delay(1000);
         Motor_init();
         Serial.println(millis());
         break;
       case 16718055://2
-        m_type_Backward(220);
-        delay(5000);
+        m_type_Backward(150);
+        delay(1000);
         Motor_init();
         break;
       case 16743045://3
-        m_type_Leftward(220);
-        delay(5000);
+        m_type_Leftward(150);
+        delay(1000);
         Motor_init();
         //        Serial.println("333");
         //        Motor3_Forward(220);
@@ -91,27 +91,27 @@ void loop() {
         //        Motor_init();
         break;
       case 16716015://4
-        m_type_Rightward(220);
-        delay(5000);
+        m_type_Rightward(150);
+        delay(1000);
         Motor_init();
         //        Motor4_Forward(220);
         //        delay(5000);
-        //        Motor_init();
+        //                Motor_init();
         break;
       case 16726215://5
-        //        Motor1_Forward(200);
-        //        delay(2000);
+        m_type_RightAround(150);
+        delay(1000);
         Motor_init();
         break;
       case 16734885://6
-        //        Motor1_Forward(200);
-        //        delay(2000);
-        //        Motor_init();
+        m_type_LeftAround(150);
+        delay(1000);
+        Motor_init();
         break;
       case 16728765://7
         //        Motor1_Forward(200);
         //        delay(2000);
-        //        Motor_init();
+        Motor_init();
         break;
       case 16730805://8
         //        Motor1_Forward(200);
@@ -119,10 +119,10 @@ void loop() {
         //        Motor_init();
         break;
       case 16732845://9
-      //        Motor1_Forward(200);
-      //        delay(2000);
-      //        Motor_init();
-      //        break;
+        //        Motor1_Forward(200);
+        //        delay(2000);
+        Motor_init();
+        break;
       default:
         Motor_init();
         break;
@@ -146,6 +146,17 @@ void Motor_init()
   digitalWrite(in8, LOW);
 
 }
+void Motor_start(int Speed)
+{
+  for (int i = 1; i <= Speed / 10 ; i++)
+  {
+    analogWrite(en1, i * 10);
+    analogWrite(en2, i * 10);
+    analogWrite(en3, i * 10);
+    analogWrite(en4, i * 10);
+    delay(100);
+  }
+}
 void m_type_Forward(int Speed)
 {
   digitalWrite(in1, HIGH);
@@ -156,10 +167,12 @@ void m_type_Forward(int Speed)
   digitalWrite(in6, LOW);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
+  Motor_start(Speed);
   analogWrite(en1, Speed);
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
+
 }
 void m_type_Backward(int Speed)
 {
@@ -171,6 +184,7 @@ void m_type_Backward(int Speed)
   digitalWrite(in6, HIGH);
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
+  Motor_start(Speed);
   analogWrite(en1, Speed);
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
@@ -186,6 +200,7 @@ void m_type_Rightward(int Speed)
   digitalWrite(in6, HIGH);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
+  Motor_start(Speed);
   analogWrite(en1, Speed);
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
@@ -201,10 +216,45 @@ void m_type_Leftward(int Speed)
   digitalWrite(in6, LOW);
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
+  Motor_start(Speed);
   analogWrite(en1, Speed);
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
+}
+void m_type_LeftAround(int Speed)
+{
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  analogWrite(en1, Speed);
+  analogWrite(en2, Speed);
+  analogWrite(en3, Speed);
+  analogWrite(en4, Speed);
+
+}
+void m_type_RightAround(int Speed)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  analogWrite(en1, Speed);
+  analogWrite(en2, Speed);
+  analogWrite(en3, Speed);
+  analogWrite(en4, Speed);
+
 }
 void Motor1_Forward(int Speed)
 {
