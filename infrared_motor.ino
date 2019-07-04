@@ -64,18 +64,17 @@ void loop() {
 
         Serial.println("111");
         Serial.println(millis());
-        m_type_Forward(100);
-        delay(1000);
+        m_type_Forward(100, 1000);
         Motor_init();
         Serial.println(millis());
         break;
       case 16718055://2
-        m_type_Backward(100);
+        m_type_Backward(100, 1000);
         delay(1000);
         Motor_init();
         break;
       case 16743045://3
-        m_type_Leftward(100);
+        m_type_Leftward(100, 1000);
         delay(1000);
         Motor_init();
         //        Serial.println("333");
@@ -84,7 +83,7 @@ void loop() {
         //        Motor_init();
         break;
       case 16716015://4
-        m_type_Rightward(100);
+        m_type_Rightward(100, 1000);
         delay(1000);
         Motor_init();
         //        Motor4_Forward(220);
@@ -92,13 +91,11 @@ void loop() {
         //                Motor_init();
         break;
       case 16726215://5
-        m_type_RightAround(100);
-        delay(1000);
+        m_type_RightAround(50, 1000);
         Motor_init();
         break;
       case 16734885://6
-        m_type_LeftAround(100);
-        delay(1000);
+        m_type_LeftAround(50, 1000);
         Motor_init();
         break;
       case 16728765://7
@@ -111,7 +108,7 @@ void loop() {
         Motor_brakes(200);
         //        Motor1_Forward(200);
         //        delay(2000);
-                Motor_init();
+        Motor_init();
         break;
       case 16732845://9
         //        Motor1_Forward(200);
@@ -139,7 +136,6 @@ void Motor_init()
   digitalWrite(in6, LOW);
   digitalWrite(in7, LOW);
   digitalWrite(in8, LOW);
-
 }
 void Motor_start(int Speed)
 {
@@ -174,25 +170,34 @@ void Motor_brakes(int Speed)
   }
   Motor_init();
 }
-void m_type_Forward(int Speed)
+void Motor_full_work(int Speed, int Time)
 {
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW);
-  digitalWrite(in5, HIGH);
-  digitalWrite(in6, LOW);
-  digitalWrite(in7, HIGH);
-  digitalWrite(in8, LOW);
-  Motor_start(Speed);
-  analogWrite(en1, Speed);
-  analogWrite(en2, Speed);
-  analogWrite(en3, Speed);
-  analogWrite(en4, Speed);
-  Motor_brakes(Speed);
+  unsigned long motor_full_start = millis();
+  unsigned long motor_full_now = millis();
+  do {
+    analogWrite(en1, Speed);
+    analogWrite(en2, Speed);
+    analogWrite(en3, Speed);
+    analogWrite(en4, Speed);
+    motor_full_now = millis();
+  } while (motor_full_now - motor_full_start < Time);
 
 }
-void m_type_Backward(int Speed)
+void m_type_Forward(int Speed, int Time)
+{
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_full_work(Speed, Time);
+  Motor_brakes(Speed);
+}
+void m_type_Backward(int Speed, int Time)
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -203,13 +208,10 @@ void m_type_Backward(int Speed)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  analogWrite(en1, Speed);
-  analogWrite(en2, Speed);
-  analogWrite(en3, Speed);
-  analogWrite(en4, Speed);
+  Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
-void m_type_Rightward(int Speed)
+void m_type_Rightward(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -220,13 +222,10 @@ void m_type_Rightward(int Speed)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  analogWrite(en1, Speed);
-  analogWrite(en2, Speed);
-  analogWrite(en3, Speed);
-  analogWrite(en4, Speed);
+  Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
-void m_type_Leftward(int Speed)
+void m_type_Leftward(int Speed, int Time)
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -237,13 +236,10 @@ void m_type_Leftward(int Speed)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  analogWrite(en1, Speed);
-  analogWrite(en2, Speed);
-  analogWrite(en3, Speed);
-  analogWrite(en4, Speed);
+  Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
-void m_type_LeftAround(int Speed)
+void m_type_LeftAround(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -254,13 +250,10 @@ void m_type_LeftAround(int Speed)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  analogWrite(en1, Speed);
-  analogWrite(en2, Speed);
-  analogWrite(en3, Speed);
-  analogWrite(en4, Speed);
+  //  Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
-void m_type_RightAround(int Speed)
+void m_type_RightAround(int Speed, int Time)
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -271,10 +264,7 @@ void m_type_RightAround(int Speed)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  analogWrite(en1, Speed);
-  analogWrite(en2, Speed);
-  analogWrite(en3, Speed);
-  analogWrite(en4, Speed);
+  //  Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
 void Motor1_Forward(int Speed)
