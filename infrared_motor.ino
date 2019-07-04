@@ -4,6 +4,12 @@ int RECV_PIN = 12; // 使用數位腳位2接收紅外線訊號
 IRrecv irrecv(RECV_PIN); // 初始化紅外線訊號輸入
 decode_results results; // 儲存訊號的結構
 
+
+unsigned long start_time;
+unsigned long before;
+unsigned long now;
+unsigned long initial;
+unsigned long current;
 const int in1 = 52;
 const int in2 = 50;
 const int in3 = 48;
@@ -37,19 +43,6 @@ void setup() {
   irrecv.enableIRIn(); // 啟動接收
   Serial.println("start");
   Motor_init();
-  //  Motor1_Forward(220);
-  //  delay(2000);
-  //  Motor_init();
-  //  Motor2_Forward(220);
-  //  delay(2000);
-  //  Motor_init();
-  //  Motor3_Forward(220);
-  //  delay(2000);
-  //  Motor_init();
-  //  Motor4_Forward(220);
-  //  delay(2000);
-  //  Motor_init();
-
 
 }
 
@@ -71,18 +64,18 @@ void loop() {
 
         Serial.println("111");
         Serial.println(millis());
-        m_type_Forward(150);
+        m_type_Forward(100);
         delay(1000);
         Motor_init();
         Serial.println(millis());
         break;
       case 16718055://2
-        m_type_Backward(150);
+        m_type_Backward(100);
         delay(1000);
         Motor_init();
         break;
       case 16743045://3
-        m_type_Leftward(150);
+        m_type_Leftward(100);
         delay(1000);
         Motor_init();
         //        Serial.println("333");
@@ -91,7 +84,7 @@ void loop() {
         //        Motor_init();
         break;
       case 16716015://4
-        m_type_Rightward(150);
+        m_type_Rightward(100);
         delay(1000);
         Motor_init();
         //        Motor4_Forward(220);
@@ -99,24 +92,26 @@ void loop() {
         //                Motor_init();
         break;
       case 16726215://5
-        m_type_RightAround(150);
+        m_type_RightAround(100);
         delay(1000);
         Motor_init();
         break;
       case 16734885://6
-        m_type_LeftAround(150);
+        m_type_LeftAround(100);
         delay(1000);
         Motor_init();
         break;
       case 16728765://7
+        Motor_start(200);
         //        Motor1_Forward(200);
         //        delay(2000);
         Motor_init();
         break;
       case 16730805://8
+        Motor_brakes(200);
         //        Motor1_Forward(200);
         //        delay(2000);
-        //        Motor_init();
+                Motor_init();
         break;
       case 16732845://9
         //        Motor1_Forward(200);
@@ -148,14 +143,36 @@ void Motor_init()
 }
 void Motor_start(int Speed)
 {
+  initial = millis();
   for (int i = 1; i <= Speed / 10 ; i++)
   {
-    analogWrite(en1, i * 10);
-    analogWrite(en2, i * 10);
-    analogWrite(en3, i * 10);
-    analogWrite(en4, i * 10);
-    delay(100);
+    do
+    {
+      current = millis();
+      analogWrite(en1, i * 10);
+      analogWrite(en2, i * 10);
+      analogWrite(en3, i * 10);
+      analogWrite(en4, i * 10);
+    } while (current - initial < 100);
+    initial = millis();
   }
+}
+void Motor_brakes(int Speed)
+{
+  initial = millis();
+  for (int i = Speed / 10; i >= 0 ; i--)
+  {
+    do
+    {
+      current = millis();
+      analogWrite(en1, i * 10);
+      analogWrite(en2, i * 10);
+      analogWrite(en3, i * 10);
+      analogWrite(en4, i * 10);
+    } while (current - initial < 100);
+    initial = millis();
+  }
+  Motor_init();
 }
 void m_type_Forward(int Speed)
 {
@@ -172,6 +189,7 @@ void m_type_Forward(int Speed)
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
+  Motor_brakes(Speed);
 
 }
 void m_type_Backward(int Speed)
@@ -189,6 +207,7 @@ void m_type_Backward(int Speed)
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
+  Motor_brakes(Speed);
 }
 void m_type_Rightward(int Speed)
 {
@@ -205,6 +224,7 @@ void m_type_Rightward(int Speed)
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
+  Motor_brakes(Speed);
 }
 void m_type_Leftward(int Speed)
 {
@@ -221,6 +241,7 @@ void m_type_Leftward(int Speed)
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
+  Motor_brakes(Speed);
 }
 void m_type_LeftAround(int Speed)
 {
@@ -237,7 +258,7 @@ void m_type_LeftAround(int Speed)
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
-
+  Motor_brakes(Speed);
 }
 void m_type_RightAround(int Speed)
 {
@@ -254,7 +275,7 @@ void m_type_RightAround(int Speed)
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
   analogWrite(en4, Speed);
-
+  Motor_brakes(Speed);
 }
 void Motor1_Forward(int Speed)
 {
