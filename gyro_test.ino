@@ -1,9 +1,9 @@
-//#include "MeOrion.h"
+#include <MPU6050_tockn.h>
 #include <IRremote.h>
 
 #include <Wire.h>
 
-
+MPU6050 mpu6050(Wire);
 IRrecv irrecv(11); // 使用數位腳位11接收紅外線訊號初始化紅外線訊號輸入
 decode_results results; // 儲存訊號的結構
 
@@ -51,27 +51,19 @@ void setup() {
   irrecv.enableIRIn(); // 啟動接收
   Serial.println("start");
   //  ==========陀螺儀==========
-//  gyro.begin();
-//  gyro.update();
-//  Serial.read();
-//  orignal_z = gyro.getAngleZ();//get 初始角度
+  Wire.begin();
+  mpu6050.begin();
+  mpu6050.calcGyroOffsets(true);
   //  =========================
   Motor_init();
-
+  Serial.println( mpu6050.getGyroAngleZ());
 }
 
 void loop() {
-
-//  gyro.update();
-//  Serial.read();
-//  Serial.print("orignal_z:");
-//  Serial.println(orignal_z);
-//  Serial.print(" Z:");
-//  Serial.println(gyro.getAngleZ() );
-//  Serial.print(" end:");
-//  Serial.println(gyro.getAngleZ() - orignal_z );
-
+  mpu6050.update();
+  //  Serial.println( mpu6050.getGyroAngleZ());
   if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
+    mpu6050.update();
     Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845
     Serial.println(results.value);//0:FF6897/1:FF6897/2:FF18E7/3:FF7A85/4:FF10EF/5:FF38C7/6:FF5AA5/7:FF42BD/8:FF4AB5/9:FF52AD
 
@@ -112,17 +104,25 @@ void loop() {
         //                Motor_init();
         break;
       case 16726215://5
+        mpu6050.update();
+        Serial.println( mpu6050.getGyroAngleZ());
         m_type_RightAround(50, 1000);
         Motor_init();
+        Serial.println( "===============");
+        mpu6050.update();
+        Serial.println( mpu6050.getGyroAngleZ());
         break;
       case 16734885://6
+        mpu6050.update();
+        Serial.println( mpu6050.getGyroAngleZ());
         m_type_LeftAround(50, 1000);
         Motor_init();
+        Serial.println( "===============");
+        mpu6050.update();
+        Serial.println( mpu6050.getGyroAngleZ());
         break;
       case 16728765://7
-        Motor_start(200);
-        //        Motor1_Forward(200);
-        //        delay(2000);
+        m_type_correction_angle();
         Motor_init();
         break;
       case 16730805://8
@@ -165,6 +165,7 @@ void Motor_start(int Speed)
   {
     do
     {
+      mpu6050.update();
       current = millis();
       analogWrite(en1, i * 10);
       analogWrite(en2, i * 10);
@@ -181,6 +182,7 @@ void Motor_brakes(int Speed)
   {
     do
     {
+      mpu6050.update();
       current = millis();
       analogWrite(en1, i * 10);
       analogWrite(en2, i * 10);
@@ -196,6 +198,7 @@ void Motor_full_work(int Speed, int Time)
   unsigned long motor_full_start = millis();
   unsigned long motor_full_now = millis();
   do {
+    mpu6050.update();
     analogWrite(en1, Speed);
     analogWrite(en2, Speed);
     analogWrite(en3, Speed);
@@ -206,6 +209,7 @@ void Motor_full_work(int Speed, int Time)
 }
 void m_type_Forward(int Speed, int Time)
 {
+  mpu6050.update();
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
@@ -220,6 +224,7 @@ void m_type_Forward(int Speed, int Time)
 }
 void m_type_Backward(int Speed, int Time)
 {
+  mpu6050.update();
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
@@ -234,6 +239,7 @@ void m_type_Backward(int Speed, int Time)
 }
 void m_type_Rightward(int Speed, int Time)
 {
+  mpu6050.update();
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -248,6 +254,7 @@ void m_type_Rightward(int Speed, int Time)
 }
 void m_type_Leftward(int Speed, int Time)
 {
+  mpu6050.update();
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
@@ -262,6 +269,7 @@ void m_type_Leftward(int Speed, int Time)
 }
 void m_type_LeftAround(int Speed, int Time)
 {
+  mpu6050.update();
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -276,6 +284,7 @@ void m_type_LeftAround(int Speed, int Time)
 }
 void m_type_RightAround(int Speed, int Time)
 {
+  mpu6050.update();
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
@@ -288,22 +297,40 @@ void m_type_RightAround(int Speed, int Time)
   Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
-//void m_type_correction_angle()
-//{
-//  if ((gyro.getAngleZ() - orignal_z) > 5.0)
-//  {
-//    do {
-//      m_type_RightAround(50, 0);
-//    } while ((gyro.getAngleZ() - orignal_z) > 5.0);
-//  } else if ((gyro.getAngleZ() - orignal_z) < -5.0)
-//  {
-//    do {
-//      m_type_LeftAround(50, 0);
-//    } while ((gyro.getAngleZ() - orignal_z) < -5.0);
-//  } else {
-//    m_type_Forward(50, 0);
-//  }
-//}
+void m_type_correction_angle()
+{
+  do
+  {
+    mpu6050.update();
+    if (mpu6050.getGyroAngleZ() > 5.0 && mpu6050.getGyroAngleZ() < 180.0)
+    {
+      Serial.println(">50;<180");
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_LeftAround(50, 0);
+    } else if (mpu6050.getGyroAngleZ() < -5.0 && mpu6050.getGyroAngleZ() > -180.0)
+    {
+      Serial.println("<-5;>-180");
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_RightAround(50, 0);
+
+    } else if (mpu6050.getGyroAngleZ() > 180.0)
+    {
+      Serial.println(">180");
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_RightAround(50, 0);
+
+    } else if (mpu6050.getGyroAngleZ() < -180.0)
+    {
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_LeftAround(50, 0);
+
+    }
+  } while (mpu6050.getGyroAngleZ() < -5.0 || mpu6050.getGyroAngleZ() > 5.0);
+
+  Serial.println("GoGoGo");
+  m_type_Forward(50, 0);
+
+}
 void Motor1_Forward(int Speed)
 {
   digitalWrite(in1, HIGH);
