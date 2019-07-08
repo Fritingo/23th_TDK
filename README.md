@@ -3,8 +3,9 @@
 http://tdk.ncut.edu.tw/23th/
 <br>
 <p>麥克納姆輪移動</p>
-![image](https://i2.kknews.cc/SIG=2gt9e7i/ctp-vzntr/np91138q32154006n2s5n016nqnp7q29.jpg)
+![image](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/%E9%BA%A5%E5%85%8B%E7%B4%8D%E5%A7%86%E8%BC%AA.png?token=AIF6LV7M56ET656W364L2NS5FS33S)
+圖片來源:Quora
 <br>
 
 <p>電路圖</p>
-![image](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/%E9%9B%BB%E8%B7%AF%E5%9C%96.jpg?token=AIF6LV6DHCOOAF4YL2MAAHS5ETOXQ)
+![image](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/%E9%9B%BB%E8%B7%AF%E5%9C%96.jpg?token=AIF6LV3QSI42TGDYR3TXGWK5FS3XU)
