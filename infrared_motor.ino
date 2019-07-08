@@ -21,7 +21,7 @@ const int in8 = 38;
 
 const int en1 = 2;
 const int en2 = 3;
-const int en3 = 4;
+const int en3 = 6;
 const int en4 = 5;
 void setup() {
   pinMode(in1, OUTPUT);
