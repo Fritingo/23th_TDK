@@ -2,6 +2,11 @@
 23th_TDK
 http://tdk.ncut.edu.tw/23th/
 <br>
+<p>Arduino Mega Pin</p>
+![image](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/arduino-mega-pinout-diagram.png?token=AIF6LV6CELDRMWHB7JLNL425FZVFK)
+圖片來源:Quora
+<br>
+<br>
 <p>麥克納姆輪移動</p>
 ![image](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/%E9%BA%A5%E5%85%8B%E7%B4%8D%E5%A7%86%E8%BC%AA.png?token=AIF6LV7M56ET656W364L2NS5FS33S)
 圖片來源:Quora
