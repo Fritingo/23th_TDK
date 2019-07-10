@@ -2,6 +2,7 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 #include <IRremote.h>
 #include "Wire.h"
+#include <HCSR04.h>
 MPU6050 mpu;
 
 IRrecv irrecv(11); // 使用數位腳位11接收紅外線訊號初始化紅外線訊號輸入
@@ -25,6 +26,11 @@ const int en1 = 2;
 const int en2 = 3;
 const int en3 = 6;
 const int en4 = 5;
+
+const int Buzzer = 22;
+
+UltraSonicDistanceSensor HCSR04_Left(24, 25);  //T/E
+UltraSonicDistanceSensor HCSR04_Right(26, 27);  //T/E
 
 float original_z;
 bool gyro_ready = false;
@@ -140,7 +146,9 @@ void mpu6050_update() {
       // reset so we can continue cleanly
       mpu.resetFIFO();
       fifoCount = mpu.getFIFOCount();
+      digitalWrite(Buzzer, HIGH);
       Serial.println(F("FIFO overflow!"));
+
 
       // otherwise, check for DMP data ready interrupt (this should happen frequently)
     } else if (mpuIntStatus & _BV(MPU6050_INTERRUPT_DMP_INT_BIT)) {
@@ -440,7 +448,7 @@ void m_type_RightForward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_LeftBackward(int Speed, int Time)
+void m_type_RightBackward(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -479,6 +487,7 @@ void Motor4_test(int Speed)
 }
 
 void setup() {
+  digitalWrite(Buzzer, HIGH);
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
@@ -492,6 +501,8 @@ void setup() {
   pinMode(en2, OUTPUT);
   pinMode(en3, OUTPUT);
   pinMode(en4, OUTPUT);
+
+  pinMode(Buzzer, OUTPUT);
 
   Serial.begin(115200);
   irrecv.blink13(true); // 設為true的話，當收到訊號時，腳位13的LED便會閃爍
@@ -532,14 +543,18 @@ void setup() {
     gyro_ready = true;
     original_z = yaw;
     Serial.println("進入策略模式");
+    digitalWrite(Buzzer, LOW);
   } else {
     // if programming failed, don't try to do anything
     Serial.println("陀螺儀初始化錯誤!!!");
+
   }
 
 }
 
 void loop() {
+  Serial.println(HCSR04_Left.measureDistanceCm());
+  Serial.println(HCSR04_Right.measureDistanceCm());
   IR_mode();
   //  if (gyro_ready && mpu6050_getyaw()) {
   if (gyro_ready) {
@@ -596,7 +611,7 @@ void loop() {
         Serial.println(yaw);
         break;
       case 16730805://8
-        m_type_LeftBackward(100, 1000);
+        m_type_RightBackward(100, 1000);
         Serial.println("888");
         break;
       case 16732845://9
