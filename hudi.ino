@@ -7,6 +7,12 @@ MPU6050 mpu;
 IRrecv irrecv(11); // 使用數位腳位11接收紅外線訊號初始化紅外線訊號輸入
 decode_results results; // 儲存訊號的結構
 
+const int start_bt = 23;
+bool Start = false;
+int move_step = 0;
+int shot_step = 0;
+
+
 unsigned long start_time;
 unsigned long before;
 unsigned long now;
@@ -25,6 +31,8 @@ const int en1 = 2;
 const int en2 = 3;
 const int en3 = 6;
 const int en4 = 5;
+
+const int Buzzer = 53;
 
 float original_z;
 bool gyro_ready = false;
@@ -110,10 +118,10 @@ void mpu6050_setup() {
     packetSize = mpu.dmpGetFIFOPacketSize();
 
     while (!mpuInterrupt && fifoCount < packetSize) {
-        if (mpuInterrupt && fifoCount < packetSize) {
-          // try to get out of the infinite loop 
-          fifoCount = mpu.getFIFOCount();
-        }
+      if (mpuInterrupt && fifoCount < packetSize) {
+        // try to get out of the infinite loop
+        fifoCount = mpu.getFIFOCount();
+      }
     }
   } else {
     // ERROR!
@@ -127,33 +135,33 @@ void mpu6050_setup() {
 }
 
 void mpu6050_update() {
-  if(mpuInterrupt) {
+  if (mpuInterrupt) {
     // reset interrupt flag and get INT_STATUS byte
     mpuInterrupt = false;
     mpuIntStatus = mpu.getIntStatus();
-  
+
     // get current FIFO count
     fifoCount = mpu.getFIFOCount();
-  
+
     // check for overflow (this should never happen unless our code is too inefficient)
     if ((mpuIntStatus & _BV(MPU6050_INTERRUPT_FIFO_OFLOW_BIT)) || fifoCount >= 1024) {
       // reset so we can continue cleanly
       mpu.resetFIFO();
       fifoCount = mpu.getFIFOCount();
       Serial.println(F("FIFO overflow!"));
-  
+
       // otherwise, check for DMP data ready interrupt (this should happen frequently)
     } else if (mpuIntStatus & _BV(MPU6050_INTERRUPT_DMP_INT_BIT)) {
       // wait for correct available data length, should be a VERY short wait
       while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
-  
+
       // read a packet from FIFO
       mpu.getFIFOBytes(fifoBuffer, packetSize);
       mpu.resetFIFO();
       fifoCount = 0;
       // track FIFO count here in case there is > 1 packet available
       // (this lets us immediately read more without waiting for an interrupt)
-  //    fifoCount -= packetSize;
+      //    fifoCount -= packetSize;
       // update Euler angles in degrees
       mpu.dmpGetQuaternion(&q, fifoBuffer);
       mpu.dmpGetGravity(&gravity, &q);
@@ -207,8 +215,8 @@ void Motor_reset()
 }
 void Motor_start(int Speed)
 {
-  if(!is_end) {
-    if(Speed<50) {
+  if (!is_end) {
+    if (Speed < 50) {
       activate_speed = 50;
     } else {
       activate_speed = Speed;
@@ -224,7 +232,7 @@ void Motor_start(int Speed)
         initial = millis();
       }
     } else {
-      if(Speed<50) {
+      if (Speed < 50) {
         analogWrite(en1, Speed);
         analogWrite(en2, Speed);
         analogWrite(en3, Speed);
@@ -250,16 +258,17 @@ void Motor_brakes(int Speed)
   } else {
     count = 0;
     Motor_reset();
-    mode_code=-1;
+    mode_code = -1;
   }
 }
 
 void Motor_brakes_with_time(int Speed, int after_time)
 {
-  if(millis()-initial>after_time && is_started) {
+
+  if (millis() - initial > after_time && !is_brake) {
     is_brake = true;
   }
-  if(is_brake) {
+  if (is_brake) {
     if (count < (Speed / 10)) {
       if (millis() - initial > 100) {
         analogWrite(en1, Speed - (count + 1) * 10);
@@ -273,6 +282,7 @@ void Motor_brakes_with_time(int Speed, int after_time)
       count = 0;
       is_brake = false;
       Motor_reset();
+      mode_code = -1;
     }
   }
 }
@@ -291,13 +301,15 @@ void Motor_full_work(int Speed, int Time)
     is_start = true;
   }
 }
-
+void m_type_correction_angle() {
+  safety_around_angle(-relative_yaw);
+}
 void safety_around_angle(int angle) {
-  if(!is_started) {
+  if (!is_started) {
     is_started = true;
     is_end = false;
     base_yaw = relative_yaw;
-    if(angle>0) {
+    if (angle > 0) {
       digitalWrite(in1, LOW);
       digitalWrite(in2, HIGH);
       digitalWrite(in3, HIGH);
@@ -306,7 +318,7 @@ void safety_around_angle(int angle) {
       digitalWrite(in6, HIGH);
       digitalWrite(in7, HIGH);
       digitalWrite(in8, LOW);
-    }else{
+    } else {
       digitalWrite(in1, HIGH);
       digitalWrite(in2, LOW);
       digitalWrite(in3, LOW);
@@ -316,36 +328,36 @@ void safety_around_angle(int angle) {
       digitalWrite(in7, LOW);
       digitalWrite(in8, HIGH);
     }
-    goal_yaw = base_yaw+angle;
-    if(goal_yaw>180) {
+    goal_yaw = base_yaw + angle;
+    if (goal_yaw > 180) {
       goal_yaw -= 360;
-    }else if(goal_yaw<-180) {
+    } else if (goal_yaw < -180) {
       goal_yaw += 360;
     }
     analogWrite(en1, 40);
     analogWrite(en2, 40);
     analogWrite(en3, 40);
     analogWrite(en4, 40);
-  }else{
-//    Motor_start(50);    
+  } else {
+    //    Motor_start(50);
     Serial.print("target angle: ");
     Serial.print(goal_yaw);
     Serial.print(" now: ");
     Serial.println(relative_yaw);
-    
-    if(abs(relative_yaw-goal_yaw)<0.5) {
+
+    if (abs(relative_yaw - goal_yaw) < 0.5) {
       Serial.println("到達目標角度!!!");
       Motor_reset();
-//      is_started=false;
+      //      is_started=false;
       is_started = false;
-      mode_code=-1;
+      mode_code = -1;
     }
   }
-//  Motor_start(Speed);
-//  Motor_brakes(Speed);
+  //  Motor_start(Speed);
+  //  Motor_brakes(Speed);
 }
 
-void m_type_Forward(int Speed, int Time)
+void m_type_Rightward(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -356,41 +368,38 @@ void m_type_Forward(int Speed, int Time)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-//  Motor_full_work(Speed, Time);
-//  Motor_brakes(Speed);
-}
-void m_type_Backward(int Speed, int Time)
-{
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, HIGH);
-  digitalWrite(in7, LOW);
-  digitalWrite(in8, HIGH);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
-}
-void m_type_Rightward(int Speed, int Time)
-{
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, HIGH);
-  digitalWrite(in7, HIGH);
-  digitalWrite(in8, LOW);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_Leftward(int Speed, int Time)
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_Backward(int Speed, int Time)
+{
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_Forward(int Speed, int Time)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
   digitalWrite(in5, HIGH);
@@ -398,8 +407,7 @@ void m_type_Leftward(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_LeftAround(int Speed, int Time)
 {
@@ -412,8 +420,7 @@ void m_type_LeftAround(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_RightAround(int Speed, int Time)
 {
@@ -426,18 +433,59 @@ void m_type_RightAround(int Speed, int Time)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
+  Motor_brakes_with_time(Speed, Time);
 }
-void m_type_correction_angle()
+void m_type_RightForward(int Speed, int Time)
 {
-  if(yaw>5){
-    m_type_LeftAround(50,0);
-  }else if(yaw<-5){
-    m_type_RightAround(50,0);
-  }else{
-    Motor_reset();
-  }
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_RightBackward(int Speed, int Time)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_LeftForward(int Speed, int Time)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_LeftBackward(int Speed, int Time)
+{
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_brakes_with_time(Speed, Time);
 }
 void Motor1_test(int Speed)
 {
@@ -465,6 +513,9 @@ void Motor4_test(int Speed)
 }
 
 void setup() {
+  pinMode(start_bt, INPUT);
+  pinMode(Buzzer, OUTPUT);
+  digitalWrite(Buzzer, HIGH);
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
@@ -494,11 +545,11 @@ void setup() {
     Serial.println("進行陀螺儀校準中...");
     do {
       if (mpuInterrupt) {
-        if(fifoCount < packetSize) {
+        if (fifoCount < packetSize) {
           fifoCount = mpu.getFIFOCount();
-        }else{
+        } else {
           mpu6050_update();
-//          Serial.println(yaw);
+          //          Serial.println(yaw);
           if (counter_ready < 100) {
             if (counter_ready == 0) {
               first_yaw = yaw;
@@ -518,6 +569,7 @@ void setup() {
     gyro_ready = true;
     original_z = yaw;
     Serial.println("進入策略模式");
+    digitalWrite(Buzzer, LOW);
   } else {
     // if programming failed, don't try to do anything
     Serial.println("陀螺儀初始化錯誤!!!");
@@ -527,67 +579,102 @@ void setup() {
 
 void loop() {
   IR_mode();
-//  if (gyro_ready && mpu6050_getyaw()) {
+
   if (gyro_ready) {
     mpu6050_update();
-    relative_yaw = yaw-original_z;
-    if(relative_yaw>180) {
-      relative_yaw = relative_yaw-360;
-    }else if(relative_yaw<-180) {
-      relative_yaw = relative_yaw+360;
+    relative_yaw = yaw - original_z;
+    if (relative_yaw > 180) {
+      relative_yaw = relative_yaw - 360;
+    } else if (relative_yaw < -180) {
+      relative_yaw = relative_yaw + 360;
     }
-//    Serial.print(" now: ");
-//    Serial.println(relative_yaw);
-//    Serial.print("相對角度: ");
-//    Serial.println(relative_yaw);
 
-    switch (mode_code)
-    {
-      case 0:
-//        safety_around_angle(90);
-//        m_type_Forward(100, 0);
-        break;
-      case 16738455://0
-        Motor_reset();
-//              Serial.println("000");
-        break;
-      case 16724175://1
-        m_type_Forward(100, 0);
-        break;
-      case 16718055://2
-        safety_around_angle(90);
-        //      Serial.println("222");
-        break;
-      case 16743045://3
-        safety_around_angle(-90);
-        //      Serial.println("333");
-        break;
-      case 16716015://4
-        safety_around_angle(45);
-        break;
-      case 16726215://5
-        safety_around_angle(-45);
-        break;
-      case 16734885://6
-        Serial.println("666");
-        break;
-      case 16728765://7
-        Serial.println("777");
-        break;
-      case 16730805://8
-        Serial.println("888");
-        break;
-      case 16732845://9
-        is_end = false;
-        is_started = false;
-        Motor_brakes(100);
-        break;
-      default:
-//        Serial.println("default");
-        is_end = false;
-        break;
+
+    if (Start == true) {
+      Serial.println(move_step);
+      if (move_step == 1) {
+        move_step1();
+      }else if(move_step == 2){
+        
+      }
+    } else {
+      Start = digitalRead(start_bt);
+      if (Start == true) {
+        move_step++;
+      } else {
+        switch (mode_code)
+        {
+          case 0:
+            Motor_reset();
+            //        safety_around_angle(90);
+            //        m_type_Forward(100, 0);
+            break;
+          case 16738455://0
+            Motor_reset();
+            //              Serial.println("000");
+            break;
+          case 16724175://1
+            m_type_Forward(150, 1000);
+            break;
+          case 16718055://2
+            m_type_Backward(150, 1000);
+            //        safety_around_angle(90);
+            //      Serial.println("222");
+            break;
+          case 16743045://3
+            m_type_Rightward(100, 1000);
+            //        safety_around_angle(-90);
+            //      Serial.println("333");
+            break;
+          case 16716015://4
+            m_type_Leftward(100, 1000);
+            //        safety_around_angle(45);
+            break;
+          case 16726215://5
+            //        m_type_RightAround(50, 0);
+            safety_around_angle(-45);
+            break;
+          case 16734885://6
+            //          safety_around_angle(45);
+            m_type_correction_angle();
+            Serial.println("666");
+            break;
+          case 16728765://7
+            m_type_RightForward(100, 1000);
+            Serial.println(yaw);
+            break;
+          case 16730805://8
+            m_type_LeftBackward(100, 1000);
+            Serial.println("888");
+            break;
+          case 16732845://9
+            m_type_RightBackward(100, 1000);
+            break;
+          default:
+            //        Serial.println("default");
+            is_end = false;
+            break;
+        }
+      }
     }
+
+    //    Serial.print(" now: ");
+    //    Serial.println(relative_yaw);
+    //    Serial.print("相對角度: ");
+    //    Serial.println(relative_yaw);
+
+
   }
-    
-//  }
+
+  //  }
+}
+
+void move_step1() {
+  m_type_Leftward(100, 1000);
+  m_type_correction_angle();
+  if (relative_yaw < 2 and relative_yaw > -2) {
+    move_step++;
+  } else {
+    m_type_correction_angle();
+  }
 }
