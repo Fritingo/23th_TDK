@@ -57,7 +57,7 @@ const int en4 = 5;
 
 const int Buzzer = 39;
 
-float original_z=0;
+float original_z = 0;
 bool gyro_ready = false;
 bool is_mode;
 int mode_code = 0;
@@ -95,7 +95,7 @@ void dmpDataReady() {
 }
 
 void mpu6050_setup() {
-  
+
   float first_yaw = 0;
   int counter_ready = 0;
   float last_yaw = 999;
@@ -235,8 +235,8 @@ void mpu6050_update() {
       } else if (relative_yaw < -180) {
         relative_yaw = relative_yaw + 360;
       }
-      Serial.print("yaw = ");
-      Serial.println(relative_yaw);
+      //      Serial.print("yaw = ");
+      //      Serial.println(relative_yaw);
     }
   }
 }
@@ -582,38 +582,38 @@ void Motor4_test(int Speed)
 }
 
 void move_step(int goal_x, int goal_y) {
-//  if (abs(distance_x - goal_x) > 0.5 && goal_x > 0) {
-//    if (distance_x > goal_x) {
-//      m_type_Rightward();
-//    } else {
-//      m_type_Leftward();
-//    }
-//  } else if (abs(distance_y - goal_y) > 0.5 && goal_y > 0) {
-//    if (distance_y > goal_y) {
-//      m_type_Forward();
-//    } else {
-//      m_type_Backward();
-//    }
-//  } else {
-//    STEP++;
-//  }
+  //  if (abs(distance_x - goal_x) > 0.5 && goal_x > 0) {
+  //    if (distance_x > goal_x) {
+  //      m_type_Rightward();
+  //    } else {
+  //      m_type_Leftward();
+  //    }
+  //  } else if (abs(distance_y - goal_y) > 0.5 && goal_y > 0) {
+  //    if (distance_y > goal_y) {
+  //      m_type_Forward();
+  //    } else {
+  //      m_type_Backward();
+  //    }
+  //  } else {
+  //    STEP++;
+  //  }
 }
 
 void echoCheck() { // If ping received, set the sensor distance to array.
   if (sonar[currentSensor].check_timer())
-    cm[currentSensor] = (sonar[currentSensor].ping_result/2) / 29.1;
+    cm[currentSensor] = (sonar[currentSensor].ping_result / 2) / 29.1;
 }
 
 void oneSensorCycle() { // Sensor ping cycle complete, do something with the results.
   // The following code would be replaced with your code that does something with the ping results.
-    distance_x = cm[0];
-    Serial.print("distance_x = ");
-    Serial.print(distance_x);
-    Serial.print("cm ");
-    distance_y = cm[1];
-    Serial.print("distance_y = ");
-    Serial.print(distance_y);
-    Serial.println("cm ");
+  distance_x = cm[0];
+  //    Serial.print("distance_x = ");
+  //    Serial.print(distance_x);
+  //    Serial.print("cm ");
+  distance_y = cm[1];
+  //    Serial.print("distance_y = ");
+  //    Serial.print(distance_y);
+  //    Serial.println("cm ");
 }
 
 void sonar_update() {
@@ -652,9 +652,9 @@ void setup() {
   irrecv.enableIRIn(); // 啟動接收
   Serial.println("start");
   Motor_reset();
-  
+
   mpu6050_setup();
-  
+
   pingTimer[0] = millis() + 75;           // First ping starts at 75ms, gives time for the Arduino to chill before starting.
   for (uint8_t i = 1; i < SONAR_NUM; i++) // Set the starting time for each sensor.
     pingTimer[i] = pingTimer[i - 1] + PING_INTERVAL;
@@ -664,77 +664,80 @@ void loop() {
   if (!gyro_ready) {
     return;
   }
-  IR_mode();
 
   sonar_update();
   mpu6050_update();
 
   Start = digitalRead(start_bt);
-  
+
+
+
   if (!Start) {
-    if (Start) {
-      step_start = millis();
-      loop_x = d5;
-      loop_y = (2 * car_y) + d2;
-      Serial.println("自動模式");
-    } else {
-      switch (mode_code)
-      {
-        case 0:
-          Motor_reset();
-          //        safety_around_angle(90);
-          //        m_type_Forward(100, 0);
-          break;
-        case 16738455://0
-          Motor_reset();
-          //              Serial.println("000");
-          break;
-        case 16724175://1
-          m_type_Forward(150, 1000);
-          break;
-        case 16718055://2
-          m_type_Backward(150, 1000);
-          //        safety_around_angle(90);
-          //      Serial.println("222");
-          break;
-        case 16743045://3
-          m_type_Rightward(100, 1000);
-          //        safety_around_angle(-90);
-          //      Serial.println("333");
-          break;
-        case 16716015://4
-          m_type_Leftward(100, 1000);
-          //        safety_around_angle(45);
-          break;
-        case 16726215://5
-          //        m_type_RightAround(50, 0);
-          safety_around_angle(-45);
-          break;
-        case 16734885://6
-          //          safety_around_angle(45);
-          m_type_correction_angle();
-          Serial.println("666");
-          break;
-        case 16728765://7
-          m_type_RightForward(100, 1000);
-          Serial.println(yaw);
-          break;
-        case 16730805://8
-          m_type_LeftBackward(100, 1000);
-          Serial.println("888");
-          break;
-        case 16732845://9
-          m_type_RightBackward(100, 1000);
-          break;
-        default:
-          //        Serial.println("default");
-          is_end = false;
-          break;
-      }
+    IR_mode();
+
+    switch (mode_code)
+    {
+      case 0:
+        Motor_reset();
+        //        safety_around_angle(90);
+        //        m_type_Forward(100, 0);
+        break;
+      case 16738455://0
+        Motor_reset();
+        //              Serial.println("000");
+        break;
+      case 16724175://1
+        m_type_Forward(150, 1000);
+        break;
+      case 16718055://2
+        m_type_Backward(150, 1000);
+        //        safety_around_angle(90);
+        //      Serial.println("222");
+        break;
+      case 16743045://3
+        m_type_Rightward(100, 1000);
+        //        safety_around_angle(-90);
+        //      Serial.println("333");
+        break;
+      case 16716015://4
+        m_type_Leftward(100, 1000);
+        //        safety_around_angle(45);
+        break;
+      case 16726215://5
+        //        m_type_RightAround(50, 0);
+        safety_around_angle(-45);
+        break;
+      case 16734885://6
+        //          safety_around_angle(45);
+        m_type_correction_angle();
+        Serial.println("666");
+        break;
+      case 16728765://7
+        m_type_RightForward(100, 1000);
+        Serial.println(yaw);
+        break;
+      case 16730805://8
+        m_type_LeftBackward(100, 1000);
+        Serial.println("888");
+        break;
+      case 16732845://9
+        Motor_brakes(100);
+        break;
+      default:
+        //        Serial.println("default");
+        is_end = false;
+        break;
+
     }
+  } else if (Start && STEP == 0) {
+    step_start = millis();
+    loop_x = d5;
+    loop_y = (2 * car_y) + d2;
+    Serial.println("自動模式");
+    STEP = -1;//測試先用-1
   } else {
     switch (STEP) {
-      case 0:
+      case -1:
         break;
       case 1:
         move_step(d1, d2);
@@ -759,7 +762,7 @@ void loop() {
         }
         break;
       case 5:
-//        Motor_brakes();
+        //        Motor_brakes();
         break;
     }
   }
