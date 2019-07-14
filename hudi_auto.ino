@@ -67,6 +67,8 @@ bool is_end = false;
 int activate_speed;
 bool is_started = false;
 bool is_brake = false;
+unsigned long stop_x = false;
+unsigned long stop_y = false;
 float relative_yaw;
 float base_yaw;
 float goal_yaw;
@@ -356,6 +358,21 @@ void Motor_brakes_with_time(int Speed, int after_time)
   }
 }
 
+void Motor_brakes_with_sonar(int Speed) {
+  if (count < (Speed / 10) - 3) {
+    if (millis() - initial > 100) {
+      analogWrite(en1, Speed - (count + 1) * 10);
+      analogWrite(en2, Speed - (count + 1) * 10);
+      analogWrite(en3, Speed - (count + 1) * 10);
+      analogWrite(en4, Speed - (count + 1) * 10);
+      count++;
+      initial = millis();
+    }
+  } else {
+    count = 0;
+  }
+}
+
 void Motor_full_work(int Speed, int Time)
 {
   if (is_start == true) {
@@ -426,7 +443,7 @@ void safety_around_angle(int angle) {
   //  Motor_brakes(Speed);
 }
 
-void m_type_Rightward(int Speed, int Time)
+void m_type_Rightward(int Speed)
 {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -438,6 +455,58 @@ void m_type_Rightward(int Speed, int Time)
   digitalWrite(in8, LOW);
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_Leftward(int Speed)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_Backward(int Speed)
+{
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_Forward(int Speed)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_Rightward(int Speed, int Time)
+{
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_Leftward(int Speed, int Time)
 {
@@ -450,7 +519,7 @@ void m_type_Leftward(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+    Motor_brakes_with_time(Speed, Time);
 }
 void m_type_Backward(int Speed, int Time)
 {
@@ -463,7 +532,7 @@ void m_type_Backward(int Speed, int Time)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+    Motor_brakes_with_time(Speed, Time);
 }
 void m_type_Forward(int Speed, int Time)
 {
@@ -476,8 +545,9 @@ void m_type_Forward(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+    Motor_brakes_with_time(Speed, Time);
 }
+
 void m_type_LeftAround(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
@@ -582,21 +652,36 @@ void Motor4_test(int Speed)
 }
 
 void move_step(int goal_x, int goal_y) {
-  //  if (abs(distance_x - goal_x) > 0.5 && goal_x > 0) {
-  //    if (distance_x > goal_x) {
-  //      m_type_Rightward();
-  //    } else {
-  //      m_type_Leftward();
-  //    }
-  //  } else if (abs(distance_y - goal_y) > 0.5 && goal_y > 0) {
-  //    if (distance_y > goal_y) {
-  //      m_type_Forward();
-  //    } else {
-  //      m_type_Backward();
-  //    }
-  //  } else {
-  //    STEP++;
-  //  }
+  if (abs(distance_x - goal_x) > 0.5 && goal_x > 0) {
+    
+    if (abs(distance_x - goal_x) > 50) {
+      if (distance_x > goal_x) {
+        m_type_Rightward(50);
+      } else {
+        m_type_Leftward(50);
+      }
+    } else {
+      Motor_brakes_with_sonar(50);
+      stop_x=millis();
+    }
+  } else if (millis()-stop_x<200) {
+    Motor_reset();
+  } else if (abs(distance_y - goal_y) > 0.5 && goal_y > 0) {
+    if (abs(distance_y - goal_y) > 50) {
+      if (distance_y > goal_y) {
+        m_type_Forward(50);
+      } else {
+        m_type_Backward(50);
+      }
+    } else {
+      Motor_brakes_with_sonar(50);
+      stop_y=millis();
+    }
+  }else if (millis()-stop_y<200) {
+    Motor_reset();
+  } else {
+    STEP++;
+  }
 }
 
 void echoCheck() { // If ping received, set the sensor distance to array.
