@@ -11,12 +11,13 @@ decode_results results; // 儲存訊號的結構
 
 const int start_bt = 23;
 bool Start = false;
+bool original_start = false;
 int STEP = 0;
-int shot_step = 0;
+int step_move = 0;
 
 #define SONAR_NUM     2 // Number of sensors.
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
-#define PING_INTERVAL 50 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
+#define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
 unsigned long pingTimer[SONAR_NUM]; // Holds the times when the next ping should happen for each sensor.
 float cm[SONAR_NUM];         // Where the ping distances are stored.
@@ -30,14 +31,14 @@ NewPing sonar[SONAR_NUM] = {     // Sensor object array.
 
 unsigned long sonar_start = 0;
 // 定策略時要修改的距離
-#define d1 100
-#define d2 100
-#define d3 50
+#define d1 80
+#define d2 150
+#define d3 55
 #define d5 150
 #define car_y 69
 #define stop_collect_y 20
 int loop_x = d5;
-int loop_y = (2 * car_y) + d2;
+int loop_y = d2 - (2 * car_y);
 
 unsigned long step_start;
 unsigned long initial;
@@ -67,8 +68,9 @@ bool is_end = false;
 int activate_speed;
 bool is_started = false;
 bool is_brake = false;
-unsigned long stop_x = false;
-unsigned long stop_y = false;
+unsigned long stop_x = 0;
+unsigned long stop_y = 0;
+unsigned long motor_start = 0;
 float relative_yaw;
 float base_yaw;
 float goal_yaw;
@@ -237,8 +239,8 @@ void mpu6050_update() {
       } else if (relative_yaw < -180) {
         relative_yaw = relative_yaw + 360;
       }
-      //      Serial.print("yaw = ");
-      //      Serial.println(relative_yaw);
+//            Serial.print("yaw = ");
+//            Serial.println(relative_yaw);
     }
   }
 }
@@ -252,7 +254,7 @@ bool mpu6050_getyaw() {
   }
 }
 
-void IR_mode() {
+void IR_update() {
   if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
     Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845
     Serial.println(results.value);//0:FF6897/1:FF6897/2:FF18E7/3:FF7A85/4:FF10EF/5:FF38C7/6:FF5AA5/7:FF42BD/8:FF4AB5/9:FF52AD
@@ -284,6 +286,7 @@ void Motor_reset()
   digitalWrite(in7, LOW);
   digitalWrite(in8, LOW);
 }
+
 void Motor_start(int Speed)
 {
   if (!is_end) {
@@ -313,6 +316,13 @@ void Motor_start(int Speed)
       is_end = true;
     }
   }
+}
+
+void Motor_start_directly(int Speed) {
+    analogWrite(en1, Speed);
+    analogWrite(en2, Speed);
+    analogWrite(en3, Speed);
+    analogWrite(en4, Speed);
 }
 
 void Motor_brakes(int Speed)
@@ -358,9 +368,13 @@ void Motor_brakes_with_time(int Speed, int after_time)
   }
 }
 
-void Motor_brakes_with_sonar(int Speed) {
-  if (count < (Speed / 10) - 3) {
+void Motor_brakes_with_sonar(int Speed, int min_speed) {
+  if (count < ((Speed-min_speed) / 10)) {
     if (millis() - initial > 100) {
+      Serial.print("brakes step=");
+      Serial.print(count);
+      Serial.print(", speed=");
+      Serial.println(Speed - (count + 1) * 10);
       analogWrite(en1, Speed - (count + 1) * 10);
       analogWrite(en2, Speed - (count + 1) * 10);
       analogWrite(en3, Speed - (count + 1) * 10);
@@ -368,8 +382,6 @@ void Motor_brakes_with_sonar(int Speed) {
       count++;
       initial = millis();
     }
-  } else {
-    count = 0;
   }
 }
 
@@ -469,6 +481,7 @@ void m_type_Leftward(int Speed)
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
 }
+
 void m_type_Backward(int Speed)
 {
   digitalWrite(in1, HIGH);
@@ -651,36 +664,220 @@ void Motor4_test(int Speed)
   analogWrite(en4, Speed);
 }
 
+void move_step(int goal_x, int goal_y, int go_STEP) {
+//  Serial.println("move_step_test");
+  switch(step_move) {
+    case 0:
+      if(goal_x>0){
+        if (distance_x > goal_x) {
+          step_move=10;
+        }else{
+          step_move=20;
+        }
+      }else{
+        step_move=60;
+      }
+      break;
+    case 10:
+      if(distance_x - goal_x > 0.5) {
+        if(distance_x - goal_x > 20) {
+          m_type_Leftward(40);
+          Serial.println("向左走");
+        }else {
+          Motor_brakes_with_sonar(40, 20);
+          Serial.print("向左減速x距離=");
+          Serial.println(distance_x - goal_x);
+        }
+      }else{
+        count = 0;
+        stop_x=millis();
+        step_move=51;
+      }
+      break;
+    case 20:
+      if(distance_x - goal_x < -0.5) {
+        if(distance_x - goal_x < -20) {
+          m_type_Rightward(40);
+          Serial.println("向右走");
+        }else {
+          Motor_brakes_with_sonar(40, 30);
+          Serial.print("向右減速x距離=");
+          Serial.println(distance_x - goal_x);
+        }
+      }else{
+        count = 0;
+        stop_x=millis();
+        step_move=51;
+      }
+      break;
+    case 51:
+      if (millis()-stop_x<200) {
+        Serial.println("到達x點等待200ms");
+        Motor_reset();
+      }else{
+        step_move=60;
+      }
+      break;
+    case 60:
+      if(goal_y>0){
+        if (distance_y > goal_y) {
+          step_move=30;
+        }else{
+          step_move=40;
+        }
+      }else{
+        STEP = go_STEP;
+        step_move=0;
+      }
+      break;
+    case 30:
+      if(distance_y - goal_y > 0.5) {
+        if(distance_y - goal_y > 20) {
+          m_type_Forward(70);
+          Serial.println("向前走");
+        }else {
+          Motor_brakes_with_sonar(70, 60);
+          Serial.print("向前減速y距離=");
+          Serial.println(distance_y - goal_y);
+        }
+      }else{
+        count = 0;
+        stop_y=millis();
+        step_move=52;
+      }
+      break;
+    case 40:
+      if(distance_y - goal_y < -0.5) {
+        if(distance_y - goal_y < -20) {
+          m_type_Backward(70);
+          Serial.println("向後走");
+        }else {
+          Motor_brakes_with_sonar(70, 60);
+          Serial.print("向後減速y距離=");
+          Serial.println(distance_y - goal_y);
+        }
+      }else{
+        count = 0;
+        stop_y=millis();
+        step_move=52;
+      }
+      break;
+    case 52:
+      if (millis()-stop_y<200) {
+        Serial.println("到達y點等待200ms");
+        Motor_reset();
+      }else{
+        STEP = go_STEP;
+        step_move=0;
+      }
+      break;
+  }
+}
+
+
 void move_step(int goal_x, int goal_y) {
-  if (abs(distance_x - goal_x) > 0.5 && goal_x > 0) {
-    
-    if (abs(distance_x - goal_x) > 50) {
-      if (distance_x > goal_x) {
-        m_type_Rightward(50);
-      } else {
-        m_type_Leftward(50);
+//  Serial.println("move_step_test");
+  switch(step_move) {
+    case 0:
+      if(goal_x>0){
+        if (distance_x > goal_x) {
+          step_move=10;
+        }else{
+          step_move=20;
+        }
+      }else{
+        step_move=60;
       }
-    } else {
-      Motor_brakes_with_sonar(50);
-      stop_x=millis();
-    }
-  } else if (millis()-stop_x<200) {
-    Motor_reset();
-  } else if (abs(distance_y - goal_y) > 0.5 && goal_y > 0) {
-    if (abs(distance_y - goal_y) > 50) {
-      if (distance_y > goal_y) {
-        m_type_Forward(50);
-      } else {
-        m_type_Backward(50);
+      break;
+    case 10:
+      if(distance_x - goal_x > 0.5) {
+        if(distance_x - goal_x > 20) {
+          m_type_Leftward(40);
+          Serial.println("向左走");
+        }else {
+          Motor_brakes_with_sonar(40, 30);
+          Serial.print("向左減速x距離=");
+          Serial.println(distance_x - goal_x);
+        }
+      }else{
+        stop_x=millis();
+        step_move=51;
       }
-    } else {
-      Motor_brakes_with_sonar(50);
-      stop_y=millis();
-    }
-  }else if (millis()-stop_y<200) {
-    Motor_reset();
-  } else {
-    STEP++;
+      break;
+    case 20:
+      if(distance_x - goal_x < -0.5) {
+        if(distance_x - goal_x < -20) {
+          m_type_Rightward(40);
+          Serial.println("向右走");
+        }else {
+          Motor_brakes_with_sonar(40, 30);
+          Serial.print("向右減速x距離=");
+          Serial.println(distance_x - goal_x);
+        }
+      }else{
+        stop_x=millis();
+        step_move=51;
+      }
+      break;
+    case 51:
+      if (millis()-stop_x<200) {
+        Serial.println("到達x點等待200ms");
+        Motor_reset();
+      }else{
+        step_move=60;
+      }
+      break;
+    case 60:
+      if(goal_y>0){
+        if (distance_y > goal_y) {
+          step_move=30;
+        }else{
+          step_move=40;
+        }
+      }else{
+        STEP++;
+        step_move=0;
+      }
+      break;
+    case 30:
+      if(distance_y - goal_y > 0.5) {
+        if(distance_y - goal_y > 20) {
+          m_type_Forward(80);
+          Serial.println("向前走");
+        }else {
+          Motor_brakes_with_sonar(80, 60);
+          Serial.print("向前減速y距離=");
+          Serial.println(distance_y - goal_y);
+        }
+      }else{
+        stop_y=millis();
+        step_move=52;
+      }
+      break;
+    case 40:
+      if(distance_y - goal_y < -0.5) {
+        if(distance_y - goal_y < -20) {
+          m_type_Backward(80);
+          Serial.println("向後走");
+        }else {
+          Motor_brakes_with_sonar(80, 60);
+          Serial.print("向後減速y距離=");
+          Serial.println(distance_y - goal_y);
+        }
+      }else{
+        stop_y=millis();
+        step_move=52;
+      }
+      break;
+    case 52:
+      if (millis()-stop_y<200) {
+        Serial.println("到達y點等待200ms");
+        Motor_reset();
+      }else{
+        STEP++; 
+        step_move=0;
+      }
+      break;
   }
 }
 
@@ -692,13 +889,13 @@ void echoCheck() { // If ping received, set the sensor distance to array.
 void oneSensorCycle() { // Sensor ping cycle complete, do something with the results.
   // The following code would be replaced with your code that does something with the ping results.
   distance_x = cm[0];
-  //    Serial.print("distance_x = ");
-  //    Serial.print(distance_x);
-  //    Serial.print("cm ");
+      Serial.print("distance_x = ");
+      Serial.print(distance_x);
+      Serial.print("cm ");
   distance_y = cm[1];
-  //    Serial.print("distance_y = ");
-  //    Serial.print(distance_y);
-  //    Serial.println("cm ");
+      Serial.print("distance_y = ");
+      Serial.print(distance_y);
+      Serial.println("cm ");
 }
 
 void sonar_update() {
@@ -753,13 +950,24 @@ void loop() {
   sonar_update();
   mpu6050_update();
 
-  Start = digitalRead(start_bt);
-
-
+  original_start = digitalRead(start_bt);
+  if(Start!=original_start) {
+    if(original_start) {
+      Serial.println("自動模式");
+      step_start = millis();
+      loop_x = d5;
+      loop_y = d2 - (2 * car_y);
+      step_move = 0;
+      STEP = 1;//測試先用-1
+    }else{
+      Serial.println("手動模式");
+      mode_code = 0;
+    }
+    Start = original_start;
+  }
 
   if (!Start) {
-    IR_mode();
-
+    IR_update();
     switch (mode_code)
     {
       case 0:
@@ -772,20 +980,20 @@ void loop() {
         //              Serial.println("000");
         break;
       case 16724175://1
-        m_type_Forward(150, 1000);
+        m_type_Forward(70, 1000);
         break;
       case 16718055://2
-        m_type_Backward(150, 1000);
+        m_type_Backward(70, 1000);
         //        safety_around_angle(90);
         //      Serial.println("222");
         break;
       case 16743045://3
-        m_type_Rightward(100, 1000);
+        m_type_Rightward(40, 1000);
         //        safety_around_angle(-90);
         //      Serial.println("333");
         break;
       case 16716015://4
-        m_type_Leftward(100, 1000);
+        m_type_Leftward(40, 1000);
         //        safety_around_angle(45);
         break;
       case 16726215://5
@@ -806,52 +1014,53 @@ void loop() {
         Serial.println("888");
         break;
       case 16732845://9
-        Motor_brakes(100);
+        Motor_brakes(50);
         break;
       default:
         //        Serial.println("default");
+        Motor_reset();
         is_end = false;
         break;
 
     }
-  } else if (Start && STEP == 0) {
-    step_start = millis();
-    loop_x = d5;
-    loop_y = (2 * car_y) + d2;
-    Serial.println("自動模式");
-    STEP = -1;//測試先用-1
   } else {
-    switch (STEP) {
-      case -1:
-        break;
-      case 1:
-        move_step(d1, d2);
-        break;
-      case 2:
-        move_step(d3, car_y + d2);
-        break;
-      case 3:
-        move_step(loop_x, loop_y);
-        break;
-      case 4:
-        if (distance_y > stop_collect_y) {
-          if (loop_x == d5) {
-            loop_x = d3;
+      switch (STEP) {
+        case -2:
+          move_step(50, 120);
+//          Serial.println(motor_start);
+          break;
+        case -1:
+          Serial.println("case -1");
+          break;
+        case 1:
+          move_step(d1, d2);
+          break;
+        case 2:
+//          move_step(d3, d2-car_y);
+          move_step(d3, -1);
+          break;
+        case 3:
+//          move_step(loop_x, loop_y);
+          break;
+        case 4:
+          if (distance_y > stop_collect_y) {
+            if (loop_x == d5) {
+              loop_x = d3;
+            } else {
+              loop_x = d5;
+            }
+            loop_y -= car_y;
+            STEP--;
           } else {
-            loop_x = d5;
+            STEP++;
           }
-          loop_y += car_y;
-          STEP--;
-        } else {
-          STEP++;
-        }
-        break;
-      case 5:
-        //        Motor_brakes();
-        break;
-    }
+          break;
+        case 5:
+          //        Motor_brakes();
+          break;
+      }
   }
-
+    
   //    Serial.print(" now: ");
   //    Serial.println(relative_yaw);
   //    Serial.print("相對角度: ");
