@@ -1,23 +1,202 @@
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <NewPing.h>
-#include <IRremote.h>
 #include "Wire.h"
+#define Pattern 'R'//A,AUTO;R,ROMOTE
+
+#if Pattern == 'A'
+#include <Servo.h>
+
+Servo sonic_servoR;
+Servo sonic_servoL;
+
+
+
+void Move(int Direction, int Turns, int sonic_Distance, int Speed) { //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+  if (is_Move_start == false) {                                   //向(方向)用(輪胎速度)轉(輪胎圈數)後用低速調整至(超音波距離)
+    is_Move_start = true;
+    is_correction_angle = false;
+    turn_count = turn_total;
+    switch (Direction) {
+      case 1://F
+        sonic_servoR.write(90);
+        break;
+      case 2://B
+        sonic_servoL.write(90);
+        break;
+      case 3://L
+        sonic_servoL.write(0);
+        sonic_servoR.write(90);
+        break;
+      case 4://R
+        sonic_servoL.write(90);
+        sonic_servoR.write(180);
+        break;
+      case 5://LF
+        sonic_servoR.write(45);
+        break;
+      case 6://RF
+        sonic_servoR.write(135);
+        break;
+      case 7://LB
+        sonic_servoR.write(45);
+        break;
+      case 8://RB
+        sonic_servoR.write(135);
+        break;
+    }
+  } else {
+    if (turn_total - turn_count < Turns) {
+      switch (Direction) {
+        case 1://F
+          m_type_Forward(Speed);
+          break;
+        case 2://B
+          m_type_Backward(Speed);
+          break;
+        case 3://L
+          m_type_Leftward(Speed);
+          break;
+        case 4://R
+          m_type_Rightward(Speed);
+          break;
+        case 5://LF
+          m_type_LeftForward(Speed);
+          break;
+        case 6://RF
+          m_type_RightForward(Speed);
+          break;
+        case 7://LB
+          m_type_LeftBackward(Speed);
+          break;
+        case 8://RB
+          m_type_RightBackward(Speed);
+          break;
+      }
+    } else {
+      if (((turn_total - turn_count) - Turns) < 5) {
+        if ((Speed - (turn_total - turn_count) * 2) < 50) {//移動最低速
+          Motor_directly(50);
+        } else {
+          Motor_directly(Speed - (turn_total - turn_count) * 2);
+        }
+      } else {
+        switch (Direction) {
+          case 1://F
+            if (is_correction_angle == true) {
+              is_Move_start = false;
+              STEP++;
+            } else {
+              m_type_correction_angle();
+            }
+            break;
+          case 2://B
+            if (is_correction_angle == true) {
+              is_Move_start = false;
+              STEP++;
+            } else {
+              m_type_correction_angle();
+            }
+            break;
+          case 3://L
+            if (int(distance_L) <= sonic_Distance) {
+              if (is_correction_angle == true) {
+                is_Move_start = false;
+                STEP++;
+              } else {
+                m_type_correction_angle();
+              }
+            }
+            break;
+          case 4://R
+            if (int(distance_R) <= sonic_Distance) {
+              if (is_correction_angle == true) {
+                is_Move_start = false;
+                STEP++;
+              } else {
+                m_type_correction_angle();
+              }
+            }
+            break;
+          case 5://"LF"
+            if (int(distance_L) <= sonic_Distance) {
+              is_Move_start = false;
+              STEP++;
+            }
+            break;
+          case 6://"RF"
+            if (int(distance_R) <= sonic_Distance) {
+              is_Move_start = false;
+              STEP++;
+              break;
+            }
+          case 7://LB
+            if (int(distance_L) <= sonic_Distance) {
+              is_Move_start = false;
+              STEP++;
+            }
+            break;
+          case 8://RB
+            if (int(distance_R) <= sonic_Distance) {
+              is_Move_start = false;
+              STEP++;
+            }
+        }
+      }
+    }
+  }
+}
+
+#endif
+
+#if Pattern == 'R'
+#include <IRremote.h>
+
+IRrecv irrecv(11); // 使用數位腳位11接收紅外線訊號初始化紅外線訊號輸入
+decode_results results; // 儲存訊號的結構
+
+bool is_mode;
+int mode_code = 0;
+
+void IR_update() {
+  if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
+    Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845
+    Serial.println(results.value);//0:FF6897/1:FF6897/2:FF18E7/3:FF7A85/4:FF10EF/5:FF38C7/6:FF5AA5/7:FF42BD/8:FF4AB5/9:FF52AD
+    is_mode = results.value == 16738455 ||
+              results.value == 16724175 ||
+              results.value == 16718055 ||
+              results.value == 16743045 ||
+              results.value == 16716015 ||
+              results.value == 16726215 ||
+              results.value == 16734885 ||
+              results.value == 16728765 ||
+              results.value == 16730805 ||
+              results.value == 16732845;
+    if (is_mode) {
+      mode_code = results.value;
+    }
+    irrecv.resume(); // 準備接收下一個訊號
+  }
+}
+
+#endif
 
 const int IR_turns_sensor = 45;
+int turn_total = 0;
 int turn_count = 0;
 int pre_IR_turn_val = 1;
 int IR_turn_val;
 MPU6050 mpu;
 
-IRrecv irrecv(11); // 使用數位腳位11接收紅外線訊號初始化紅外線訊號輸入
-decode_results results; // 儲存訊號的結構
+
 
 const int start_bt = 23;
 bool Start = false;
 bool original_start = false;
 int STEP = 0;
 int step_move = 0;
+bool is_Move_start = false;
+bool is_correction_angle = false;
 
 #define SONAR_NUM     2 // Number of sensors.
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
@@ -28,6 +207,7 @@ float cm[SONAR_NUM];         // Where the ping distances are stored.
 uint8_t currentSensor = 0;          // Keeps track of which sensor is active.
 
 float distance_x, distance_y;
+float distance_R, distance_L;
 NewPing sonar[SONAR_NUM] = {     // Sensor object array.
   NewPing(51, 53, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
   NewPing(47, 49, MAX_DISTANCE)
@@ -60,12 +240,15 @@ const int en2 = 3;
 const int en3 = 6;
 const int en4 = 5;
 
+const int Rsonic_servo = 7;
+const int Lsonic_servo = 8;
+
 const int Buzzer = 39;
 
 float original_z = 0;
 bool gyro_ready = false;
-bool is_mode;
-int mode_code = 0;
+
+
 int count = 0;
 bool is_start = true;
 bool is_end = false;
@@ -258,26 +441,6 @@ bool mpu6050_getyaw() {
   }
 }
 
-void IR_update() {
-  if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
-    Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845
-    Serial.println(results.value);//0:FF6897/1:FF6897/2:FF18E7/3:FF7A85/4:FF10EF/5:FF38C7/6:FF5AA5/7:FF42BD/8:FF4AB5/9:FF52AD
-    is_mode = results.value == 16738455 ||
-              results.value == 16724175 ||
-              results.value == 16718055 ||
-              results.value == 16743045 ||
-              results.value == 16716015 ||
-              results.value == 16726215 ||
-              results.value == 16734885 ||
-              results.value == 16728765 ||
-              results.value == 16730805 ||
-              results.value == 16732845;
-    if (is_mode) {
-      mode_code = results.value;
-    }
-    irrecv.resume(); // 準備接收下一個訊號
-  }
-}
 
 void Motor_reset()
 {
@@ -322,7 +485,7 @@ void Motor_start(int Speed)
   }
 }
 
-void Motor_start_directly(int Speed) {
+void Motor_directly(int Speed) {
   analogWrite(en1, Speed);
   analogWrite(en2, Speed);
   analogWrite(en3, Speed);
@@ -452,7 +615,8 @@ void safety_around_angle(int angle) {
       Motor_reset();
       //      is_started=false;
       is_started = false;
-      mode_code = -1;
+      Motor_reset();
+      is_correction_angle = true;
     }
   }
   //  Motor_start(Speed);
@@ -511,6 +675,57 @@ void m_type_Forward(int Speed)
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_RightForward(int Speed)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_RightBackward(int Speed)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_LeftForward(int Speed)
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  //  Motor_brakes_with_time(Speed, Time);
+}
+void m_type_LeftBackward(int Speed)
+{
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
 }
 void m_type_Rightward(int Speed, int Time)
 {
@@ -576,7 +791,7 @@ void m_type_LeftAround(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_RightAround(int Speed, int Time)
 {
@@ -589,7 +804,7 @@ void m_type_RightAround(int Speed, int Time)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_RightForward(int Speed, int Time)
 {
@@ -602,7 +817,7 @@ void m_type_RightForward(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_RightBackward(int Speed, int Time)
 {
@@ -615,7 +830,7 @@ void m_type_RightBackward(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_LeftForward(int Speed, int Time)
 {
@@ -628,7 +843,7 @@ void m_type_LeftForward(int Speed, int Time)
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+  Motor_brakes_with_time(Speed, Time);
 }
 void m_type_LeftBackward(int Speed, int Time)
 {
@@ -641,7 +856,7 @@ void m_type_LeftBackward(int Speed, int Time)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  //  Motor_brakes_with_time(Speed, Time);
+  Motor_brakes_with_time(Speed, Time);
 }
 void Motor1_test(int Speed)
 {
@@ -885,6 +1100,9 @@ void move_step(int goal_x, int goal_y) {
   }
 }
 
+
+
+
 void echoCheck() { // If ping received, set the sensor distance to array.
   if (sonar[currentSensor].check_timer())
     cm[currentSensor] = (sonar[currentSensor].ping_result / 2) / 29.1;
@@ -893,10 +1111,12 @@ void echoCheck() { // If ping received, set the sensor distance to array.
 void oneSensorCycle() { // Sensor ping cycle complete, do something with the results.
   // The following code would be replaced with your code that does something with the ping results.
   distance_x = cm[0];
+  distance_L = cm[0];
   //  Serial.print("distance_x = ");
   //  Serial.print(distance_x);
   //  Serial.print("cm ");
   distance_y = cm[1];
+  distance_R = cm[1];
   //  Serial.print("distance_y = ");
   //  Serial.print(distance_y);
   //  Serial.println("cm ");
@@ -914,14 +1134,13 @@ void sonar_update() {
     }
   }
 }
-int turn_update(){
+void turn_update() {
   IR_turn_val = digitalRead(IR_turns_sensor);
   if (IR_turn_val > pre_IR_turn_val) {
-    turn_count++;
-//    Serial.println(turn_count);
+    turn_total++;
+    //    Serial.println(turn_count);
   }
   pre_IR_turn_val = IR_turn_val;
-  return turn_count;
 }
 void setup() {
   pinMode(IR_turns_sensor, INPUT);
@@ -941,6 +1160,11 @@ void setup() {
   pinMode(en2, OUTPUT);
   pinMode(en3, OUTPUT);
   pinMode(en4, OUTPUT);
+
+#if Pattern == 'A'
+  sonic_servoR.attach(Rsonic_servo);
+  sonic_servoL.attach(Lsonic_servo);
+#endif
 
   Serial.begin(115200);
   irrecv.blink13(true); // 設為true的話，當收到訊號時，腳位13的LED便會閃爍
@@ -963,6 +1187,7 @@ void loop() {
 
   sonar_update();
   mpu6050_update();
+  turn_update();
 
   original_start = digitalRead(start_bt);
   if (Start != original_start) {
@@ -981,6 +1206,7 @@ void loop() {
   }
 
   if (!Start) {
+    #if Pattern == 'R'
     IR_update();
     switch (mode_code)
     {
@@ -1037,6 +1263,7 @@ void loop() {
         break;
 
     }
+    #endif
   } else {
     switch (STEP) {
       case -2:
@@ -1079,5 +1306,5 @@ void loop() {
   //    Serial.println(relative_yaw);
   //    Serial.print("相對角度: ");
   //    Serial.println(relative_yaw);
-  
+
 }
