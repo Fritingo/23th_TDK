@@ -2,7 +2,7 @@
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <NewPing.h>
 #include "Wire.h"
-#define Pattern 'R'//A,AUTO;R,ROMOTE
+#define Pattern 'A'//A,AUTO;R,ROMOTE
 
 bool Start = false;
 bool original_start = false;
@@ -36,33 +36,48 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
     turn_count = turn_total;
     switch (Direction) {
       case 'F'://F
-        sonic_servoR.write(90);
+        Serial.println("F");
+        sonic_servoR.write(180);
+        sonic_servoL.write(0);
         break;
       case 'B'://B
-        sonic_servoL.write(90);
+        Serial.println("B");
+        sonic_servoR.write(180);
+        sonic_servoL.write(0);
         break;
       case 'L'://L
-        sonic_servoL.write(0);
-        sonic_servoR.write(90);
-        break;
-      case 'R'://R
+        Serial.println("L");
         sonic_servoL.write(90);
         sonic_servoR.write(180);
         break;
+      case 'R'://R
+        Serial.println("R");
+        sonic_servoL.write(0);
+        sonic_servoR.write(90);
+        break;
       case '3'://LF
-        sonic_servoR.write(45);
+        sonic_servoL.write(45);
+        sonic_servoR.write(135);
         break;
       case '1'://RF
+        sonic_servoL.write(45);
         sonic_servoR.write(135);
         break;
       case '4'://LB
-        sonic_servoR.write(45);
+        sonic_servoL.write(45);
+        sonic_servoR.write(135);
         break;
       case '2'://RB
+        sonic_servoL.write(45);
         sonic_servoR.write(135);
         break;
     }
   } else {
+    Serial.println(turn_total - turn_count);
+    Serial.print("R:");
+    Serial.print(distance_R);
+    Serial.print("L:");
+    Serial.println(distance_L);
     if (turn_total - turn_count < Turns) {
       switch (Direction) {
         case 'F'://F
@@ -92,6 +107,7 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
       }
     } else {
       if (((turn_total - turn_count) - Turns) < 5) {
+       Serial.println("slow_down");
         if ((Speed - (turn_total - turn_count) * 2) < 50) {//移動最低速
           Motor_directly(50);
         } else {
@@ -101,12 +117,14 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
         switch (Direction) {
           case 'F'://F
             if (is_correction_angle == true) {
-              if (int(distance_L) <= 60) { //進入發球距離
+              Serial.print("distanc:");
+              Serial.println(distance_L);
+              if (int(distance_L) <= 60 and int(distance_L) != 0) { //進入發球距離
                 STEP++;
               } else {
                 is_Move_start = false;
                 sweep_ball_step++;
-              }
+              }//
             } else {
               m_type_correction_angle();
             }
@@ -120,7 +138,7 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
             }
             break;
           case 'L'://L
-            if (int(distance_L) <= sonic_Distance) {
+            if (int(distance_L) <= sonic_Distance and int(distance_L) != 0) {
               if (is_correction_angle == true) {
                 is_Move_start = false;
                 sweep_ball_step++;
@@ -130,7 +148,7 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
             }
             break;
           case 'R'://R
-            if (int(distance_R) <= sonic_Distance) {
+            if (int(distance_R) <= sonic_Distance and int(distance_R) != 0) {
               if (is_correction_angle == true) {
                 is_Move_start = false;
                 sweep_ball_step++;
@@ -219,8 +237,8 @@ uint8_t currentSensor = 0;          // Keeps track of which sensor is active.
 
 
 NewPing sonar[SONAR_NUM] = {     // Sensor object array.
-  NewPing(51, 53, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
-  NewPing(47, 49, MAX_DISTANCE)
+  NewPing(51, 53, MAX_DISTANCE), //L// Each sensor's trigger pin, echo pin, and max distance to ping.
+  NewPing(47, 49, MAX_DISTANCE)//R
 };
 
 unsigned long sonar_start = 0;
@@ -250,7 +268,7 @@ const int en2 = 3;
 const int en3 = 6;
 const int en4 = 5;
 
-const int Rsonic_servo = 7;
+const int Rsonic_servo = 9;
 const int Lsonic_servo = 8;
 
 const int Buzzer = 39;
@@ -579,7 +597,7 @@ void safety_around_angle(int angle) {
   if (!is_started) {
 #if Pattern == 'A'
     sonic_servoL.write(0);
-    sonic_servoR.write(0);
+    sonic_servoR.write(180);
 #endif
     is_started = true;
     is_end = false;
@@ -1117,9 +1135,9 @@ void oneSensorCycle() { // Sensor ping cycle complete, do something with the res
   // The following code would be replaced with your code that does something with the ping results.
   distance_x = cm[0];
   distance_L = cm[0];
-  //  Serial.print("distance_x = ");
-  //  Serial.print(distance_x);
-  //  Serial.print("cm ");
+//    Serial.print("distance_x = ");
+//    Serial.print(distance_x);
+//    Serial.print("cm ");
   distance_y = cm[1];
   distance_R = cm[1];
   //  Serial.print("distance_y = ");
@@ -1199,6 +1217,8 @@ void loop() {
   turn_update();
 
   original_start = digitalRead(start_bt);
+//  Serial.print("bt:");
+//  Serial.println(original_start);
   if (Start != original_start) {
     if (original_start) {
       Serial.println("自動模式");
@@ -1206,7 +1226,7 @@ void loop() {
       loop_x = d5;
       loop_y = d2 - (2 * car_y);
       step_move = 0;
-      STEP = 1;//測試先用-1
+      STEP = 4;//測試先用-1
     } else {
       Serial.println("手動模式");
       mode_code = 0;
@@ -1295,6 +1315,8 @@ void loop() {
         //          move_step(loop_x, loop_y);
         break;
       case 4://掃球
+        Serial.print("Sweep_ball:");
+        Serial.println(sweep_ball_step);
         if (sweep_ball_step > 3) {
           sweep_ball_step = 0;
         }
@@ -1326,6 +1348,7 @@ void loop() {
         //        }
         break;
       case 5:
+        Serial.println("Shot");
         //        Motor_brakes();
         break;
     }
