@@ -4,72 +4,89 @@
 #include "Wire.h"
 #define Pattern 'R'//A,AUTO;R,ROMOTE
 
+bool Start = false;
+bool original_start = false;
+int STEP = 0;
+int sweep_ball_step = 0;
+int step_move = 0;
+const int IR_turns_sensor = 45;
+int turn_total = 0;
+int turn_count = 0;
+int pre_IR_turn_val = 1;
+int IR_turn_val;
+bool is_mode;
+int mode_code = 0;
+
+bool is_Move_start = false;
+bool is_correction_angle = false;
+
+float distance_x, distance_y;
+float distance_R, distance_L;
+
 #if Pattern == 'A'
 #include <Servo.h>
 
 Servo sonic_servoR;
 Servo sonic_servoL;
 
-
-
-void Move(int Direction, int Turns, int sonic_Distance, int Speed) { //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
   if (is_Move_start == false) {                                   //向(方向)用(輪胎速度)轉(輪胎圈數)後用低速調整至(超音波距離)
     is_Move_start = true;
     is_correction_angle = false;
     turn_count = turn_total;
     switch (Direction) {
-      case 1://F
+      case 'F'://F
         sonic_servoR.write(90);
         break;
-      case 2://B
+      case 'B'://B
         sonic_servoL.write(90);
         break;
-      case 3://L
+      case 'L'://L
         sonic_servoL.write(0);
         sonic_servoR.write(90);
         break;
-      case 4://R
+      case 'R'://R
         sonic_servoL.write(90);
         sonic_servoR.write(180);
         break;
-      case 5://LF
+      case '3'://LF
         sonic_servoR.write(45);
         break;
-      case 6://RF
+      case '1'://RF
         sonic_servoR.write(135);
         break;
-      case 7://LB
+      case '4'://LB
         sonic_servoR.write(45);
         break;
-      case 8://RB
+      case '2'://RB
         sonic_servoR.write(135);
         break;
     }
   } else {
     if (turn_total - turn_count < Turns) {
       switch (Direction) {
-        case 1://F
+        case 'F'://F
           m_type_Forward(Speed);
           break;
-        case 2://B
+        case 'B'://B
           m_type_Backward(Speed);
           break;
-        case 3://L
+        case 'L'://L
           m_type_Leftward(Speed);
           break;
-        case 4://R
+        case 'R'://R
           m_type_Rightward(Speed);
           break;
-        case 5://LF
+        case '3'://LF
           m_type_LeftForward(Speed);
           break;
-        case 6://RF
+        case '1'://RF
           m_type_RightForward(Speed);
           break;
-        case 7://LB
+        case '4'://LB
           m_type_LeftBackward(Speed);
           break;
-        case 8://RB
+        case '2'://RB
           m_type_RightBackward(Speed);
           break;
       }
@@ -82,61 +99,65 @@ void Move(int Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
         }
       } else {
         switch (Direction) {
-          case 1://F
+          case 'F'://F
             if (is_correction_angle == true) {
-              is_Move_start = false;
-              STEP++;
+              if (int(distance_L) <= 60) { //進入發球距離
+                STEP++;
+              } else {
+                is_Move_start = false;
+                sweep_ball_step++;
+              }
             } else {
               m_type_correction_angle();
             }
             break;
-          case 2://B
+          case 'B'://B
             if (is_correction_angle == true) {
               is_Move_start = false;
-              STEP++;
+              sweep_ball_step++;
             } else {
               m_type_correction_angle();
             }
             break;
-          case 3://L
+          case 'L'://L
             if (int(distance_L) <= sonic_Distance) {
               if (is_correction_angle == true) {
                 is_Move_start = false;
-                STEP++;
+                sweep_ball_step++;
               } else {
                 m_type_correction_angle();
               }
             }
             break;
-          case 4://R
+          case 'R'://R
             if (int(distance_R) <= sonic_Distance) {
               if (is_correction_angle == true) {
                 is_Move_start = false;
-                STEP++;
+                sweep_ball_step++;
               } else {
                 m_type_correction_angle();
               }
             }
             break;
-          case 5://"LF"
+          case '3'://"LF"
             if (int(distance_L) <= sonic_Distance) {
               is_Move_start = false;
               STEP++;
             }
             break;
-          case 6://"RF"
+          case '1'://"RF"
             if (int(distance_R) <= sonic_Distance) {
               is_Move_start = false;
               STEP++;
               break;
             }
-          case 7://LB
+          case '4'://LB
             if (int(distance_L) <= sonic_Distance) {
               is_Move_start = false;
               STEP++;
             }
             break;
-          case 8://RB
+          case '2'://RB
             if (int(distance_R) <= sonic_Distance) {
               is_Move_start = false;
               STEP++;
@@ -154,9 +175,6 @@ void Move(int Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
 
 IRrecv irrecv(11); // 使用數位腳位11接收紅外線訊號初始化紅外線訊號輸入
 decode_results results; // 儲存訊號的結構
-
-bool is_mode;
-int mode_code = 0;
 
 void IR_update() {
   if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
@@ -181,22 +199,15 @@ void IR_update() {
 
 #endif
 
-const int IR_turns_sensor = 45;
-int turn_total = 0;
-int turn_count = 0;
-int pre_IR_turn_val = 1;
-int IR_turn_val;
+
 MPU6050 mpu;
 
 
 
 const int start_bt = 23;
-bool Start = false;
-bool original_start = false;
-int STEP = 0;
-int step_move = 0;
-bool is_Move_start = false;
-bool is_correction_angle = false;
+
+
+
 
 #define SONAR_NUM     2 // Number of sensors.
 #define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
@@ -206,8 +217,7 @@ unsigned long pingTimer[SONAR_NUM]; // Holds the times when the next ping should
 float cm[SONAR_NUM];         // Where the ping distances are stored.
 uint8_t currentSensor = 0;          // Keeps track of which sensor is active.
 
-float distance_x, distance_y;
-float distance_R, distance_L;
+
 NewPing sonar[SONAR_NUM] = {     // Sensor object array.
   NewPing(51, 53, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
   NewPing(47, 49, MAX_DISTANCE)
@@ -441,9 +451,7 @@ bool mpu6050_getyaw() {
   }
 }
 
-
-void Motor_reset()
-{
+void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -454,8 +462,7 @@ void Motor_reset()
   digitalWrite(in8, LOW);
 }
 
-void Motor_start(int Speed)
-{
+void Motor_start(int Speed) {
   if (!is_end) {
     if (Speed < 50) {
       activate_speed = 50;
@@ -492,8 +499,7 @@ void Motor_directly(int Speed) {
   analogWrite(en4, Speed);
 }
 
-void Motor_brakes(int Speed)
-{
+void Motor_brakes(int Speed) {
   if (count < (Speed / 10)) {
     if (millis() - initial > 100) {
       analogWrite(en1, Speed - (count + 1) * 10);
@@ -510,8 +516,7 @@ void Motor_brakes(int Speed)
   }
 }
 
-void Motor_brakes_with_time(int Speed, int after_time)
-{
+void Motor_brakes_with_time(int Speed, int after_time) {
 
   if (millis() - initial > after_time && !is_brake) {
     is_brake = true;
@@ -552,8 +557,7 @@ void Motor_brakes_with_sonar(int Speed, int min_speed) {
   }
 }
 
-void Motor_full_work(int Speed, int Time)
-{
+void Motor_full_work(int Speed, int Time) {
   if (is_start == true) {
     initial = millis();
     is_start = false;
@@ -566,11 +570,17 @@ void Motor_full_work(int Speed, int Time)
     is_start = true;
   }
 }
+
 void m_type_correction_angle() {
   safety_around_angle(-relative_yaw);
 }
+
 void safety_around_angle(int angle) {
   if (!is_started) {
+#if Pattern == 'A'
+    sonic_servoL.write(0);
+    sonic_servoR.write(0);
+#endif
     is_started = true;
     is_end = false;
     base_yaw = relative_yaw;
@@ -616,15 +626,16 @@ void safety_around_angle(int angle) {
       //      is_started=false;
       is_started = false;
       Motor_reset();
+#if Pattern == 'A'
       is_correction_angle = true;
+#endif
     }
   }
   //  Motor_start(Speed);
   //  Motor_brakes(Speed);
 }
 
-void m_type_Rightward(int Speed)
-{
+void m_type_Leftward(int Speed) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
@@ -636,8 +647,8 @@ void m_type_Rightward(int Speed)
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
 }
-void m_type_Leftward(int Speed)
-{
+
+void m_type_Rightward(int Speed) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
@@ -650,8 +661,7 @@ void m_type_Leftward(int Speed)
   //  Motor_brakes_with_time(Speed, Time);
 }
 
-void m_type_Backward(int Speed)
-{
+void m_type_Forward(int Speed) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -663,8 +673,8 @@ void m_type_Backward(int Speed)
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
 }
-void m_type_Forward(int Speed)
-{
+
+void m_type_Backward(int Speed) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
@@ -676,8 +686,8 @@ void m_type_Forward(int Speed)
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
 }
-void m_type_RightForward(int Speed)
-{
+
+void m_type_LeftBackward(int Speed) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
@@ -689,8 +699,8 @@ void m_type_RightForward(int Speed)
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
 }
-void m_type_RightBackward(int Speed)
-{
+
+void m_type_LeftForward(int Speed) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -702,8 +712,8 @@ void m_type_RightBackward(int Speed)
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
 }
-void m_type_LeftForward(int Speed)
-{
+
+void m_type_RightBackward(int Speed) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
@@ -715,8 +725,8 @@ void m_type_LeftForward(int Speed)
   Motor_start(Speed);
   //  Motor_brakes_with_time(Speed, Time);
 }
-void m_type_LeftBackward(int Speed)
-{
+
+void m_type_RightForward(int Speed) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -727,8 +737,8 @@ void m_type_LeftBackward(int Speed)
   digitalWrite(in8, LOW);
   Motor_start(Speed);
 }
-void m_type_Rightward(int Speed, int Time)
-{
+
+void m_type_Leftward(int Speed, int Time) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
@@ -740,8 +750,8 @@ void m_type_Rightward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_Leftward(int Speed, int Time)
-{
+
+void m_type_Rightward(int Speed, int Time) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
@@ -753,8 +763,8 @@ void m_type_Leftward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_Backward(int Speed, int Time)
-{
+
+void m_type_Forward(int Speed, int Time) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -766,8 +776,8 @@ void m_type_Backward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_Forward(int Speed, int Time)
-{
+
+void m_type_Backward(int Speed, int Time) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
@@ -780,8 +790,7 @@ void m_type_Forward(int Speed, int Time)
   Motor_brakes_with_time(Speed, Time);
 }
 
-void m_type_LeftAround(int Speed, int Time)
-{
+void m_type_RightAround(int Speed, int Time) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -793,8 +802,8 @@ void m_type_LeftAround(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_RightAround(int Speed, int Time)
-{
+
+void m_type_LeftAround(int Speed, int Time) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
@@ -806,8 +815,8 @@ void m_type_RightAround(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_RightForward(int Speed, int Time)
-{
+
+void m_type_LeftBackward(int Speed, int Time) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
@@ -819,8 +828,8 @@ void m_type_RightForward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_RightBackward(int Speed, int Time)
-{
+
+void m_type_LeftForward(int Speed, int Time) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -832,8 +841,8 @@ void m_type_RightBackward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_LeftForward(int Speed, int Time)
-{
+
+void m_type_RightBackward(int Speed, int Time) {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
@@ -845,8 +854,8 @@ void m_type_LeftForward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void m_type_LeftBackward(int Speed, int Time)
-{
+
+void m_type_RightForward(int Speed, int Time) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
@@ -858,26 +867,26 @@ void m_type_LeftBackward(int Speed, int Time)
   Motor_start(Speed);
   Motor_brakes_with_time(Speed, Time);
 }
-void Motor1_test(int Speed)
-{
+
+void Motor1_test(int Speed) {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
   analogWrite(en1, Speed);
 }
-void Motor2_test(int Speed)
-{
+
+void Motor2_test(int Speed) {
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
   analogWrite(en2, Speed);
 }
-void Motor3_test(int Speed)
-{
+
+void Motor3_test(int Speed) {
   digitalWrite(in5, HIGH);
   digitalWrite(in6, LOW);
   analogWrite(en3, Speed);
 }
-void Motor4_test(int Speed)
-{
+
+void Motor4_test(int Speed) {
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   analogWrite(en4, Speed);
@@ -993,7 +1002,6 @@ void move_step(int goal_x, int goal_y, int go_STEP) {
   }
 }
 
-
 void move_step(int goal_x, int goal_y) {
   //  Serial.println("move_step_test");
   switch (step_move) {
@@ -1100,9 +1108,6 @@ void move_step(int goal_x, int goal_y) {
   }
 }
 
-
-
-
 void echoCheck() { // If ping received, set the sensor distance to array.
   if (sonar[currentSensor].check_timer())
     cm[currentSensor] = (sonar[currentSensor].ping_result / 2) / 29.1;
@@ -1134,6 +1139,7 @@ void sonar_update() {
     }
   }
 }
+
 void turn_update() {
   IR_turn_val = digitalRead(IR_turns_sensor);
   if (IR_turn_val > pre_IR_turn_val) {
@@ -1142,6 +1148,7 @@ void turn_update() {
   }
   pre_IR_turn_val = IR_turn_val;
 }
+
 void setup() {
   pinMode(IR_turns_sensor, INPUT);
   pinMode(start_bt, INPUT);
@@ -1167,8 +1174,10 @@ void setup() {
 #endif
 
   Serial.begin(115200);
+#if Pattern == 'R'  
   irrecv.blink13(true); // 設為true的話，當收到訊號時，腳位13的LED便會閃爍
   irrecv.enableIRIn(); // 啟動接收
+#endif
   Serial.println("start");
   Motor_reset();
 
@@ -1206,7 +1215,7 @@ void loop() {
   }
 
   if (!Start) {
-    #if Pattern == 'R'
+#if Pattern == 'R'
     IR_update();
     switch (mode_code)
     {
@@ -1263,8 +1272,9 @@ void loop() {
         break;
 
     }
-    #endif
+#endif
   } else {
+#if Pattern == 'A'
     switch (STEP) {
       case -2:
         move_step(50, 120);
@@ -1273,33 +1283,53 @@ void loop() {
       case -1:
         Serial.println("case -1");
         break;
-      case 1:
+      case 1://起步到顏色看板
         move_step(d1, d2);
         break;
-      case 2:
+      case 2://對者顏色看板前進
         //          move_step(d3, d2-car_y);
         move_step(d3, -1);
         break;
-      case 3:
+      case 3://向左走到牆
+
         //          move_step(loop_x, loop_y);
         break;
-      case 4:
-        if (distance_y > stop_collect_y) {
-          if (loop_x == d5) {
-            loop_x = d3;
-          } else {
-            loop_x = d5;
-          }
-          loop_y -= car_y;
-          STEP--;
-        } else {
-          STEP++;
+      case 4://掃球
+        if (sweep_ball_step > 3) {
+          sweep_ball_step = 0;
         }
+        switch (sweep_ball_step) {
+          case 0:
+            Move('F', 5, 60, 100);  //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+            break;
+          case 1:
+            Move('R', 20, 50, 100);
+            break;
+          case 2:
+            Move('F', 5, 60, 100);
+            break;
+          case 3:
+            Move('L', 5, 60, 100);
+            break;
+        }
+
+        //        if (distance_y > stop_collect_y) {
+        //          if (loop_x == d5) {
+        //            loop_x = d3;
+        //          } else {
+        //            loop_x = d5;
+        //          }
+        //          loop_y -= car_y;
+        //          STEP--;
+        //        } else {
+        //          STEP++;
+        //        }
         break;
       case 5:
         //        Motor_brakes();
         break;
     }
+#endif
   }
 
   //    Serial.print(" now: ");
