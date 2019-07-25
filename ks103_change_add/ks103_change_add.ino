@@ -12,7 +12,6 @@ int distanceR, distanceL;
 
 void setup() {
   Wire.begin();
-   Wire.setClock(4000000);
   Serial.begin(115200);
   Serial.println("I2C Master started");
   Serial.println();

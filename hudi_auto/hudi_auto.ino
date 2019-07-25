@@ -306,7 +306,7 @@ void mpu6050_setup() {
 
   // join I2C bus (I2Cdev library doesn't do this automatically)
   
-  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+//  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
