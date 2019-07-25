@@ -4,12 +4,32 @@
 #include "Wire.h"
 #define Pattern 'A'//A,AUTO;R,ROMOTE
 
+//==========pin================
+const int in1 = 52;
+const int in2 = 50;
+const int in3 = 48;
+const int in4 = 43;
+const int in5 = 42;
+const int in6 = 41;
+const int in7 = 40;
+const int in8 = 39;
+const int en1 = 46;
+const int en2 = 45;
+const int en3 = 44;
+const int en4 = 10;
+const int Lsonic_servo = 8;
+const int Rsonic_servo = 9;
+const int start_bt = 23;
+const int Buzzer = 38;
+const int IR_turns_sensor = 37;
+
+
 bool Start = false;
 bool original_start = false;
 int STEP = 0;
 int sweep_ball_step = 0;
 int step_move = 0;
-const int IR_turns_sensor = 45;
+
 int turn_total = 0;
 int turn_count = 0;
 int pre_IR_turn_val = 1;
@@ -73,7 +93,7 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
         break;
     }
   } else {
-    Serial.println(turn_total - turn_count);
+//    Serial.println(turn_total - turn_count);
     Serial.print("R:");
     Serial.print(distance_R);
     Serial.print("L:");
@@ -222,7 +242,7 @@ MPU6050 mpu;
 
 
 
-const int start_bt = 23;
+
 
 
 
@@ -254,24 +274,7 @@ int loop_y = d2 - (2 * car_y);
 
 unsigned long step_start;
 unsigned long initial;
-const int in1 = 52;
-const int in2 = 50;
-const int in3 = 48;
-const int in4 = 46;
-const int in5 = 44;
-const int in6 = 42;
-const int in7 = 40;
-const int in8 = 38;
 
-const int en1 = 2;
-const int en2 = 3;
-const int en3 = 6;
-const int en4 = 5;
-
-const int Rsonic_servo = 9;
-const int Lsonic_servo = 8;
-
-const int Buzzer = 39;
 
 float original_z = 0;
 bool gyro_ready = false;
@@ -1315,8 +1318,8 @@ void loop() {
         //          move_step(loop_x, loop_y);
         break;
       case 4://掃球
-        Serial.print("Sweep_ball:");
-        Serial.println(sweep_ball_step);
+//        Serial.print("Sweep_ball:");
+//        Serial.println(sweep_ball_step);
         if (sweep_ball_step > 3) {
           sweep_ball_step = 0;
         }
