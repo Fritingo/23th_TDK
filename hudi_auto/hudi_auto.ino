@@ -1,7 +1,9 @@
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
-#include <NewPing.h>
 #include "Wire.h"
+
+#define KS103_L 0x74
+#define KS103_R 0x75
 #define Pattern 'A'//A,AUTO;R,ROMOTE
 
 //==========pin================
@@ -40,8 +42,10 @@ int mode_code = 0;
 bool is_Move_start = false;
 bool is_correction_angle = false;
 
-float distance_x, distance_y;
-float distance_R, distance_L;
+unsigned long ks103_time;
+int ks103_state = 0;
+int distance_x, distance_y;
+int distance_R, distance_L;
 
 #if Pattern == 'A'
 #include <Servo.h>
@@ -237,29 +241,7 @@ void IR_update() {
 
 #endif
 
-
 MPU6050 mpu;
-
-
-
-
-
-
-
-
-#define SONAR_NUM     2 // Number of sensors.
-#define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
-#define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
-
-unsigned long pingTimer[SONAR_NUM]; // Holds the times when the next ping should happen for each sensor.
-float cm[SONAR_NUM];         // Where the ping distances are stored.
-uint8_t currentSensor = 0;          // Keeps track of which sensor is active.
-
-
-NewPing sonar[SONAR_NUM] = {     // Sensor object array.
-  NewPing(51, 53, MAX_DISTANCE), //L// Each sensor's trigger pin, echo pin, and max distance to ping.
-  NewPing(47, 49, MAX_DISTANCE)//R
-};
 
 unsigned long sonar_start = 0;
 // 定策略時要修改的距離
@@ -317,13 +299,13 @@ void dmpDataReady() {
 }
 
 void mpu6050_setup() {
-
+  Wire.begin();
   float first_yaw = 0;
   int counter_ready = 0;
   float last_yaw = 999;
 
   // join I2C bus (I2Cdev library doesn't do this automatically)
-  Wire.begin();
+  
   Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   while (!Serial); // wait for Leonardo enumeration, others continue immediately
@@ -1129,38 +1111,6 @@ void move_step(int goal_x, int goal_y) {
   }
 }
 
-void echoCheck() { // If ping received, set the sensor distance to array.
-  if (sonar[currentSensor].check_timer())
-    cm[currentSensor] = (sonar[currentSensor].ping_result / 2) / 29.1;
-}
-
-void oneSensorCycle() { // Sensor ping cycle complete, do something with the results.
-  // The following code would be replaced with your code that does something with the ping results.
-  distance_x = cm[0];
-  distance_L = cm[0];
-//    Serial.print("distance_x = ");
-//    Serial.print(distance_x);
-//    Serial.print("cm ");
-  distance_y = cm[1];
-  distance_R = cm[1];
-  //  Serial.print("distance_y = ");
-  //  Serial.print(distance_y);
-  //  Serial.println("cm ");
-}
-
-void sonar_update() {
-  for (uint8_t i = 0; i < SONAR_NUM; i++) { // Loop through all the sensors.
-    if (millis() >= pingTimer[i]) {         // Is it this sensor's time to ping?
-      pingTimer[i] += PING_INTERVAL * SONAR_NUM;  // Set next time this sensor will be pinged.
-      if (i == 0 && currentSensor == SONAR_NUM - 1) oneSensorCycle(); // Sensor ping cycle complete, do something with the results.
-      sonar[currentSensor].timer_stop();          // Make sure previous timer is canceled before starting a new ping (insurance).
-      currentSensor = i;                          // Sensor being accessed.
-      cm[currentSensor] = 0;                      // Make distance zero in case there's no ping echo for this sensor.
-      sonar[currentSensor].ping_timer(echoCheck); // Do the ping (processing continues, interrupt will call echoCheck to look for echo).
-    }
-  }
-}
-
 void turn_update() {
   IR_turn_val = digitalRead(IR_turns_sensor);
   if (IR_turn_val > pre_IR_turn_val) {
@@ -1170,7 +1120,62 @@ void turn_update() {
   pre_IR_turn_val = IR_turn_val;
 }
 
+void setting_ks103(byte addr, byte command) {
+  Wire.beginTransmission(addr);
+  Wire.write(byte(0x02));
+  Wire.write(command);   // 发送降噪指令
+  Wire.endTransmission();
+  delay(1000);
+}
+
+void ks103_update() {
+  if (ks103_state == 0) {
+    Wire.beginTransmission(KS103_L);
+    Wire.write(byte(0x02));
+    Wire.write(0xb4);     //量程设置为5m 带温度补偿
+    Wire.endTransmission();
+    ks103_time = millis();
+    ks103_state++;
+  } else if ((millis() - ks103_time) > 1 and ks103_state == 1) {
+    Wire.beginTransmission(KS103_L);
+    Wire.write(byte(0x02));
+    Wire.endTransmission();
+    Wire.requestFrom(KS103_L, 2);
+    if (2 <= Wire.available()) {
+      distance_L = Wire.read();
+      distance_L =  distance_L << 8;
+      distance_L |= Wire.read();
+      ks103_time = millis();
+      ks103_state++;
+    }
+  } else if ((millis() - ks103_time) > 100 and ks103_state == 2) {
+  Wire.beginTransmission(KS103_R);
+    Wire.write(byte(0x02));
+    Wire.write(0xb4);     //量程设置为5m 带温度补偿
+    Wire.endTransmission();
+    ks103_time = millis();
+    ks103_state++;
+  } else if ((millis() - ks103_time) > 1 and ks103_state == 3) {
+  Wire.beginTransmission(KS103_R);
+    Wire.write(byte(0x02));
+    Wire.endTransmission();
+    Wire.requestFrom(KS103_R, 2);
+    if (2 <= Wire.available()) {
+      distance_R = Wire.read();
+      distance_R =  distance_R << 8;
+      distance_R |= Wire.read();
+      ks103_state++;
+      ks103_time = millis();
+    }
+  } else if ((millis() - ks103_time) > 100 and ks103_state == 4) {
+  ks103_state = 0;
+}
+}
+
 void setup() {
+  
+  setting_ks103(KS103_L, 0x75);
+  setting_ks103(KS103_R, 0x75);
   pinMode(IR_turns_sensor, INPUT);
   pinMode(start_bt, INPUT);
   pinMode(Buzzer, OUTPUT);
@@ -1204,9 +1209,6 @@ void setup() {
 
   mpu6050_setup();
 
-  pingTimer[0] = millis() + 75;           // First ping starts at 75ms, gives time for the Arduino to chill before starting.
-  for (uint8_t i = 1; i < SONAR_NUM; i++) // Set the starting time for each sensor.
-    pingTimer[i] = pingTimer[i - 1] + PING_INTERVAL;
 }
 
 void loop() {
@@ -1215,9 +1217,13 @@ void loop() {
     return;
   }
 
-  sonar_update();
-  mpu6050_update();
+//  mpu6050_update();
   turn_update();
+  ks103_update();
+  Serial.print("L:");
+  Serial.print(distance_L);
+  Serial.print("R:");
+  Serial.println(distance_R);
 
   original_start = digitalRead(start_bt);
 //  Serial.print("bt:");

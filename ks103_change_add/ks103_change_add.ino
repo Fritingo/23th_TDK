@@ -12,12 +12,13 @@ int distanceR, distanceL;
 
 void setup() {
   Wire.begin();
+   Wire.setClock(4000000);
   Serial.begin(115200);
   Serial.println("I2C Master started");
   Serial.println();
 
-  setting_ks103(KS103_1, 0x71);
-  setting_ks103(KS103_2, 0x71);
+  setting_ks103(KS103_1, 0x75);
+  setting_ks103(KS103_2, 0x75);
 }
 
 void loop() {
@@ -88,7 +89,7 @@ word KS103_read(int addr) {
   }
 }
 
-word ks103_read() {
+void ks103_read() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_1);
     Wire.write(byte(0x02));
