@@ -1145,6 +1145,7 @@ void ks103_update() {
       distance_L = Wire.read();
       distance_L =  distance_L << 8;
       distance_L |= Wire.read();
+      distance_L = distance_L/10;
       ks103_time = millis();
       ks103_state++;
     }
@@ -1164,6 +1165,7 @@ void ks103_update() {
       distance_R = Wire.read();
       distance_R =  distance_R << 8;
       distance_R |= Wire.read();
+      distance_R = distance_R/10;
       ks103_state++;
       ks103_time = millis();
     }
@@ -1217,7 +1219,7 @@ void loop() {
     return;
   }
 
-//  mpu6050_update();
+  mpu6050_update();
   turn_update();
   ks103_update();
   Serial.print("L:");
