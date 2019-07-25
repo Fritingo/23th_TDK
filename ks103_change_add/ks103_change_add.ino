@@ -23,10 +23,12 @@ void setup() {
 void loop() {
 
   ks103_read();
+//  KS103_read(KS103_1);
   Serial.print("第一顆=");
   Serial.print(distanceL);
   Serial.print("mm");
   //  ks103_read();
+//  KS103_read(KS103_2);
   Serial.print(" 第二顆=");
   Serial.print(distanceR);
   Serial.println("mm");
