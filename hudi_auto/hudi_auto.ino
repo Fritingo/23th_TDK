@@ -21,19 +21,24 @@ const int en3 = 44;
 const int en4 = 10;
 const int Lsonic_servo = 8;
 const int Rsonic_servo = 9;
+const int team_color_bt = 24;
 const int start_bt = 23;
 const int Buzzer = 38;
 const int IR_turns_sensor = 37;
 
-
+char team_color = 'Y';
+bool team_color_bool = false;
 bool Start = false;
 bool original_start = false;
 int STEP = 0;
 int sweep_ball_step = 0;
 int step_move = 0;
+int find_color_borad_step = 0;
 
+bool set_turn = false;
 int turn_total = 0;
 int turn_count = 0;
+int brake_Speed = 0;
 int pre_IR_turn_val = 1;
 int IR_turn_val;
 bool is_mode;
@@ -72,11 +77,11 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
       case 'L'://L
         Serial.println("L");
         sonic_servoL.write(90);
-        sonic_servoR.write(180);
+        sonic_servoR.write(90);
         break;
       case 'R'://R
         Serial.println("R");
-        sonic_servoL.write(0);
+        sonic_servoL.write(90);
         sonic_servoR.write(90);
         break;
       case '3'://LF
@@ -97,7 +102,7 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
         break;
     }
   } else {
-//    Serial.println(turn_total - turn_count);
+    //    Serial.println(turn_total - turn_count);
     Serial.print("R:");
     Serial.print(distance_R);
     Serial.print("L:");
@@ -131,7 +136,7 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
       }
     } else {
       if (((turn_total - turn_count) - Turns) < 5) {
-       Serial.println("slow_down");
+        Serial.println("slow_down");
         if ((Speed - (turn_total - turn_count) * 2) < 50) {//移動最低速
           Motor_directly(50);
         } else {
@@ -204,6 +209,75 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
               is_Move_start = false;
               STEP++;
             }
+            break;
+        }
+      }
+    }
+  }
+}
+
+void First_Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+  if (is_Move_start == false) {                                   //向(方向)用(輪胎速度)轉(輪胎圈數)後用低速調整至(超音波距離)
+    is_Move_start = true;
+    is_correction_angle = false;
+    turn_count = turn_total;
+    switch (Direction) {
+      case 'L'://L
+        Serial.println("L");
+        sonic_servoL.write(90);
+        sonic_servoR.write(90);
+        break;
+      case 'R'://R
+        Serial.println("R");
+        sonic_servoL.write(90);
+        sonic_servoR.write(90);
+        break;
+    }
+  } else {
+    //    Serial.println(turn_total - turn_count);
+    Serial.print("R:");
+    Serial.print(distance_R);
+    Serial.print("L:");
+    Serial.println(distance_L);
+    if (turn_total - turn_count < Turns) {
+      switch (Direction) {
+        case 'L'://L
+          m_type_Leftward(Speed);
+          break;
+        case 'R'://R
+          m_type_Rightward(Speed);
+          break;
+      }
+    } else {
+      if (((turn_total - turn_count) - Turns) < 5) {
+        Serial.println("slow_down");
+        if ((Speed - (turn_total - turn_count) * 2) < 50) {//移動最低速
+          Motor_directly(50);
+        } else {
+          Motor_directly(Speed - (turn_total - turn_count) * 2);
+        }
+      } else {
+        switch (Direction) {
+          case 'L'://L
+            if (int(distance_R) <= sonic_Distance and int(distance_R) != 0) {
+              if (is_correction_angle == true) {
+                is_Move_start = false;
+                STEP++;
+              } else {
+                m_type_correction_angle();
+              }
+            }
+            break;
+          case 'R'://R
+            if (int(distance_L) <= sonic_Distance and int(distance_L) != 0) {
+              if (is_correction_angle == true) {
+                is_Move_start = false;
+                STEP++;
+              } else {
+                m_type_correction_angle();
+              }
+            }
+            break;
         }
       }
     }
@@ -305,8 +379,8 @@ void mpu6050_setup() {
   float last_yaw = 999;
 
   // join I2C bus (I2Cdev library doesn't do this automatically)
-  
-//  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+
+  //  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
@@ -537,6 +611,34 @@ void Motor_brakes_with_time(int Speed, int after_time) {
     } else {
       count = 0;
       is_brake = false;
+      Motor_reset();
+      mode_code = -1;
+    }
+  }
+}
+
+void Motor_brakes_with_turn(int Speed, int Turn, int min_Speed, int brakes_turn) {
+  if (set_turn == false) {
+    turn_count = turn_total;
+    is_correction_angle = false;
+  } else if ((turn_total - turn_count) > Turn && !is_brake) {
+    is_brake = true;
+  }
+  if (is_brake) {
+    if (((turn_total - turn_count) - Turn) < brakes_turn) {
+      brake_Speed = Speed - (((Speed - min_Speed) / brakes_turn) * (count + 1));
+      analogWrite(en1, brake_Speed);
+      analogWrite(en2, brake_Speed);
+      analogWrite(en3, brake_Speed);
+      analogWrite(en4, brake_Speed);
+      count++;
+    } else if (is_correction_angle == false) {
+      m_type_correction_angle();
+    } else {
+      count = 0;
+      brake_Speed = 0;
+      is_brake = false;
+      set_turn = false;
       Motor_reset();
       mode_code = -1;
     }
@@ -1145,19 +1247,19 @@ void ks103_update() {
       distance_L = Wire.read();
       distance_L =  distance_L << 8;
       distance_L |= Wire.read();
-      distance_L = distance_L/10;
+      distance_L = distance_L / 10;
       ks103_time = millis();
       ks103_state++;
     }
   } else if ((millis() - ks103_time) > 100 and ks103_state == 2) {
-  Wire.beginTransmission(KS103_R);
+    Wire.beginTransmission(KS103_R);
     Wire.write(byte(0x02));
     Wire.write(0xb4);     //量程设置为5m 带温度补偿
     Wire.endTransmission();
     ks103_time = millis();
     ks103_state++;
   } else if ((millis() - ks103_time) > 1 and ks103_state == 3) {
-  Wire.beginTransmission(KS103_R);
+    Wire.beginTransmission(KS103_R);
     Wire.write(byte(0x02));
     Wire.endTransmission();
     Wire.requestFrom(KS103_R, 2);
@@ -1165,17 +1267,17 @@ void ks103_update() {
       distance_R = Wire.read();
       distance_R =  distance_R << 8;
       distance_R |= Wire.read();
-      distance_R = distance_R/10;
+      distance_R = distance_R / 10;
       ks103_state++;
       ks103_time = millis();
     }
   } else if ((millis() - ks103_time) > 100 and ks103_state == 4) {
-  ks103_state = 0;
-}
+    ks103_state = 0;
+  }
 }
 
 void setup() {
-  
+
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
   pinMode(IR_turns_sensor, INPUT);
@@ -1202,7 +1304,7 @@ void setup() {
 #endif
 
   Serial.begin(115200);
-#if Pattern == 'R'  
+#if Pattern == 'R'
   irrecv.blink13(true); // 設為true的話，當收到訊號時，腳位13的LED便會閃爍
   irrecv.enableIRIn(); // 啟動接收
 #endif
@@ -1222,20 +1324,27 @@ void loop() {
   mpu6050_update();
   turn_update();
   ks103_update();
-  Serial.print("L:");
-  Serial.print(distance_L);
-  Serial.print("R:");
-  Serial.println(distance_R);
+  //  Serial.print("L:");
+  //  Serial.print(distance_L);
+  //  Serial.print("R:");
+  //  Serial.println(distance_R);
 
   original_start = digitalRead(start_bt);
-//  Serial.print("bt:");
-//  Serial.println(original_start);
+  //  Serial.print("bt:");
+  //  Serial.println(original_start);
   if (Start != original_start) {
     if (original_start) {
       Serial.println("自動模式");
       step_start = millis();
-      loop_x = d5;
-      loop_y = d2 - (2 * car_y);
+      find_color_borad_step = 0;
+      team_color_bool = digitalRead(team_color_bt);
+      if (team_color_bool == true) {
+        team_color = 'Y';
+      } else {
+        team_color = 'O';
+      }
+      //      loop_x = d5;
+      //      loop_y = d2 - (2 * car_y);
       step_move = 0;
       STEP = 4;//測試先用-1
     } else {
@@ -1260,20 +1369,24 @@ void loop() {
         //              Serial.println("000");
         break;
       case 16724175://1
-        m_type_Forward(70, 1000);
+        m_type_Forward(70);
+        Motor_brakes_with_turn(70, 10, 50, 5);//int Speed, int Turn, int min_Speed, int brakes_turn
         break;
       case 16718055://2
-        m_type_Backward(70, 1000);
+        m_type_Backward(70);
+        Motor_brakes_with_turn(70, 10, 50, 5);//int Speed, int Turn, int min_Speed, int brakes_turn
         //        safety_around_angle(90);
         //      Serial.println("222");
         break;
       case 16743045://3
-        m_type_Rightward(40, 1000);
+        m_type_Rightward(70);
+        Motor_brakes_with_turn(70, 10, 50, 5);//int Speed, int Turn, int min_Speed, int brakes_turn
         //        safety_around_angle(-90);
         //      Serial.println("333");
         break;
       case 16716015://4
-        m_type_Leftward(40, 1000);
+        m_type_Leftward(70);
+        Motor_brakes_with_turn(70, 10, 50, 5);
         //        safety_around_angle(45);
         break;
       case 16726215://5
@@ -1286,11 +1399,13 @@ void loop() {
         Serial.println("666");
         break;
       case 16728765://7
-        m_type_RightForward(100, 1000);
+        m_type_RightForward(100);
+        Motor_brakes_with_turn(100, 10, 50, 5);
         Serial.println(yaw);
         break;
       case 16730805://8
-        m_type_LeftBackward(100, 1000);
+        m_type_LeftBackward(100);
+        Motor_brakes_with_turn(100, 10, 50, 5);
         Serial.println("888");
         break;
       case 16732845://9
@@ -1315,19 +1430,46 @@ void loop() {
         Serial.println("case -1");
         break;
       case 1://起步到顏色看板
-        move_step(d1, d2);
+        switch (find_color_borad_step) {
+          case 0:
+            sonic_servoL.write(90);
+            sonic_servoR.write(90);
+            find_color_borad_step++;
+            break;
+          case 1://固定行走圈數結束後判斷超音波
+            switch (team_color) {
+              case 'Y':
+                First_Move('R', 5, 200, 100);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+              case 'O':
+                First_Move('L', 5, 200, 100);
+                break;
+            }
+            break;
+        }
         break;
       case 2://對者顏色看板前進
-        //          move_step(d3, d2-car_y);
-        move_step(d3, -1);
+        m_type_Forward(70);
+        Motor_brakes_with_turn(70, 10, 50, 5);
+        if (is_correction_angle == true) {
+          STEP++;
+        }
         break;
-      case 3://向左走到牆
-
-        //          move_step(loop_x, loop_y);
+      case 3://向左走到牆//固定行走圈數結束後判斷超音波
+        switch (team_color) {
+          case 'Y':
+            Move('R', 5, 20, 70);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+          case 'O':
+            Move('L', 5, 20, 70);
+            break;
+        }
+        if (is_correction_angle == true) {
+          STEP++;
+          sweep_ball_step = 0;
+        }
         break;
       case 4://掃球
-//        Serial.print("Sweep_ball:");
-//        Serial.println(sweep_ball_step);
+        //        Serial.print("Sweep_ball:");
+        //        Serial.println(sweep_ball_step);
         if (sweep_ball_step > 3) {
           sweep_ball_step = 0;
         }
@@ -1345,18 +1487,6 @@ void loop() {
             Move('L', 5, 60, 100);
             break;
         }
-
-        //        if (distance_y > stop_collect_y) {
-        //          if (loop_x == d5) {
-        //            loop_x = d3;
-        //          } else {
-        //            loop_x = d5;
-        //          }
-        //          loop_y -= car_y;
-        //          STEP--;
-        //        } else {
-        //          STEP++;
-        //        }
         break;
       case 5:
         Serial.println("Shot");
