@@ -22,17 +22,17 @@ void setup() {
 
 void loop() {
 
-  ks103_read();
-//  KS103_read(KS103_1);
+//  ks103_read();
+  KS103_read(KS103_1);
   Serial.print("第一顆=");
-  Serial.print(distanceL);
+  Serial.print(distance);
   Serial.print("mm");
   //  ks103_read();
-//  KS103_read(KS103_2);
+  KS103_read(KS103_2);
   Serial.print(" 第二顆=");
-  Serial.print(distanceR);
+  Serial.print(distance);
   Serial.println("mm");
-  //  delay(100);
+    delay(100);
   //
   //  if (Serial.available()) {
   //    Serial.println(Serial.read());

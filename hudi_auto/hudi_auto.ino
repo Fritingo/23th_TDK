@@ -66,38 +66,38 @@ void Move(char Direction, int Turns, int sonic_Distance, int Speed) { //方向(�
     switch (Direction) {
       case 'F'://F
         Serial.println("F");
+        sonic_servoL.write(15);
         sonic_servoR.write(180);
-        sonic_servoL.write(0);
         break;
       case 'B'://B
         Serial.println("B");
+        sonic_servoL.write(15);
         sonic_servoR.write(180);
-        sonic_servoL.write(0);
         break;
       case 'L'://L
         Serial.println("L");
-        sonic_servoL.write(90);
+        sonic_servoL.write(105);
         sonic_servoR.write(90);
         break;
       case 'R'://R
         Serial.println("R");
-        sonic_servoL.write(90);
+        sonic_servoL.write(105);
         sonic_servoR.write(90);
         break;
       case '3'://LF
-        sonic_servoL.write(45);
+        sonic_servoL.write(60);
         sonic_servoR.write(135);
         break;
       case '1'://RF
-        sonic_servoL.write(45);
+        sonic_servoL.write(60);
         sonic_servoR.write(135);
         break;
       case '4'://LB
-        sonic_servoL.write(45);
+        sonic_servoL.write(60);
         sonic_servoR.write(135);
         break;
       case '2'://RB
-        sonic_servoL.write(45);
+        sonic_servoL.write(60);
         sonic_servoR.write(135);
         break;
     }
@@ -224,12 +224,12 @@ void First_Move(char Direction, int Turns, int sonic_Distance, int Speed) { //�
     switch (Direction) {
       case 'L'://L
         Serial.println("L");
-        sonic_servoL.write(90);
+        sonic_servoL.write(105);
         sonic_servoR.write(90);
         break;
       case 'R'://R
         Serial.println("R");
-        sonic_servoL.write(90);
+        sonic_servoL.write(105);
         sonic_servoR.write(90);
         break;
     }
@@ -683,8 +683,8 @@ void m_type_correction_angle() {
 void safety_around_angle(int angle) {
   if (!is_started) {
 #if Pattern == 'A'
-    sonic_servoL.write(0);
-    sonic_servoR.write(180);
+    sonic_servoL.write(105);
+    sonic_servoR.write(90);
 #endif
     is_started = true;
     is_end = false;
@@ -1278,6 +1278,7 @@ void ks103_update() {
 
 void setup() {
 
+  Wire.begin();
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
   pinMode(IR_turns_sensor, INPUT);
@@ -1432,7 +1433,7 @@ void loop() {
       case 1://起步到顏色看板
         switch (find_color_borad_step) {
           case 0:
-            sonic_servoL.write(90);
+            sonic_servoL.write(105);
             sonic_servoR.write(90);
             find_color_borad_step++;
             break;
