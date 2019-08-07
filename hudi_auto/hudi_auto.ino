@@ -4,7 +4,8 @@
 
 #define KS103_L 0x74
 #define KS103_R 0x75
-#define Pattern 'A'//A,AUTO;R,ROMOTE
+#define Pattern 'R'//A,AUTO;R,ROMOTE#R要改矩陣鍵盤
+
 
 //==========pin================
 const int in1 = 52;
@@ -286,34 +287,6 @@ void First_Move(char Direction, int Turns, int sonic_Distance, int Speed) { //�
 
 #endif
 
-#if Pattern == 'R'
-#include <IRremote.h>
-
-IRrecv irrecv(11); // 使用數位腳位11接收紅外線訊號初始化紅外線訊號輸入
-decode_results results; // 儲存訊號的結構
-
-void IR_update() {
-  if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
-    Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845
-    Serial.println(results.value);//0:FF6897/1:FF6897/2:FF18E7/3:FF7A85/4:FF10EF/5:FF38C7/6:FF5AA5/7:FF42BD/8:FF4AB5/9:FF52AD
-    is_mode = results.value == 16738455 ||
-              results.value == 16724175 ||
-              results.value == 16718055 ||
-              results.value == 16743045 ||
-              results.value == 16716015 ||
-              results.value == 16726215 ||
-              results.value == 16734885 ||
-              results.value == 16728765 ||
-              results.value == 16730805 ||
-              results.value == 16732845;
-    if (is_mode) {
-      mode_code = results.value;
-    }
-    irrecv.resume(); // 準備接收下一個訊號
-  }
-}
-
-#endif
 
 MPU6050 mpu;
 
@@ -330,8 +303,6 @@ int loop_y = d2 - (2 * car_y);
 
 unsigned long step_start;
 unsigned long initial;
-
-
 float original_z = 0;
 bool gyro_ready = false;
 
@@ -1305,10 +1276,6 @@ void setup() {
 #endif
 
   Serial.begin(115200);
-#if Pattern == 'R'
-  irrecv.blink13(true); // 設為true的話，當收到訊號時，腳位13的LED便會閃爍
-  irrecv.enableIRIn(); // 啟動接收
-#endif
   Serial.println("start");
   Motor_reset();
 
@@ -1325,181 +1292,89 @@ void loop() {
   mpu6050_update();
   turn_update();
   ks103_update();
-  //  Serial.print("L:");
-  //  Serial.print(distance_L);
-  //  Serial.print("R:");
-  //  Serial.println(distance_R);
+  Serial.print("relative_yaw:");
+  Serial.println(relative_yaw);
+  Serial.print("L:");
+  Serial.print(distance_L);
+  Serial.print("R:");
+  Serial.println(distance_R);
 
-  original_start = digitalRead(start_bt);
-  //  Serial.print("bt:");
-  //  Serial.println(original_start);
-  if (Start != original_start) {
-    if (original_start) {
-      Serial.println("自動模式");
-      step_start = millis();
-      find_color_borad_step = 0;
-      team_color_bool = digitalRead(team_color_bt);
-      if (team_color_bool == true) {
-        team_color = 'Y';
-      } else {
-        team_color = 'O';
-      }
-      //      loop_x = d5;
-      //      loop_y = d2 - (2 * car_y);
-      step_move = 0;
-      STEP = 4;//測試先用-1
-    } else {
-      Serial.println("手動模式");
-      mode_code = 0;
-    }
-    Start = original_start;
-  }
+  Start = digitalRead(start_bt);
 
-  if (!Start) {
-#if Pattern == 'R'
-    IR_update();
-    switch (mode_code)
-    {
-      case 0:
-        Motor_reset();
-        //        safety_around_angle(90);
-        //        m_type_Forward(100, 0);
-        break;
-      case 16738455://0
-        Motor_reset();
-        //              Serial.println("000");
-        break;
-      case 16724175://1
-        m_type_Forward(70);
-        Motor_brakes_with_turn(70, 10, 50, 5);//int Speed, int Turn, int min_Speed, int brakes_turn
-        break;
-      case 16718055://2
-        m_type_Backward(70);
-        Motor_brakes_with_turn(70, 10, 50, 5);//int Speed, int Turn, int min_Speed, int brakes_turn
-        //        safety_around_angle(90);
-        //      Serial.println("222");
-        break;
-      case 16743045://3
-        m_type_Rightward(70);
-        Motor_brakes_with_turn(70, 10, 50, 5);//int Speed, int Turn, int min_Speed, int brakes_turn
-        //        safety_around_angle(-90);
-        //      Serial.println("333");
-        break;
-      case 16716015://4
-        m_type_Leftward(70);
-        Motor_brakes_with_turn(70, 10, 50, 5);
-        //        safety_around_angle(45);
-        break;
-      case 16726215://5
-        //        m_type_RightAround(50, 0);
-        safety_around_angle(-45);
-        break;
-      case 16734885://6
-        //          safety_around_angle(45);
-        m_type_correction_angle();
-        Serial.println("666");
-        break;
-      case 16728765://7
-        m_type_RightForward(100);
-        Motor_brakes_with_turn(100, 10, 50, 5);
-        Serial.println(yaw);
-        break;
-      case 16730805://8
-        m_type_LeftBackward(100);
-        Motor_brakes_with_turn(100, 10, 50, 5);
-        Serial.println("888");
-        break;
-      case 16732845://9
-        Motor_brakes(50);
-        break;
-      default:
-        //        Serial.println("default");
-        Motor_reset();
-        is_end = false;
-        break;
-
-    }
-#endif
-  } else {
-#if Pattern == 'A'
-    switch (STEP) {
-      case -2:
-        move_step(50, 120);
-        //          Serial.println(motor_start);
-        break;
-      case -1:
-        Serial.println("case -1");
-        break;
-      case 1://起步到顏色看板
-        switch (find_color_borad_step) {
-          case 0:
-            sonic_servoL.write(105);
-            sonic_servoR.write(90);
-            find_color_borad_step++;
-            break;
-          case 1://固定行走圈數結束後判斷超音波
-            switch (team_color) {
-              case 'Y':
-                First_Move('R', 5, 200, 100);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
-              case 'O':
-                First_Move('L', 5, 200, 100);
-                break;
-            }
-            break;
-        }
-        break;
-      case 2://對者顏色看板前進
-        m_type_Forward(70);
-        Motor_brakes_with_turn(70, 10, 50, 5);
-        if (is_correction_angle == true) {
-          STEP++;
-        }
-        break;
-      case 3://向左走到牆//固定行走圈數結束後判斷超音波
-        switch (team_color) {
-          case 'Y':
-            Move('R', 5, 20, 70);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
-          case 'O':
-            Move('L', 5, 20, 70);
-            break;
-        }
-        if (is_correction_angle == true) {
-          STEP++;
-          sweep_ball_step = 0;
-        }
-        break;
-      case 4://掃球
-        //        Serial.print("Sweep_ball:");
-        //        Serial.println(sweep_ball_step);
-        if (sweep_ball_step > 3) {
-          sweep_ball_step = 0;
-        }
-        switch (sweep_ball_step) {
-          case 0:
-            Move('F', 5, 60, 100);  //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
-            break;
-          case 1:
-            Move('R', 20, 50, 100);
-            break;
-          case 2:
-            Move('F', 5, 60, 100);
-            break;
-          case 3:
-            Move('L', 5, 60, 100);
-            break;
-        }
-        break;
-      case 5:
-        Serial.println("Shot");
-        //        Motor_brakes();
-        break;
-    }
-#endif
-  }
-
-  //    Serial.print(" now: ");
-  //    Serial.println(relative_yaw);
-  //    Serial.print("相對角度: ");
-  //    Serial.println(relative_yaw);
-
+//if(Start == True){
+//#if Pattern == 'A'
+//    switch (STEP) {
+//      case -2:
+//        move_step(50, 120);
+//        //          Serial.println(motor_start);
+//        break;
+//      case -1:
+//        Serial.println("case -1");
+//        break;
+//      case 1://起步到顏色看板
+//        switch (find_color_borad_step) {
+//          case 0:
+//            sonic_servoL.write(105);
+//            sonic_servoR.write(90);
+//            find_color_borad_step++;
+//            break;
+//          case 1://固定行走圈數結束後判斷超音波
+//            switch (team_color) {
+//              case 'Y':
+//                First_Move('R', 5, 200, 100);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+//              case 'O':
+//                First_Move('L', 5, 200, 100);
+//                break;
+//            }
+//            break;
+//        }
+//        break;
+//      case 2://對者顏色看板前進
+//        m_type_Forward(70);
+//        Motor_brakes_with_turn(70, 10, 50, 5);
+//        if (is_correction_angle == true) {
+//          STEP++;
+//        }
+//        break;
+//      case 3://向左走到牆//固定行走圈數結束後判斷超音波
+//        switch (team_color) {
+//          case 'Y':
+//            Move('R', 5, 20, 70);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+//          case 'O':
+//            Move('L', 5, 20, 70);
+//            break;
+//        }
+//        if (is_correction_angle == true) {
+//          STEP++;
+//          sweep_ball_step = 0;
+//        }
+//        break;
+//      case 4://掃球
+//        //        Serial.print("Sweep_ball:");
+//        //        Serial.println(sweep_ball_step);
+//        if (sweep_ball_step > 3) {
+//          sweep_ball_step = 0;
+//        }
+//        switch (sweep_ball_step) {
+//          case 0:
+//            Move('F', 5, 60, 100);  //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+//            break;
+//          case 1:
+//            Move('R', 20, 50, 100);
+//            break;
+//          case 2:
+//            Move('F', 5, 60, 100);
+//            break;
+//          case 3:
+//            Move('L', 5, 60, 100);
+//            break;
+//        }
+//        break;
+//      case 5:
+//        Serial.println("Shot");
+//        //        Motor_brakes();
+//        break;
+//    }
+//#endif
+//}
 }
