@@ -16,29 +16,27 @@ void setup() {
   Serial.println("I2C Master started");
   Serial.println();
 
-  setting_ks103(KS103_1, 0x75);
-  setting_ks103(KS103_2, 0x75);
+//  setting_ks103(KS103_1, 0x75);
+//  setting_ks103(KS103_2, 0x75);
+  setting_ks103(KS103_1, 0xc3);
+   setting_ks103(KS103_2, 0xc3);
 }
 
 void loop() {
 
-//  ks103_read();
-  KS103_read(KS103_1);
-  Serial.print("第一顆=");
-  Serial.print(distance);
-  Serial.print("mm");
   //  ks103_read();
-  KS103_read(KS103_2);
-  Serial.print(" 第二顆=");
-  Serial.print(distance);
-  Serial.println("mm");
-    delay(100);
-  //
-  //  if (Serial.available()) {
-  //    Serial.println(Serial.read());
-  //    change_ks103_addr(0xea);
-  //  }
-
+//  KS103_read(KS103_1);
+//  Serial.print("第一顆=");
+//  Serial.print(distance);
+//  Serial.print("mm");
+  //  ks103_read();
+//  KS103_read(KS103_2);
+//  Serial.print(" 第二顆=");
+//  Serial.print(distance);
+//  Serial.println("mm");
+//  delay(100);
+//   setting_ks103(KS103_1, 0xc3);
+//   setting_ks103(KS103_2, 0xc3);
 }
 
 void setting_ks103(byte addr, byte command) {
@@ -46,7 +44,12 @@ void setting_ks103(byte addr, byte command) {
   Wire.write(byte(0x02));
   Wire.write(command);   // 发送降噪指令
   Wire.endTransmission();
-  delay(1000);
+  delay(2000);
+  Serial.print("設置設備 位址=");
+  Serial.print(addr, HEX);
+  Serial.print(" 指令=");
+  Serial.print(command, HEX);
+  Serial.println(" 成功");
 }
 
 void change_ks103_addr(byte old_addr, byte new_addr) {
@@ -111,14 +114,14 @@ void ks103_read() {
       ks103_state++;
     }
   } else if ((millis() - ks103_time) > 100 and ks103_state == 2) {
-  Wire.beginTransmission(KS103_2);
+    Wire.beginTransmission(KS103_2);
     Wire.write(byte(0x02));
     Wire.write(0xb4);     //量程设置为5m 带温度补偿
     Wire.endTransmission();
     ks103_time = millis();
     ks103_state++;
   } else if ((millis() - ks103_time) > 1 and ks103_state == 3) {
-  Wire.beginTransmission(KS103_2);
+    Wire.beginTransmission(KS103_2);
     Wire.write(byte(0x02));
     Wire.endTransmission();
     Wire.requestFrom(KS103_2, 2);
@@ -130,6 +133,6 @@ void ks103_read() {
       ks103_time = millis();
     }
   } else if ((millis() - ks103_time) > 100 and ks103_state == 4) {
-  ks103_state = 0;
-}
+    ks103_state = 0;
+  }
 }
