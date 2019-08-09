@@ -4,7 +4,7 @@
 
 #define KS103_L 0x74
 #define KS103_R 0x75
-#define Pattern 'R'//A,AUTO;R,ROMOTE#R要改矩陣鍵盤
+#define Pattern 'A'//A,AUTO;R,ROMOTE#R要改矩陣鍵盤
 
 
 //==========pin================
@@ -365,7 +365,7 @@ void mpu6050_setup() {
 
   // join I2C bus (I2Cdev library doesn't do this automatically)
 
-    Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+//    Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
@@ -1356,12 +1356,12 @@ void ks103_update() {
 void setup() {
 
   Wire.begin();
-//  setting_ks103(KS103_L, 0x75);
-//  setting_ks103(KS103_R, 0x75);
-//  pinMode(IR_turns_sensor, INPUT);
-//  pinMode(start_bt, INPUT);
-//  pinMode(Buzzer, OUTPUT);
-//  digitalWrite(Buzzer, HIGH);
+  setting_ks103(KS103_L, 0x75);
+  setting_ks103(KS103_R, 0x75);
+  pinMode(IR_turns_sensor, INPUT);
+  pinMode(start_bt, INPUT);
+  pinMode(Buzzer, OUTPUT);
+  digitalWrite(Buzzer, HIGH);
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
@@ -1397,17 +1397,17 @@ void loop() {
 
   mpu6050_update();
 
-  PID();
-//  turn_update();
-//  ks103_update();
+//  PID();
+  turn_update();
+  ks103_update();
   Serial.print("relative_yaw:");
   Serial.println(relative_yaw);
-//  Serial.print("L:");
-//  Serial.print(distance_L);
-//  Serial.print("R:");
-//  Serial.println(distance_R);
+  Serial.print("L:");
+  Serial.print(distance_L);
+  Serial.print("R:");
+  Serial.println(distance_R);
 
-  Start = digitalRead(start_bt);
+//  Start = digitalRead(start_bt);
 
 //if(Start == True){
 //#if Pattern == 'A'
