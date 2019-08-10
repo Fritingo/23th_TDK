@@ -13,11 +13,11 @@ void setup()
 void loop()
 {
   while (!digitalRead(7)) {
-    myservo.write(180); // 一開始先置中90度
+    myservo.write(180); // run
   }
-  myservo.writeMicroseconds(1488); // 一開始先置中90度
+  myservo.writeMicroseconds(1488); // stop
   delay(1000);
   while (digitalRead(7)) {
-    myservo.write(180); // 一開始先置中90度
+    myservo.write(180); // run
   }
 }
