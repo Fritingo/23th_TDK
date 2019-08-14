@@ -1,22 +1,22 @@
-#include <IRremote.h>
+//#include <IRremote.h>
 
 int RECV_PIN = 12; // 使用數位腳位2接收紅外線訊號
-IRrecv irrecv(RECV_PIN); // 初始化紅外線訊號輸入
-decode_results results; // 儲存訊號的結構
+//IRrecv irrecv(RECV_PIN); // 初始化紅外線訊號輸入
+//decode_results results; // 儲存訊號的結構
 
 const int in1 = 52;
 const int in2 = 50;
 const int in3 = 48;
-const int in4 = 46;
-const int in5 = 44;
-const int in6 = 42;
+const int in4 = 43;
+const int in5 = 42;
+const int in6 = 41;
 const int in7 = 40;
-const int in8 = 38;
+const int in8 = 39;
 
-const int en1 = 2;
-const int en2 = 3;
-const int en3 = 6;
-const int en4 = 5;
+const int en1 = 46;
+const int en2 = 45;
+const int en3 = 44;
+const int en4 = 10;
 void setup() {
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
@@ -44,14 +44,16 @@ void setup() {
 void loop() {
 
   Motor_init();
-  Motor1_Forward(220);
+  Motor1_Forward(50);
   delay(2000);
   Motor_init();
-  Motor2_Forward(220);
+  Motor2_Forward(50);
   delay(2000);
-  Motor3_Forward(220);
+  Motor_init();
+  Motor3_Forward(50);
   delay(2000);
-  Motor4_Forward(220);
+  Motor_init();
+  Motor4_Forward(50);
   delay(2000);
 
   //  if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼

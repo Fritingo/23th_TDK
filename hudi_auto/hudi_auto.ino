@@ -26,6 +26,9 @@ const int team_color_bt = 24;
 const int start_bt = 23;
 const int Buzzer = 38;
 const int IR_turns_sensor = 37;
+const int collect_ball_pin = 35;
+const int pullup_ball_pin = 36;
+const int shot_ball_pin = 34;
 
 char team_color = 'Y';
 bool team_color_bool = false;
@@ -1405,6 +1408,9 @@ void setup() {
   Wire.begin();
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
+  pinMode(collect_ball_pin, OUTPUT);
+  pinMode(pullup_ball_pin, OUTPUT);
+  pinMode(shot_ball_pin, OUTPUT);
   pinMode(IR_turns_sensor, INPUT);
   pinMode(start_bt, INPUT);
   pinMode(Buzzer, OUTPUT);
