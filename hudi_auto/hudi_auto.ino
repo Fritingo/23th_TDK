@@ -4,7 +4,7 @@
 
 #define KS103_L 0x74
 #define KS103_R 0x75
-#define Pattern 'R'//A,AUTO;R,ROMOTE#R要改矩陣鍵盤
+#define Pattern 'A'//A,AUTO;R,ROMOTE#R要改矩陣鍵盤
 
 
 //==========pin================
@@ -52,6 +52,7 @@ int speed_L;
 int speed_R;
 int speed_LI;
 int speed_RI;
+int flag=1;
 //===================
 
 bool set_turn = false;
@@ -608,6 +609,19 @@ void Backward_PID() {
 }
 
 void PID(char Direction) {
+  if(Direction == 'F' or Direction == 'B'){
+    speed_n = 100;
+    kp=8;
+    kd=6;
+    speed_ne=-110;
+    speed_pu=110;
+  }else{
+    speed_n = 50;
+    kp=8;
+    kd=5;
+    speed_ne=-60;
+    speed_pu=60;
+  }
   e = relative_yaw;
   control = kp * e + kd * (e - e_pre);
   speed_L = speed_n + control;
@@ -1402,7 +1416,7 @@ void ks103_update() {
     ks103_state = 0;
   }
 }
-
+long pidtest_time;
 void setup() {
 
   Wire.begin();
@@ -1439,7 +1453,8 @@ void setup() {
   Motor_reset();
 
   mpu6050_setup();
-
+  pidtest_time = millis();
+  
 }
 
 void loop() {
@@ -1451,6 +1466,10 @@ void loop() {
   mpu6050_update();
   turn_update();
   ks103_update();
+
+  PID('F');
+
+
   Serial.print("relative_yaw:");
   Serial.println(relative_yaw);
   Serial.print("L:");
@@ -1458,8 +1477,52 @@ void loop() {
   Serial.print("R:");
   Serial.println(distance_R);
 
-  Start = digitalRead(start_bt);
-  PID('R');
+//  Start = digitalRead(start_bt);
+
+//  if(millis()-pidtest_time<1000){
+//    sonic_servoL.write(105);
+//    }else if(millis()-pidtest_time<2000){
+//      sonic_servoR.write(90);
+//    }
+
+//  if(distance_R<200 && flag==1)
+//  {
+//    PID('R');  
+//    pidtest_time = millis();
+//  }else{ 
+//    if(millis()-pidtest_time<1000){
+//      Motor_reset();
+//    }else{
+//      flag++;
+//      pidtest_time = millis();
+//    }
+//  }
+//  
+//  if(flag == 2){
+//    if(millis()-pidtest_time<5000){
+//    PID('F');
+//    }
+//    else {
+//    Motor_reset();  
+//    }
+//  }
+
+  
+//    else{
+//      pidtest_time = millis();
+//    }
+
+//  }else if(millis()-pidtest_time<6000){
+//    PID('F');
+//  }else if(millis()-pidtest_time<11000){
+//    PID('L');
+//  }else if(millis()-pidtest_time<12000){
+//    PID('B');
+//  }else{
+//    pidtest_time = millis();
+//  }
+//  
+  
   //if(Start == True){
   //#if Pattern == 'A'
   //    switch (STEP) {

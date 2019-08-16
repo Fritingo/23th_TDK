@@ -9,7 +9,7 @@ void setup() {
 }
 
 void loop() {
-//  digitalWrite(collect_ball_pin, HIGH);
+  digitalWrite(collect_ball_pin, HIGH);
 //  delay(2000);
 //  digitalWrite(collect_ball_pin, LOW);
 //  digitalWrite(pullup_ball_pin, HIGH);
@@ -18,7 +18,7 @@ void loop() {
 //  digitalWrite(shot_ball_pin, HIGH);
 //  delay(2000);
 //  digitalWrite(shot_ball_pin, LOW);
-  digitalWrite(pullup_ball_pin, HIGH);
-  delay(2000);
+//  digitalWrite(pullup_ball_pin, HIGH);
+//  delay(2000);
 
 }

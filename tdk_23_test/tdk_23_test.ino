@@ -26,6 +26,9 @@ const int team_color_bt = 24;
 const int start_bt = 23;
 const int Buzzer = 38;
 const int IR_turns_sensor = 37;
+const int collect_ball_pin = 35;
+const int pullup_ball_pin = 36;
+const int shot_ball_pin = 34;
 
 char team_color = 'Y';
 bool team_color_bool = false;
@@ -36,18 +39,29 @@ int sweep_ball_step = 0;
 int step_move = 0;
 int find_color_borad_step = 0;
 
-int kp=8;
-int kd=5;
-int speed_n=50;
-int speed_ne=-60;
-int speed_pu=60;
+int kp = 8;
+int kd = 5;
+int kp1 = 8;
+int kd1 = 6;
+int speed_n = 50;
+int speed_ne = -60;
+int speed_pu = 60;
+int speed_n1 = 170;
+int speed_ne1 = 160;
+int speed_pu1 = 180;
 int e;
-int e_pre=0;
+int e_pre = 0;
 int control;
+int control1;
 int speed_L;
 int speed_R;
 int speed_LI;
 int speed_RI;
+int speed_L1;
+int speed_R1;
+int speed_LI1;
+int speed_RI1;
+int flag = 1;
 
 
 bool set_turn = false;
@@ -365,7 +379,7 @@ void mpu6050_setup() {
 
   // join I2C bus (I2Cdev library doesn't do this automatically)
 
-//    Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  //    Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
@@ -724,39 +738,103 @@ void safety_around_angle(int angle) {
   //  Motor_start(Speed);
   //  Motor_brakes(Speed);
 }
-void PID() {
-   e=relative_yaw;
-   control=kp*e+kd*(e-e_pre);
-   speed_L=speed_n+control;
-   speed_R=speed_n-control;
-   if (speed_L>speed_pu) {
-    speed_L=speed_pu;
-   }
-   if (speed_L<speed_ne) {
-    speed_L=speed_ne;
-   }
-   if (speed_R>speed_pu) {
-    speed_R=speed_pu;
-   }
-   if (speed_R<speed_ne) {
-    speed_R=speed_ne;
-   }  
-   speed_L=abs(speed_L);
-   speed_R=abs(speed_R);
-   speed_LI=floor(speed_L);
-   speed_RI=floor(speed_R);
-   e_pre=e;
-   if (e>0) {
+void PIDR() {
+  e = relative_yaw;
+  control = kp * e + kd * (e - e_pre);
+  speed_L = speed_n + control;
+  speed_R = speed_n - control;
+  if (speed_L > speed_pu) {
+    speed_L = speed_pu;
+  }
+  if (speed_L < speed_ne) {
+    speed_L = speed_ne;
+  }
+  if (speed_R > speed_pu) {
+    speed_R = speed_pu;
+  }
+  if (speed_R < speed_ne) {
+    speed_R = speed_ne;
+  }
+  speed_L = abs(speed_L);
+  speed_R = abs(speed_R);
+  speed_LI = floor(speed_L);
+  speed_RI = floor(speed_R);
+  e_pre = e;
+  if (e > 0) {
     RightAround();
-   }
-   else if (e<0) {
-   LeftAround();
-   }
-   else {
+  }
+  else if (e < 0) {
+    LeftAround();
+  }
+  else {
+    Rightward();
+  }
+}
+
+void PIDL() {
+  e = relative_yaw;
+  control = kp * e + kd * (e - e_pre);
+  speed_L = speed_n + control;
+  speed_R = speed_n - control;
+  if (speed_L > speed_pu) {
+    speed_L = speed_pu;
+  }
+  if (speed_L < speed_ne) {
+    speed_L = speed_ne;
+  }
+  if (speed_R > speed_pu) {
+    speed_R = speed_pu;
+  }
+  if (speed_R < speed_ne) {
+    speed_R = speed_ne;
+  }
+  speed_L = abs(speed_L);
+  speed_R = abs(speed_R);
+  speed_LI = floor(speed_L);
+  speed_RI = floor(speed_R);
+  e_pre = e;
+  if (e > 0) {
+    RightAround();
+  }
+  else if (e < 0) {
+    LeftAround();
+  }
+  else {
     Leftward();
-  //  Rightward();
-   }
-   
+  }
+}
+
+void PIDF() {
+  e = relative_yaw;
+  control1 = kp1 * e + kd1 * (e - e_pre);
+  speed_L1 = speed_n1 + control1;
+  speed_R1 = speed_n1 - control1;
+  if (speed_L1 > speed_pu1) {
+    speed_L1 = speed_pu1;
+  }
+  if (speed_L1 < speed_ne1) {
+    speed_L1 = 190;
+  }
+  if (speed_R1 > speed_pu1) {
+    speed_R1 = speed_pu1;
+  }
+  if (speed_R1 < speed_ne1) {
+    speed_R1 = 190;
+  }
+  speed_L1 = abs(speed_L1);
+  speed_R1 = abs(speed_R1);
+  speed_LI1 = floor(speed_L1);
+  speed_RI1 = floor(speed_R1);
+  e_pre = e;
+  if (e > 0) {
+    ForwardAround();
+  }
+  else if (e < 0) {
+    BackAround();
+  }
+  else {
+    Forward();
+  }
 }
 
 void RightAround() {
@@ -789,6 +867,36 @@ void LeftAround() {
   analogWrite(en4, speed_RI);
 }
 
+void ForwardAround() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_RI1);
+  analogWrite(en4, speed_RI1);
+  analogWrite(en2, speed_LI1);
+  analogWrite(en3, speed_LI1);
+}
+
+void BackAround() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_LI1);
+  analogWrite(en4, speed_LI1);
+  analogWrite(en2, speed_RI1);
+  analogWrite(en3, speed_RI1);
+}
+
 void Rightward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -816,6 +924,20 @@ void Leftward() {
   analogWrite(en2, speed_n);
   analogWrite(en3, speed_n);
   analogWrite(en4, speed_n);
+}
+void Forward() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_n1);
+  analogWrite(en2, speed_n1);
+  analogWrite(en3, speed_n1);
+  analogWrite(en4, speed_n1);
 }
 void m_type_Leftward(int Speed) {
   digitalWrite(in1, HIGH);
@@ -1352,12 +1474,15 @@ void ks103_update() {
     ks103_state = 0;
   }
 }
-
+long pidtest_time;
 void setup() {
 
   Wire.begin();
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
+  pinMode(collect_ball_pin, OUTPUT);
+  pinMode(pullup_ball_pin, OUTPUT);
+  pinMode(shot_ball_pin, OUTPUT);
   pinMode(IR_turns_sensor, INPUT);
   pinMode(start_bt, INPUT);
   pinMode(Buzzer, OUTPUT);
@@ -1376,28 +1501,33 @@ void setup() {
   pinMode(en3, OUTPUT);
   pinMode(en4, OUTPUT);
 
-//#if Pattern == 'A'
-//  sonic_servoR.attach(Rsonic_servo);
-//  sonic_servoL.attach(Lsonic_servo);
-//#endif
+  //#if Pattern == 'A'
+  //  sonic_servoR.attach(Rsonic_servo);
+  //  sonic_servoL.attach(Lsonic_servo);
+  //#endif
 
   Serial.begin(115200);
   Serial.println("start");
   Motor_reset();
 
   mpu6050_setup();
+ if (millis() - pidtest_time < 1000) {
+    sonic_servoL.write(105);
+  } else if (millis() - pidtest_time < 2000) {
+    sonic_servoR.write(90);
+  }
 
 }
 
 void loop() {
-   
+
   if (!gyro_ready) {
     return;
   }
 
   mpu6050_update();
-
-//  PID();
+  // Forward();
+  // PIDF();
   turn_update();
   ks103_update();
   Serial.print("relative_yaw:");
@@ -1407,82 +1537,255 @@ void loop() {
   Serial.print("R:");
   Serial.println(distance_R);
 
-//  Start = digitalRead(start_bt);
 
-//if(Start == True){
-//#if Pattern == 'A'
-//    switch (STEP) {
-//      case -2:
-//        move_step(50, 120);
-//        //          Serial.println(motor_start);
-//        break;
-//      case -1:
-//        Serial.println("case -1");
-//        break;
-//      case 1://起步到顏色看板
-//        switch (find_color_borad_step) {
-//          case 0:
-//            sonic_servoL.write(105);
-//            sonic_servoR.write(90);
-//            find_color_borad_step++;
-//            break;
-//          case 1://固定行走圈數結束後判斷超音波
-//            switch (team_color) {
-//              case 'Y':
-//                First_Move('R', 5, 200, 100);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
-//              case 'O':
-//                First_Move('L', 5, 200, 100);
-//                break;
-//            }
-//            break;
-//        }
-//        break;
-//      case 2://對者顏色看板前進
-//        m_type_Forward(70);
-//        Motor_brakes_with_turn(70, 10, 50, 5);
-//        if (is_correction_angle == true) {
-//          STEP++;
-//        }
-//        break;
-//      case 3://向左走到牆//固定行走圈數結束後判斷超音波
-//        switch (team_color) {
-//          case 'Y':
-//            Move('R', 5, 20, 70);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
-//          case 'O':
-//            Move('L', 5, 20, 70);
-//            break;
-//        }
-//        if (is_correction_angle == true) {
-//          STEP++;
-//          sweep_ball_step = 0;
-//        }
-//        break;
-//      case 4://掃球
-//        //        Serial.print("Sweep_ball:");
-//        //        Serial.println(sweep_ball_step);
-//        if (sweep_ball_step > 3) {
-//          sweep_ball_step = 0;
-//        }
-//        switch (sweep_ball_step) {
-//          case 0:
-//            Move('F', 5, 60, 100);  //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
-//            break;
-//          case 1:
-//            Move('R', 20, 50, 100);
-//            break;
-//          case 2:
-//            Move('F', 5, 60, 100);
-//            break;
-//          case 3:
-//            Move('L', 5, 60, 100);
-//            break;
-//        }
-//        break;
-//      case 5:
-//        Serial.println("Shot");
-//        //        Motor_brakes();
-//        break;
-//    }
-//#endif
-//}
+
+  if (distance_R < 200 and flag == 1)
+  {
+    PIDR();
+    pidtest_time = millis();
+  } else if (flag == 1) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
+      pidtest_time = millis();
+    }
+  }
+
+  if (flag == 2) {
+    if (millis() - pidtest_time < 3000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  if (distance_L > 50 and flag == 3) {
+    PIDR();
+    pidtest_time = millis();
+  } else if (flag == 3) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
+      pidtest_time = millis();
+    }
+  }
+
+
+  if (flag == 4) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_R > 50 and flag == 5)
+    {
+      PIDL();
+      pidtest_time = millis();
+    } else if (flag == 5) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 6) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_L > 50 and flag == 7)
+    {
+      PIDR();
+      pidtest_time = millis();
+    } else if (flag == 7) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 8) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+
+    if (distance_R > 50 and flag == 9)
+    {
+      PIDL();
+      pidtest_time = millis();
+    } else if (flag == 9) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 10) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_L > 50 and flag == 11)
+    {
+      PIDR();
+      pidtest_time = millis();
+    } else if (flag == 11) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 12) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_R > 50 and flag == 13)
+    {
+      PIDL();
+      pidtest_time = millis();
+    } else if (flag == 13) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 14) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      //   flag++;
+    }
+  }
+
+
+
+
+
+
+
+
+  //  Start = digitalRead(start_bt);
+
+  //if(Start == True){
+  //#if Pattern == 'A'
+  //    switch (STEP) {
+  //      case -2:
+  //        move_step(50, 120);
+  //        //          Serial.println(motor_start);
+  //        break;
+  //      case -1:
+  //        Serial.println("case -1");
+  //        break;
+  //      case 1://起步到顏色看板
+  //        switch (find_color_borad_step) {
+  //          case 0:
+  //            sonic_servoL.write(105);
+  //            sonic_servoR.write(90);
+  //            find_color_borad_step++;
+  //            break;
+  //          case 1://固定行走圈數結束後判斷超音波
+  //            switch (team_color) {
+  //              case 'Y':
+  //                First_Move('R', 5, 200, 100);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+  //              case 'O':
+  //                First_Move('L', 5, 200, 100);
+  //                break;
+  //            }
+  //            break;
+  //        }
+  //        break;
+  //      case 2://對者顏色看板前進
+  //        m_type_Forward(70);
+  //        Motor_brakes_with_turn(70, 10, 50, 5);
+  //        if (is_correction_angle == true) {
+  //          STEP++;
+  //        }
+  //        break;
+  //      case 3://向左走到牆//固定行走圈數結束後判斷超音波
+  //        switch (team_color) {
+  //          case 'Y':
+  //            Move('R', 5, 20, 70);//方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+  //          case 'O':
+  //            Move('L', 5, 20, 70);
+  //            break;
+  //        }
+  //        if (is_correction_angle == true) {
+  //          STEP++;
+  //          sweep_ball_step = 0;
+  //        }
+  //        break;
+  //      case 4://掃球
+  //        //        Serial.print("Sweep_ball:");
+  //        //        Serial.println(sweep_ball_step);
+  //        if (sweep_ball_step > 3) {
+  //          sweep_ball_step = 0;
+  //        }
+  //        switch (sweep_ball_step) {
+  //          case 0:
+  //            Move('F', 5, 60, 100);  //方向(前F後B左L右R),輪胎圈數,超音波距離,輪胎速度
+  //            break;
+  //          case 1:
+  //            Move('R', 20, 50, 100);
+  //            break;
+  //          case 2:
+  //            Move('F', 5, 60, 100);
+  //            break;
+  //          case 3:
+  //            Move('L', 5, 60, 100);
+  //            break;
+  //        }
+  //        break;
+  //      case 5:
+  //        Serial.println("Shot");
+  //        //        Motor_brakes();
+  //        break;
+  //    }
+  //#endif
+  //}
 }
