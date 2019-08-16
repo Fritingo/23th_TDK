@@ -1423,11 +1423,11 @@ void ks103_update() {
       ks103_state++;
       ks103_time = millis();
     }
-  } else if ((millis() - ks103_time) > 100 and ks103_state == 4) {
+  } else if ((millis() - ks103_time) > 1 and ks103_state == 4) {
     ks103_state = 0;
   }
 }
-long pidtest_time;
+
 void setup() {
 
   Wire.begin();
@@ -1464,25 +1464,27 @@ void setup() {
   Motor_reset();
 
   mpu6050_setup();
-  pidtest_time = millis();
 
 }
 
 void loop() {
-
-  if (!gyro_ready) {
+//  Serial.println(millis());
+  ks103_update();
+//  Serial.println(millis());
+  if (!gyro_ready) { 
     return;
   }
-
+  
   mpu6050_update();
-  turn_update();
-  ks103_update();
+  
+//  turn_update();
+  
 
-  PID('F');
+//  PID('F');
 
 
-  Serial.print("relative_yaw:");
-  Serial.println(relative_yaw);
+//  Serial.print("relative_yaw:");
+//  Serial.println(relative_yaw);
   Serial.print("L:");
   Serial.print(distance_L);
   Serial.print("R:");

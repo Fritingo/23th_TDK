@@ -46,9 +46,9 @@ int kd1 = 6;
 int speed_n = 50;
 int speed_ne = -60;
 int speed_pu = 60;
-int speed_n1 = 170;
-int speed_ne1 = 160;
-int speed_pu1 = 180;
+int speed_n1 = 70;
+int speed_ne1 = -80;
+int speed_pu1 = 80;
 int e;
 int e_pre = 0;
 int control;
@@ -739,26 +739,26 @@ void safety_around_angle(int angle) {
   //  Motor_brakes(Speed);
 }
 void PIDR() {
-  e = relative_yaw;
+  e = abs(relative_yaw);
   control = kp * e + kd * (e - e_pre);
   speed_L = speed_n + control;
-  speed_R = speed_n - control;
+ // speed_R = speed_n - control;
   if (speed_L > speed_pu) {
     speed_L = speed_pu;
   }
-  if (speed_L < speed_ne) {
-    speed_L = speed_ne;
-  }
+//  if (speed_L < speed_ne) {
+//    speed_L = speed_ne;
+//  }
   if (speed_R > speed_pu) {
     speed_R = speed_pu;
   }
-  if (speed_R < speed_ne) {
-    speed_R = speed_ne;
-  }
+//  if (speed_R < speed_ne) {
+//    speed_R = speed_ne;
+//  }
   speed_L = abs(speed_L);
-  speed_R = abs(speed_R);
+//  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-  speed_RI = floor(speed_R);
+//  speed_RI = floor(speed_R);
   e_pre = e;
   if (e > 0) {
     RightAround();
@@ -772,26 +772,26 @@ void PIDR() {
 }
 
 void PIDL() {
-  e = relative_yaw;
+  e = abs(relative_yaw);
   control = kp * e + kd * (e - e_pre);
   speed_L = speed_n + control;
-  speed_R = speed_n - control;
+//  speed_R = speed_n - control;
   if (speed_L > speed_pu) {
     speed_L = speed_pu;
   }
-  if (speed_L < speed_ne) {
-    speed_L = speed_ne;
-  }
+//  if (speed_L < speed_ne) {
+//    speed_L = speed_ne;
+//  }
   if (speed_R > speed_pu) {
     speed_R = speed_pu;
   }
-  if (speed_R < speed_ne) {
-    speed_R = speed_ne;
-  }
+//  if (speed_R < speed_ne) {
+//    speed_R = speed_ne;
+//  }
   speed_L = abs(speed_L);
-  speed_R = abs(speed_R);
+//  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-  speed_RI = floor(speed_R);
+//  speed_RI = floor(speed_R);
   e_pre = e;
   if (e > 0) {
     RightAround();
@@ -805,32 +805,32 @@ void PIDL() {
 }
 
 void PIDF() {
-  e = relative_yaw;
+  e = abs(relative_yaw);
   control1 = kp1 * e + kd1 * (e - e_pre);
   speed_L1 = speed_n1 + control1;
-  speed_R1 = speed_n1 - control1;
+//  speed_R1 = speed_n1 - control1;
   if (speed_L1 > speed_pu1) {
     speed_L1 = speed_pu1;
   }
-  if (speed_L1 < speed_ne1) {
-    speed_L1 = 190;
-  }
+//  if (speed_L1 < speed_ne1) {
+//    speed_L1 = speed_ne1;
+//  }
   if (speed_R1 > speed_pu1) {
     speed_R1 = speed_pu1;
   }
-  if (speed_R1 < speed_ne1) {
-    speed_R1 = 190;
-  }
+//  if (speed_R1 < speed_ne1) {
+//    speed_R1 = speed_ne1;
+//  }
   speed_L1 = abs(speed_L1);
-  speed_R1 = abs(speed_R1);
+//  speed_R1 = abs(speed_R1);
   speed_LI1 = floor(speed_L1);
-  speed_RI1 = floor(speed_R1);
+//  speed_RI1 = floor(speed_R1);
   e_pre = e;
   if (e > 0) {
-    ForwardAround();
+    RightAround();
   }
   else if (e < 0) {
-    BackAround();
+    LeftAround();
   }
   else {
     Forward();
@@ -846,8 +846,8 @@ void RightAround() {
   digitalWrite(in6, LOW);
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
-  analogWrite(en1, speed_RI);
-  analogWrite(en3, speed_RI);
+  analogWrite(en1, speed_LI);
+  analogWrite(en3, speed_LI);
   analogWrite(en2, speed_LI);
   analogWrite(en4, speed_LI);
 }
@@ -863,8 +863,8 @@ void LeftAround() {
   digitalWrite(in8, LOW);
   analogWrite(en1, speed_LI);
   analogWrite(en3, speed_LI);
-  analogWrite(en2, speed_RI);
-  analogWrite(en4, speed_RI);
+  analogWrite(en2, speed_LI);
+  analogWrite(en4, speed_LI);
 }
 
 void ForwardAround() {
@@ -1475,6 +1475,7 @@ void ks103_update() {
   }
 }
 long pidtest_time;
+int lai=0;
 void setup() {
 
   Wire.begin();
@@ -1501,14 +1502,14 @@ void setup() {
   pinMode(en3, OUTPUT);
   pinMode(en4, OUTPUT);
 
-  #if Pattern == 'A'
-    sonic_servoR.attach(Rsonic_servo);
-    sonic_servoL.attach(Lsonic_servo);
-  #endif
+  //#if Pattern == 'A'
+  //  sonic_servoR.attach(Rsonic_servo);
+  //  sonic_servoL.attach(Lsonic_servo);
+  //#endif
+
   Serial.begin(115200);
   Serial.println("start");
   Motor_reset();
-  
 
   mpu6050_setup();
  if (millis() - pidtest_time < 1000) {
@@ -1561,14 +1562,16 @@ void loop() {
     }
   }
 
-  if (distance_L > 50 and flag == 3) {
+  if (distance_L > 50 and flag == 3 and lai==0) {
     PIDR();
     pidtest_time = millis();
   } else if (flag == 3) {
     if (millis() - pidtest_time < 1000) {
       Motor_reset();
+      lai=1;
     } else {
       flag++;
+      lai=0;
       pidtest_time = millis();
     }
   }
@@ -1584,15 +1587,17 @@ void loop() {
   }
 
   
-    if (distance_R > 50 and flag == 5)
+    if (distance_R > 50 and flag == 5 and lai==0)
     {
       PIDL();
       pidtest_time = millis();
     } else if (flag == 5) {
       if (millis() - pidtest_time < 1000) {
         Motor_reset();
+        lai=1;
       } else {
         flag++;
+        lai=0;
         pidtest_time = millis();
       }
     }
@@ -1608,15 +1613,17 @@ void loop() {
   }
 
   
-    if (distance_L > 50 and flag == 7)
+    if (distance_L > 50 and flag == 7 and lai==0)
     {
       PIDR();
       pidtest_time = millis();
     } else if (flag == 7) {
       if (millis() - pidtest_time < 1000) {
         Motor_reset();
+        lai=1;
       } else {
         flag++;
+        lai=0;
         pidtest_time = millis();
       }
     }
@@ -1632,15 +1639,17 @@ void loop() {
   }
 
 
-    if (distance_R > 50 and flag == 9)
+    if (distance_R > 50 and flag == 9 and lai==0)
     {
       PIDL();
       pidtest_time = millis();
     } else if (flag == 9) {
       if (millis() - pidtest_time < 1000) {
         Motor_reset();
+        lai=1;
       } else {
         flag++;
+        lai=0;
         pidtest_time = millis();
       }
     }
@@ -1656,15 +1665,17 @@ void loop() {
   }
 
   
-    if (distance_L > 50 and flag == 11)
+    if (distance_L > 50 and flag == 11 and lai==0)
     {
       PIDR();
       pidtest_time = millis();
     } else if (flag == 11) {
       if (millis() - pidtest_time < 1000) {
         Motor_reset();
+        lai=1;
       } else {
         flag++;
+        lai=0;
         pidtest_time = millis();
       }
     }
@@ -1680,15 +1691,17 @@ void loop() {
   }
 
   
-    if (distance_R > 50 and flag == 13)
+    if (distance_R > 50 and flag == 13 and lai==0)
     {
       PIDL();
       pidtest_time = millis();
     } else if (flag == 13) {
       if (millis() - pidtest_time < 1000) {
         Motor_reset();
+        lai=1;
       } else {
         flag++;
+        lai=0;
         pidtest_time = millis();
       }
     }
