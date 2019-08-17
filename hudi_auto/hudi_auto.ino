@@ -337,7 +337,6 @@ void dmpDataReady() {
 }
 
 void mpu6050_setup() {
-  Wire.begin();
   float first_yaw = 0;
   int counter_ready = 0;
   float last_yaw = 999;
@@ -1388,42 +1387,46 @@ void ks103_update() {
     Wire.write(byte(0x02));
     Wire.write(0xb4);     //量程设置为5m 带温度补偿
     Wire.endTransmission();
-    ks103_time = millis();
-    ks103_state++;
-  } else if ((millis() - ks103_time) > 1 and ks103_state == 1) {
+//    ks103_time = millis();
+//    ks103_state++;
+//  } else if ((millis() - ks103_time) > 1 and ks103_state == 1) {
+    delay(1);
     Wire.beginTransmission(KS103_L);
     Wire.write(byte(0x02));
     Wire.endTransmission();
     Wire.requestFrom(KS103_L, 2);
-    if (2 <= Wire.available()) {
+    if (2 == Wire.available()) {
       distance_L = Wire.read();
       distance_L =  distance_L << 8;
       distance_L |= Wire.read();
       distance_L = distance_L / 10;
-      ks103_time = millis();
-      ks103_state++;
+//      ks103_state++;
+      ks103_state=2;
     }
+    ks103_time = millis();
   } else if ((millis() - ks103_time) > 100 and ks103_state == 2) {
     Wire.beginTransmission(KS103_R);
     Wire.write(byte(0x02));
     Wire.write(0xb4);     //量程设置为5m 带温度补偿
     Wire.endTransmission();
-    ks103_time = millis();
-    ks103_state++;
-  } else if ((millis() - ks103_time) > 1 and ks103_state == 3) {
+//    ks103_time = millis();
+//    ks103_state++;
+//  } else if ((millis() - ks103_time) > 1 and ks103_state == 3) {
+    delay(1);
     Wire.beginTransmission(KS103_R);
     Wire.write(byte(0x02));
     Wire.endTransmission();
     Wire.requestFrom(KS103_R, 2);
-    if (2 <= Wire.available()) {
+    if (2 == Wire.available()) {
       distance_R = Wire.read();
       distance_R =  distance_R << 8;
       distance_R |= Wire.read();
       distance_R = distance_R / 10;
-      ks103_state++;
-      ks103_time = millis();
+//      ks103_state++;
+      ks103_state=4;
     }
-  } else if ((millis() - ks103_time) > 1 and ks103_state == 4) {
+    ks103_time = millis();
+  } else if ((millis() - ks103_time) > 100 and ks103_state == 4) {
     ks103_state = 0;
   }
 }
@@ -1463,20 +1466,21 @@ void setup() {
   Serial.println("start");
   Motor_reset();
 
-  mpu6050_setup();
+//  mpu6050_setup();
 
 }
 
 void loop() {
+  m_type_Forward(100);
 //  Serial.println(millis());
-  ks103_update();
-//  Serial.println(millis());
-  if (!gyro_ready) { 
-    return;
-  }
-  
-  mpu6050_update();
-  
+//  ks103_update();
+////  Serial.println(millis());
+//  if (!gyro_ready) { 
+//    return;
+//  }
+//  
+//  mpu6050_update();
+//  
 //  turn_update();
   
 
@@ -1485,10 +1489,10 @@ void loop() {
 
 //  Serial.print("relative_yaw:");
 //  Serial.println(relative_yaw);
-  Serial.print("L:");
-  Serial.print(distance_L);
-  Serial.print("R:");
-  Serial.println(distance_R);
+//  Serial.print("L:");
+//  Serial.print(distance_L);
+//  Serial.print("R:");
+//  Serial.println(distance_R);
 
   //  Start = digitalRead(start_bt);
 

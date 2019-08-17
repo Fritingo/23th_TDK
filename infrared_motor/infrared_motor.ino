@@ -13,17 +13,28 @@ unsigned long current;
 const int in1 = 52;
 const int in2 = 50;
 const int in3 = 48;
-const int in4 = 46;
-const int in5 = 44;
-const int in6 = 42;
+const int in4 = 43;
+const int in5 = 42;
+const int in6 = 41;
 const int in7 = 40;
-const int in8 = 38;
-
-const int en1 = 2;
-const int en2 = 3;
-const int en3 = 6;
-const int en4 = 5;
+const int in8 = 39;
+const int en1 = 46;
+const int en2 = 45;
+const int en3 = 44;
+const int en4 = 10;
+const int Lsonic_servo = 8;
+const int Rsonic_servo = 9;
+const int team_color_bt = 24;
+const int start_bt = 23;
+const int Buzzer = 38;
+const int IR_turns_sensor = 37;
+const int collect_ball_pin = 35;
+const int pullup_ball_pin = 36;
+const int shot_ball_pin = 34;
 void setup() {
+    pinMode(collect_ball_pin, OUTPUT);
+  pinMode(pullup_ball_pin, OUTPUT);
+  pinMode(shot_ball_pin, OUTPUT);
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
@@ -47,80 +58,80 @@ void setup() {
 }
 
 void loop() {
-
-
-
-  if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
-    Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845
-    Serial.println(results.value);//0:FF6897/1:FF6897/2:FF18E7/3:FF7A85/4:FF10EF/5:FF38C7/6:FF5AA5/7:FF42BD/8:FF4AB5/9:FF52AD
-
-    switch (results.value)
-    {
-      case 16738455://0
-        Motor_init();
-        Serial.println("000");
-        break;
-      case 16724175://1
-
-        Serial.println("111");
-        Serial.println(millis());
-        m_type_Forward(100, 1000);
-        Motor_init();
-        Serial.println(millis());
-        break;
-      case 16718055://2
-        m_type_Backward(100, 1000);
-        delay(1000);
-        Motor_init();
-        break;
-      case 16743045://3
-        m_type_Leftward(100, 1000);
-        delay(1000);
-        Motor_init();
-        //        Serial.println("333");
-        //        Motor3_Forward(220);
-        //        delay(5000);
-        //        Motor_init();
-        break;
-      case 16716015://4
-        m_type_Rightward(100, 1000);
-        delay(1000);
-        Motor_init();
-        //        Motor4_Forward(220);
-        //        delay(5000);
-        //                Motor_init();
-        break;
-      case 16726215://5
-        m_type_RightAround(50, 1000);
-        Motor_init();
-        break;
-      case 16734885://6
-        m_type_LeftAround(50, 1000);
-        Motor_init();
-        break;
-      case 16728765://7
-        Motor_start(200);
-        //        Motor1_Forward(200);
-        //        delay(2000);
-        Motor_init();
-        break;
-      case 16730805://8
-        Motor_brakes(200);
-        //        Motor1_Forward(200);
-        //        delay(2000);
-        Motor_init();
-        break;
-      case 16732845://9
-        //        Motor1_Forward(200);
-        //        delay(2000);
-        Motor_init();
-        break;
-      default:
-        Motor_init();
-        break;
-    }
-    irrecv.resume(); // 準備接收下一個訊號
-  }
+m_type_Forward(100,10000);
+//
+//
+//  if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
+//    Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845
+//    Serial.println(results.value);//0:FF6897/1:FF6897/2:FF18E7/3:FF7A85/4:FF10EF/5:FF38C7/6:FF5AA5/7:FF42BD/8:FF4AB5/9:FF52AD
+//
+//    switch (results.value)
+//    {
+//      case 16738455://0
+//        Motor_init();
+//        Serial.println("000");
+//        break;
+//      case 16724175://1
+//
+//        Serial.println("111");
+//        Serial.println(millis());
+//        m_type_Forward(100, 1000);
+//        Motor_init();
+//        Serial.println(millis());
+//        break;
+//      case 16718055://2
+//        m_type_Backward(100, 1000);
+//        delay(1000);
+//        Motor_init();
+//        break;
+//      case 16743045://3
+//        m_type_Leftward(100, 1000);
+//        delay(1000);
+//        Motor_init();
+//        //        Serial.println("333");
+//        //        Motor3_Forward(220);
+//        //        delay(5000);
+//        //        Motor_init();
+//        break;
+//      case 16716015://4
+//        m_type_Rightward(100, 1000);
+//        delay(1000);
+//        Motor_init();
+//        //        Motor4_Forward(220);
+//        //        delay(5000);
+//        //                Motor_init();
+//        break;
+//      case 16726215://5
+//        m_type_RightAround(50, 1000);
+//        Motor_init();
+//        break;
+//      case 16734885://6
+//        m_type_LeftAround(50, 1000);
+//        Motor_init();
+//        break;
+//      case 16728765://7
+//        Motor_start(200);
+//        //        Motor1_Forward(200);
+//        //        delay(2000);
+//        Motor_init();
+//        break;
+//      case 16730805://8
+//        Motor_brakes(200);
+//        //        Motor1_Forward(200);
+//        //        delay(2000);
+//        Motor_init();
+//        break;
+//      case 16732845://9
+//        //        Motor1_Forward(200);
+//        //        delay(2000);
+//        Motor_init();
+//        break;
+//      default:
+//        Motor_init();
+//        break;
+//    }
+//    irrecv.resume(); // 準備接收下一個訊號
+//  }
 
 
 
@@ -194,8 +205,8 @@ void m_type_Forward(int Speed, int Time)
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
+//  Motor_full_work(Speed, Time);
+//  Motor_brakes(Speed);
 }
 void m_type_Backward(int Speed, int Time)
 {

@@ -17,7 +17,15 @@ const int en1 = 46;
 const int en2 = 45;
 const int en3 = 44;
 const int en4 = 10;
+
+const int collect_ball_pin = 35;
+const int pullup_ball_pin = 36;
+const int shot_ball_pin = 34;
 void setup() {
+  pinMode(collect_ball_pin, OUTPUT);
+  pinMode(pullup_ball_pin, OUTPUT);
+  pinMode(shot_ball_pin, OUTPUT);
+  
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
@@ -42,19 +50,19 @@ void setup() {
 }
 
 void loop() {
-
-  Motor_init();
-  Motor1_Forward(50);
-  delay(2000);
-  Motor_init();
-  Motor2_Forward(50);
-  delay(2000);
-  Motor_init();
-  Motor3_Forward(50);
-  delay(2000);
-  Motor_init();
+  
+//  Motor_init();
   Motor4_Forward(50);
-  delay(2000);
+//  delay(2000);
+//  Motor_init();
+//  Motor2_Forward(50);
+//  delay(2000);
+//  Motor_init();
+//  Motor3_Forward(50);
+//  delay(2000);
+//  Motor_init();
+//  Motor4_Forward(50);
+//  delay(2000);
 
   //  if (irrecv.decode(&results)) { // 接收紅外線訊號並解碼
   //    Serial.print("results value is "); // 輸出解碼後的資料//0:16738455/1:16724175/2:16718055/3:16743045/4:16716015/5:16726215/6:16734885/7:16728765/8:16730805/9:16732845

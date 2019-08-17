@@ -20,8 +20,8 @@ const int en1 = 46;
 const int en2 = 45;
 const int en3 = 44;
 const int en4 = 10;
-const int Lsonic_servo = 8;
-const int Rsonic_servo = 9;
+const int Lsonic_servo = 2;
+const int Rsonic_servo = 5;
 const int team_color_bt = 24;
 const int start_bt = 23;
 const int Buzzer = 38;
@@ -1486,7 +1486,7 @@ void ks103_update() {
   }
 }
 
-long pidtest_time;
+long servo_test_time;
 void setup() {
 
   Wire.begin();
@@ -1513,210 +1513,232 @@ void setup() {
   pinMode(en3, OUTPUT);
   pinMode(en4, OUTPUT);
 
-//  #if Pattern == 'A'
-//    sonic_servoR.attach(Rsonic_servo);
-//    sonic_servoL.attach(Lsonic_servo);
-//  #endif
+  #if Pattern == 'A'
+    sonic_servoR.attach(Rsonic_servo);
+    sonic_servoL.attach(Lsonic_servo);
+  #endif
   Serial.begin(115200);
   Serial.println("start");
   Motor_reset();
   
 
   mpu6050_setup();
-// if (millis() - pidtest_time < 1000) {
-//    sonic_servoL.write(105);
-//  } else if (millis() - pidtest_time < 2000) {
-//    sonic_servoR.write(90);
-//  }
 
+  servo_test_time = millis();
+  
 }
 
 void loop() {
-
-  if (!gyro_ready) {
+   mpu6050_update();
+   
+    if (!gyro_ready) {
     return;
   }
+  ks103_update();
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, 100);
+  analogWrite(en2, 100);
+  analogWrite(en3, 100);
+  analogWrite(en4, 100);
+  if(millis()-servo_test_time<2000){
+    sonic_servoL.write(105);
+    sonic_servoR.write(90);
+  }else if(millis()-servo_test_time<5000){
+    sonic_servoL.write(15);
+    sonic_servoR.write(180);
+  }else{
+    servo_test_time = millis();
+  }
+  
 
-  mpu6050_update();
+ 
   // Forward();
 //   Forward();
 //  turn_update();
-  ks103_update();
-//  Serial.print("relative_yaw:");
-//  Serial.println(relative_yaw);
-//  Serial.print("L:");
-//  Serial.print(distance_L);
-//  Serial.print("R:");
-//  Serial.println(distance_R);
-
-
-
-  if (distance_R < 200 and flag == 1)
-  {
-    PIDR();
-    pidtest_time = millis();
-  } else if (flag == 1) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-    } else {
-      flag++;
-      pidtest_time = millis();
-    }
-  }
-
-  if (flag == 2) {
-    if (millis() - pidtest_time < 6000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-    }
-  }
-
-  if (distance_L > 50 and flag == 3) {
-    PIDR();
-    pidtest_time = millis();
-  } else if (flag == 3) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-    } else {
-      flag++;
-      pidtest_time = millis();
-    }
-  }
-
-
-  if (flag == 4) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-    }
-  }
-
   
-    if (distance_R > 50 and flag == 5)
-    {
-      PIDL();
-      pidtest_time = millis();
-    } else if (flag == 5) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
-    }
   
-
-  if (flag == 6) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-    }
-  }
-
-  
-    if (distance_L > 50 and flag == 7)
-    {
-      PIDR();
-      pidtest_time = millis();
-    } else if (flag == 7) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
-    }
-  
-
-  if (flag == 8) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-    }
-  }
-
-
-    if (distance_R > 50 and flag == 9)
-    {
-      PIDL();
-      pidtest_time = millis();
-    } else if (flag == 9) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
-    }
-  
-
-  if (flag == 10) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-    }
-  }
-
-  
-    if (distance_L > 50 and flag == 11)
-    {
-      PIDR();
-      pidtest_time = millis();
-    } else if (flag == 11) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
-    }
-  
-
-  if (flag == 12) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-    }
-  }
-
-  
-    if (distance_R > 50 and flag == 13)
-    {
-      PIDL();
-      pidtest_time = millis();
-    } else if (flag == 13) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
-    }
-  
-
-  if (flag == 14) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      //   flag++;
-    }
-  }
+  Serial.print("relative_yaw:");
+  Serial.print(relative_yaw);
+  Serial.print("\tL:");
+  Serial.print(distance_L);
+  Serial.print("\tR:");
+  Serial.println(distance_R);
 
 
 
+//  if (distance_R < 200 and flag == 1)
+//  {
+//    PIDR();
+//    pidtest_time = millis();
+//  } else if (flag == 1) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//    }
+//  }
+//
+//  if (flag == 2) {
+//    if (millis() - pidtest_time < 6000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//    }
+//  }
+//
+//  if (distance_L > 50 and flag == 3) {
+//    PIDR();
+//    pidtest_time = millis();
+//  } else if (flag == 3) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//    }
+//  }
+//
+//
+//  if (flag == 4) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//    }
+//  }
+//
+//  
+//    if (distance_R > 50 and flag == 5)
+//    {
+//      PIDL();
+//      pidtest_time = millis();
+//    } else if (flag == 5) {
+//      if (millis() - pidtest_time < 1000) {
+//        Motor_reset();
+//      } else {
+//        flag++;
+//        pidtest_time = millis();
+//      }
+//    }
+//  
+//
+//  if (flag == 6) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//    }
+//  }
+//
+//  
+//    if (distance_L > 50 and flag == 7)
+//    {
+//      PIDR();
+//      pidtest_time = millis();
+//    } else if (flag == 7) {
+//      if (millis() - pidtest_time < 1000) {
+//        Motor_reset();
+//      } else {
+//        flag++;
+//        pidtest_time = millis();
+//      }
+//    }
+//  
+//
+//  if (flag == 8) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//    }
+//  }
+//
+//
+//    if (distance_R > 50 and flag == 9)
+//    {
+//      PIDL();
+//      pidtest_time = millis();
+//    } else if (flag == 9) {
+//      if (millis() - pidtest_time < 1000) {
+//        Motor_reset();
+//      } else {
+//        flag++;
+//        pidtest_time = millis();
+//      }
+//    }
+//  
+//
+//  if (flag == 10) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//    }
+//  }
+//
+//  
+//    if (distance_L > 50 and flag == 11)
+//    {
+//      PIDR();
+//      pidtest_time = millis();
+//    } else if (flag == 11) {
+//      if (millis() - pidtest_time < 1000) {
+//        Motor_reset();
+//      } else {
+//        flag++;
+//        pidtest_time = millis();
+//      }
+//    }
+//  
+//
+//  if (flag == 12) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//    }
+//  }
+//
+//  
+//    if (distance_R > 50 and flag == 13)
+//    {
+//      PIDL();
+//      pidtest_time = millis();
+//    } else if (flag == 13) {
+//      if (millis() - pidtest_time < 1000) {
+//        Motor_reset();
+//      } else {
+//        flag++;
+//        pidtest_time = millis();
+//      }
+//    }
+//  
+//
+//  if (flag == 14) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      //   flag++;
+//    }
+//  }
+//
+//
+//
 
 
 
