@@ -3,11 +3,7 @@
 
 #define KS103_L 0x74
 #define KS103_R 0x75
-//#include <Servo.h>
-//
-//Servo sonic_servoR;
-//Servo sonic_servoL;
-//long servo_test_time;
+
 
 MPU6050 mpu;
 unsigned long ks103_time;
@@ -46,6 +42,251 @@ const int shot_ball_pin = 34;
 
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 
+//----------pid------------
+int kp = 8;
+int kd = 5;
+int kp1 =5;
+int kd1 =3;
+int speed_n = 100;
+int speed_ne = -110;
+int speed_pu = 110;
+//int speed_n2 = 50;
+//int speed_ne2 = -60;
+//int speed_pu2 = 60;
+int speed_n1 = 120;
+int speed_ne1 =-130;
+int speed_pu1 = 130;
+int e;
+int e1;
+int e_pre = 0;
+int control;
+int control1;
+int speed_L;
+int speed_R;
+int speed_LI;
+int speed_RI;
+int speed_L1;
+int speed_R1;
+int speed_LI1;
+int speed_RI1;
+int flag = 1;
+long pidtest_time;
+
+void PIDR() {
+  e = relative_yaw;
+  e1 = abs(relative_yaw);
+  control = kp * e1 + kd * (e1 - e_pre);
+  speed_L = speed_n + control;
+ // speed_R = speed_n - control;
+  if (speed_L > speed_pu) {
+    speed_L = speed_pu;
+  }
+//  if (speed_L < speed_ne) {
+//    speed_L = speed_ne;
+//  }
+  if (speed_R > speed_pu) {
+    speed_R = speed_pu;
+  }
+//  if (speed_R < speed_ne) {
+//    speed_R = speed_ne;
+//  }
+  speed_L = abs(speed_L);
+//  speed_R = abs(speed_R);
+  speed_LI = floor(speed_L);
+//  speed_RI = floor(speed_R);
+  e_pre = e1;
+  if (e > 0) {
+    RightAround();
+  }
+  else if (e < 0) {
+    LeftAround();
+  }
+  else {
+    Rightward();
+  }
+}
+
+void PIDL() {
+  e = relative_yaw;
+  e1 = abs(relative_yaw);
+  control = kp * e1 + kd * (e1- e_pre);
+  speed_L = speed_n + control;
+//  speed_R = speed_n - control;
+  if (speed_L > speed_pu) {
+    speed_L = speed_pu;
+  }
+//  if (speed_L < speed_ne) {
+//    speed_L = speed_ne;
+//  }
+  if (speed_R > speed_pu) {
+    speed_R = speed_pu;
+  }
+//  if (speed_R < speed_ne) {
+//    speed_R = speed_ne;
+//  }
+  speed_L = abs(speed_L);
+//  speed_R = abs(speed_R);
+  speed_LI = floor(speed_L);
+//  speed_RI = floor(speed_R);
+  e_pre = e1;
+  if (e > 0) {
+    RightAround();
+  }
+  else if (e < 0) {
+    LeftAround();
+  }
+  else {
+    Leftward();
+  }
+}
+
+void PIDF() {
+  e = relative_yaw;
+  e1 = abs(relative_yaw);
+  control1 = kp1 * e1 + kd1 * (e1 - e_pre);
+  speed_L1 = speed_n1 + control1;
+//  speed_R1 = speed_n1 - control1;
+  if (speed_L1 > speed_pu1) {
+    speed_L1 = speed_pu1;
+  }
+//  if (speed_L1 < speed_ne1) {
+//    speed_L1 = speed_ne1;
+//  }
+//  if (speed_R1 > speed_pu1) {
+//    speed_R1 = speed_pu1;
+//  }
+//  if (speed_R1 < speed_ne1) {
+//    speed_R1 = speed_ne1;
+//  }
+  speed_L1 = abs(speed_L1);
+//  speed_R1 = abs(speed_R1);
+  speed_LI = floor(speed_L1);
+//  speed_RI1 = floor(speed_R1);
+  e_pre = e1;
+  if (e > 0) {
+    RightAround();
+  }
+  else if (e < 0) {
+    LeftAround();
+  }
+  else {
+    Forward();
+  }
+}
+
+void RightAround() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  analogWrite(en1, speed_LI);
+  analogWrite(en3, speed_LI);
+  analogWrite(en2, speed_LI);
+  analogWrite(en4, speed_LI);
+}
+
+void LeftAround() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_LI);
+  analogWrite(en3, speed_LI);
+  analogWrite(en2, speed_LI);
+  analogWrite(en4, speed_LI);
+}
+
+void ForwardAround() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_RI1);
+  analogWrite(en4, speed_RI1);
+  analogWrite(en2, speed_LI1);
+  analogWrite(en3, speed_LI1);
+}
+
+void BackAround() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_LI1);
+  analogWrite(en4, speed_LI1);
+  analogWrite(en2, speed_RI1);
+  analogWrite(en3, speed_RI1);
+}
+
+void Rightward() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  analogWrite(en1, speed_n);
+  analogWrite(en2, speed_n);
+  analogWrite(en3, speed_n);
+  analogWrite(en4, speed_n);
+}
+void Leftward() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_n);
+  analogWrite(en2, speed_n);
+  analogWrite(en3, speed_n);
+  analogWrite(en4, speed_n);
+}
+void Forward() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_n1);
+  analogWrite(en2, speed_n1);
+  analogWrite(en3, speed_n1);
+  analogWrite(en4, speed_n1);
+}
+//---------------------
+void Motor_reset() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+}
 
 // MPU control/status vars
 bool dmpReady = false;  // set true if DMP init was successful
@@ -325,32 +566,190 @@ void setup() {
 }
 
 void loop() {
-//    if(millis()-servo_test_time<2000){
-//    sonic_servoL.write(105);
-//    sonic_servoR.write(90);
-//  }else if(millis()-servo_test_time<5000){
-//    sonic_servoL.write(15);
-//    sonic_servoR.write(180);
-//  }else{
-//    servo_test_time = millis();
-//  }
-  ks103_update();
 
-  if (!gyro_ready) { 
+  if (!gyro_ready) {
     return;
   }
-  
+
   mpu6050_update();
-
-
+  // Forward();
+//   Forward();
+//  turn_update();
+  ks103_update();
   Serial.print("relative_yaw:");
-  Serial.print(relative_yaw);
-//  Serial.print("我操你超音波 ");
-//  Serial.print("我操你超音波x2 ");
-  Serial.print(" L:");
+  Serial.println(relative_yaw);
+  Serial.print("L:");
   Serial.print(distance_L);
-  Serial.print(" R:");
+  Serial.print("R:");
   Serial.println(distance_R);
-  // put your main code here, to run repeatedly:
+
+
+
+  if (distance_R < 200 and flag == 1)
+  {
+    PIDR();
+    pidtest_time = millis();
+  } else if (flag == 1) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
+      pidtest_time = millis();
+    }
+  }
+
+  if (flag == 2) {
+    if (millis() - pidtest_time < 6000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  if (distance_L > 50 and flag == 3) {
+    PIDR();
+    pidtest_time = millis();
+  } else if (flag == 3) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
+      pidtest_time = millis();
+    }
+  }
+
+
+  if (flag == 4) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_R > 50 and flag == 5)
+    {
+      PIDL();
+      pidtest_time = millis();
+    } else if (flag == 5) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 6) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_L > 50 and flag == 7)
+    {
+      PIDR();
+      pidtest_time = millis();
+    } else if (flag == 7) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 8) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+
+    if (distance_R > 50 and flag == 9)
+    {
+      PIDL();
+      pidtest_time = millis();
+    } else if (flag == 9) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 10) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_L > 50 and flag == 11)
+    {
+      PIDR();
+      pidtest_time = millis();
+    } else if (flag == 11) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 12) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      flag++;
+    }
+  }
+
+  
+    if (distance_R > 50 and flag == 13)
+    {
+      PIDL();
+      pidtest_time = millis();
+    } else if (flag == 13) {
+      if (millis() - pidtest_time < 1000) {
+        Motor_reset();
+      } else {
+        flag++;
+        pidtest_time = millis();
+      }
+    }
+  
+
+  if (flag == 14) {
+    if (millis() - pidtest_time < 2000) {
+      PIDF();
+    } else {
+      Motor_reset();
+      //   flag++;
+    }
+  }
+
+
+
 
 }
