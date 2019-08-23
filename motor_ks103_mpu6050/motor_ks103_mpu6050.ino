@@ -30,8 +30,9 @@ const int en1 = 46;
 const int en2 = 45;
 const int en3 = 44;
 const int en4 = 10;
-const int Lsonic_servo = 6;
-const int Rsonic_servo = 8;
+const int angle90 = 49;
+const int angle180 = 51;
+const int angle135 = 53;
 const int team_color_bt = 24;
 const int start_bt = 23;
 const int Buzzer = 38;
@@ -45,8 +46,8 @@ const int shot_ball_pin = 34;
 //----------pid------------
 int kp = 8;
 int kd = 5;
-int kp1 =5;
-int kd1 =3;
+int kp1 = 5;
+int kd1 = 3;
 int speed_n = 100;
 int speed_ne = -110;
 int speed_pu = 110;
@@ -54,7 +55,7 @@ int speed_pu = 110;
 //int speed_ne2 = -60;
 //int speed_pu2 = 60;
 int speed_n1 = 120;
-int speed_ne1 =-130;
+int speed_ne1 = -130;
 int speed_pu1 = 130;
 int e;
 int e1;
@@ -77,23 +78,23 @@ void PIDR() {
   e1 = abs(relative_yaw);
   control = kp * e1 + kd * (e1 - e_pre);
   speed_L = speed_n + control;
- // speed_R = speed_n - control;
+  // speed_R = speed_n - control;
   if (speed_L > speed_pu) {
     speed_L = speed_pu;
   }
-//  if (speed_L < speed_ne) {
-//    speed_L = speed_ne;
-//  }
+  //  if (speed_L < speed_ne) {
+  //    speed_L = speed_ne;
+  //  }
   if (speed_R > speed_pu) {
     speed_R = speed_pu;
   }
-//  if (speed_R < speed_ne) {
-//    speed_R = speed_ne;
-//  }
+  //  if (speed_R < speed_ne) {
+  //    speed_R = speed_ne;
+  //  }
   speed_L = abs(speed_L);
-//  speed_R = abs(speed_R);
+  //  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-//  speed_RI = floor(speed_R);
+  //  speed_RI = floor(speed_R);
   e_pre = e1;
   if (e > 0) {
     RightAround();
@@ -109,25 +110,25 @@ void PIDR() {
 void PIDL() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
-  control = kp * e1 + kd * (e1- e_pre);
+  control = kp * e1 + kd * (e1 - e_pre);
   speed_L = speed_n + control;
-//  speed_R = speed_n - control;
+  //  speed_R = speed_n - control;
   if (speed_L > speed_pu) {
     speed_L = speed_pu;
   }
-//  if (speed_L < speed_ne) {
-//    speed_L = speed_ne;
-//  }
+  //  if (speed_L < speed_ne) {
+  //    speed_L = speed_ne;
+  //  }
   if (speed_R > speed_pu) {
     speed_R = speed_pu;
   }
-//  if (speed_R < speed_ne) {
-//    speed_R = speed_ne;
-//  }
+  //  if (speed_R < speed_ne) {
+  //    speed_R = speed_ne;
+  //  }
   speed_L = abs(speed_L);
-//  speed_R = abs(speed_R);
+  //  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-//  speed_RI = floor(speed_R);
+  //  speed_RI = floor(speed_R);
   e_pre = e1;
   if (e > 0) {
     RightAround();
@@ -145,23 +146,23 @@ void PIDF() {
   e1 = abs(relative_yaw);
   control1 = kp1 * e1 + kd1 * (e1 - e_pre);
   speed_L1 = speed_n1 + control1;
-//  speed_R1 = speed_n1 - control1;
+  //  speed_R1 = speed_n1 - control1;
   if (speed_L1 > speed_pu1) {
     speed_L1 = speed_pu1;
   }
-//  if (speed_L1 < speed_ne1) {
-//    speed_L1 = speed_ne1;
-//  }
-//  if (speed_R1 > speed_pu1) {
-//    speed_R1 = speed_pu1;
-//  }
-//  if (speed_R1 < speed_ne1) {
-//    speed_R1 = speed_ne1;
-//  }
+  //  if (speed_L1 < speed_ne1) {
+  //    speed_L1 = speed_ne1;
+  //  }
+  //  if (speed_R1 > speed_pu1) {
+  //    speed_R1 = speed_pu1;
+  //  }
+  //  if (speed_R1 < speed_ne1) {
+  //    speed_R1 = speed_ne1;
+  //  }
   speed_L1 = abs(speed_L1);
-//  speed_R1 = abs(speed_R1);
+  //  speed_R1 = abs(speed_R1);
   speed_LI = floor(speed_L1);
-//  speed_RI1 = floor(speed_R1);
+  //  speed_RI1 = floor(speed_R1);
   e_pre = e1;
   if (e > 0) {
     RightAround();
@@ -476,9 +477,9 @@ void ks103_update() {
     Wire.write(byte(0x02));
     Wire.write(0xb4);     //量程设置为5m 带温度补偿
     Wire.endTransmission();
-//    ks103_time = millis();
-//    ks103_state++;
-//  } else if ((millis() - ks103_time) > 1 and ks103_state == 1) {
+    //    ks103_time = millis();
+    //    ks103_state++;
+    //  } else if ((millis() - ks103_time) > 1 and ks103_state == 1) {
     delay(1);
     Wire.beginTransmission(KS103_L);
     Wire.write(byte(0x02));
@@ -489,8 +490,8 @@ void ks103_update() {
       distance_L =  distance_L << 8;
       distance_L |= Wire.read();
       distance_L = distance_L / 10;
-//      ks103_state++;
-      ks103_state=2;
+      //      ks103_state++;
+      ks103_state = 2;
     }
     ks103_time = millis();
   } else if ((millis() - ks103_time) > 100 and ks103_state == 2) {
@@ -498,9 +499,9 @@ void ks103_update() {
     Wire.write(byte(0x02));
     Wire.write(0xb4);     //量程设置为5m 带温度补偿
     Wire.endTransmission();
-//    ks103_time = millis();
-//    ks103_state++;
-//  } else if ((millis() - ks103_time) > 1 and ks103_state == 3) {
+    //    ks103_time = millis();
+    //    ks103_state++;
+    //  } else if ((millis() - ks103_time) > 1 and ks103_state == 3) {
     delay(1);
     Wire.beginTransmission(KS103_R);
     Wire.write(byte(0x02));
@@ -511,13 +512,19 @@ void ks103_update() {
       distance_R =  distance_R << 8;
       distance_R |= Wire.read();
       distance_R = distance_R / 10;
-//      ks103_state++;
-      ks103_state=4;
+      //      ks103_state++;
+      ks103_state = 4;
     }
     ks103_time = millis();
   } else if ((millis() - ks103_time) > 100 and ks103_state == 4) {
     ks103_state = 0;
   }
+}
+
+void servo_reset() {
+  digitalWrite(angle90, LOW);
+  digitalWrite(angle180, LOW);
+  digitalWrite(angle135, LOW);
 }
 
 void setup() {
@@ -534,7 +541,11 @@ void setup() {
   pinMode(en2, OUTPUT);
   pinMode(en3, OUTPUT);
   pinMode(en4, OUTPUT);
-  
+
+  pinMode(angle90, OUTPUT);
+  pinMode(angle180, OUTPUT);
+  pinMode(angle135, OUTPUT);
+
   pinMode(collect_ball_pin, OUTPUT);
   pinMode(pullup_ball_pin, OUTPUT);
   pinMode(shot_ball_pin, OUTPUT);
@@ -546,43 +557,29 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("start");
- 
+
   mpu6050_setup();
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, HIGH);
-  digitalWrite(in7, HIGH);
-  digitalWrite(in8, LOW);
-  analogWrite(en1, 100);
-  analogWrite(en4, 100);
-  analogWrite(en2, 100);
-  analogWrite(en3, 100);
-//  sonic_servoR.attach(Rsonic_servo);
-//    sonic_servoL.attach(Lsonic_servo);
-//   servo_test_time = millis();
+  servo_reset();
+  Motor_reset();
+  digitalWrite(angle180, HIGH);
 }
-
 void loop() {
-
   if (!gyro_ready) {
     return;
   }
-
+  //------sensor更新------
   mpu6050_update();
-  // Forward();
-//   Forward();
-//  turn_update();
   ks103_update();
+  //---------------------
+
+  //=======debug=========
   Serial.print("relative_yaw:");
   Serial.println(relative_yaw);
   Serial.print("L:");
   Serial.print(distance_L);
   Serial.print("R:");
   Serial.println(distance_R);
-
+  //=====================
 
 
   if (distance_R < 200 and flag == 1)
@@ -595,6 +592,8 @@ void loop() {
     } else {
       flag++;
       pidtest_time = millis();
+      servo_reset();
+      digitalWrite(angle90, HIGH);
     }
   }
 
@@ -604,6 +603,8 @@ void loop() {
     } else {
       Motor_reset();
       flag++;
+      servo_reset();
+      digitalWrite(angle180, HIGH);
     }
   }
 
@@ -616,6 +617,8 @@ void loop() {
     } else {
       flag++;
       pidtest_time = millis();
+      servo_reset();
+      digitalWrite(angle90, HIGH);
     }
   }
 
@@ -626,23 +629,27 @@ void loop() {
     } else {
       Motor_reset();
       flag++;
+      servo_reset();
+      digitalWrite(angle180, HIGH);
     }
   }
 
-  
-    if (distance_R > 50 and flag == 5)
-    {
-      PIDL();
+
+  if (distance_R > 50 and flag == 5)
+  {
+    PIDL();
+    pidtest_time = millis();
+  } else if (flag == 5) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
       pidtest_time = millis();
-    } else if (flag == 5) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
+      servo_reset();
+      digitalWrite(angle90, HIGH);
     }
-  
+  }
+
 
   if (flag == 6) {
     if (millis() - pidtest_time < 2000) {
@@ -650,23 +657,27 @@ void loop() {
     } else {
       Motor_reset();
       flag++;
+      servo_reset();
+      digitalWrite(angle180, HIGH);
     }
   }
 
-  
-    if (distance_L > 50 and flag == 7)
-    {
-      PIDR();
+
+  if (distance_L > 50 and flag == 7)
+  {
+    PIDR();
+    pidtest_time = millis();
+  } else if (flag == 7) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
       pidtest_time = millis();
-    } else if (flag == 7) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
+      servo_reset();
+      digitalWrite(angle90, HIGH);
     }
-  
+  }
+
 
   if (flag == 8) {
     if (millis() - pidtest_time < 2000) {
@@ -674,23 +685,27 @@ void loop() {
     } else {
       Motor_reset();
       flag++;
+      servo_reset();
+      digitalWrite(angle180, HIGH);
     }
   }
 
 
-    if (distance_R > 50 and flag == 9)
-    {
-      PIDL();
+  if (distance_R > 50 and flag == 9)
+  {
+    PIDL();
+    pidtest_time = millis();
+  } else if (flag == 9) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
       pidtest_time = millis();
-    } else if (flag == 9) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
+      servo_reset();
+      digitalWrite(angle90, HIGH);
     }
-  
+  }
+
 
   if (flag == 10) {
     if (millis() - pidtest_time < 2000) {
@@ -698,23 +713,27 @@ void loop() {
     } else {
       Motor_reset();
       flag++;
+      servo_reset();
+      digitalWrite(angle180, HIGH);
     }
   }
 
-  
-    if (distance_L > 50 and flag == 11)
-    {
-      PIDR();
+
+  if (distance_L > 50 and flag == 11)
+  {
+    PIDR();
+    pidtest_time = millis();
+  } else if (flag == 11) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
       pidtest_time = millis();
-    } else if (flag == 11) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
+      servo_reset();
+      digitalWrite(angle90, HIGH);
     }
-  
+  }
+
 
   if (flag == 12) {
     if (millis() - pidtest_time < 2000) {
@@ -722,23 +741,27 @@ void loop() {
     } else {
       Motor_reset();
       flag++;
+      servo_reset();
+      digitalWrite(angle180, HIGH);
     }
   }
 
-  
-    if (distance_R > 50 and flag == 13)
-    {
-      PIDL();
+
+  if (distance_R > 50 and flag == 13)
+  {
+    PIDL();
+    pidtest_time = millis();
+  } else if (flag == 13) {
+    if (millis() - pidtest_time < 1000) {
+      Motor_reset();
+    } else {
+      flag++;
       pidtest_time = millis();
-    } else if (flag == 13) {
-      if (millis() - pidtest_time < 1000) {
-        Motor_reset();
-      } else {
-        flag++;
-        pidtest_time = millis();
-      }
+      servo_reset();
+      digitalWrite(angle90, HIGH);
     }
-  
+  }
+
 
   if (flag == 14) {
     if (millis() - pidtest_time < 2000) {
@@ -746,6 +769,8 @@ void loop() {
     } else {
       Motor_reset();
       //   flag++;
+      servo_reset();
+      digitalWrite(angle180, HIGH);
     }
   }
 
