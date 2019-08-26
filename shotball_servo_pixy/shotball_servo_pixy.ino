@@ -2,10 +2,12 @@
 
 Servo sonic_servoR;
 Servo sonic_servoL;
+Servo classification_servo;
 
 const int shot_ball_pin = 34;
-const int Lsonic_servo = 12;
+const int Lsonic_servo =47 ;
 const int Rsonic_servo = 13;
+const int classification_servo_pin = 52;
 const int angle90 = 49;
 const int angle180 = 51;
 const int angle135 = 53;
@@ -25,12 +27,15 @@ void LRservo135() {
 void setup() {
   pinMode(shot_ball_pin, OUTPUT);
 
+  
   sonic_servoR.attach(Rsonic_servo);
   sonic_servoL.attach(Lsonic_servo);
-
+  classification_servo.attach(classification_servo_pin);
+  
   pinMode(angle90, INPUT);
   pinMode(angle180, INPUT);
   pinMode(angle135, INPUT);
+  classification_servo.write(130);
   // put your setup code here, to run once:
 
 }
