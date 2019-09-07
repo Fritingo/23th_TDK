@@ -33,13 +33,14 @@ const int en4 = 10;
 const int angle90 = 49;
 const int angle180 = 51;
 const int angle135 = 53;
-const int team_color_bt = 24;
+const int team_color_bt = 22;
 const int start_bt = 23;
 const int Buzzer = 38;
-const int IR_turns_sensor = 37;
-const int collect_ball_pin = 35;
-const int pullup_ball_pin = 36;
-const int shot_ball_pin = 34;
+//const int IR_turns_sensor = 37;
+//const int collect_ball_pin = 35;
+//const int pullup_ball_pin = 36;
+//const int shot_ball_pin = 34;
+const int pixy_color_flag_pin = 37;
 
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 
@@ -711,9 +712,12 @@ void setup() {
   pinMode(angle180, OUTPUT);
   pinMode(angle135, OUTPUT);
 
-  pinMode(collect_ball_pin, OUTPUT);
-  pinMode(pullup_ball_pin, OUTPUT);
-  pinMode(shot_ball_pin, OUTPUT);
+//  pinMode(collect_ball_pin, OUTPUT);
+//  pinMode(pullup_ball_pin, OUTPUT);
+//  pinMode(shot_ball_pin, OUTPUT);
+  pinMode(pixy_color_flag_pin,OUTPUT);
+  digitalWrite(pixy_color_flag_pin,HIGH);
+  
   pinMode(Buzzer, OUTPUT);
   digitalWrite(Buzzer, HIGH);
   Wire.begin();
@@ -778,6 +782,7 @@ void loop() {
 
   if (flag==2) {
     if (millis() - pidtest_time < 3000) {
+      digitalWrite(pixy_color_flag_pin,LOW);
       Motor_reset();
     }
     else {

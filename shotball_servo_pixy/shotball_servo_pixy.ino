@@ -4,8 +4,9 @@ Servo sonic_servoR;
 Servo sonic_servoL;
 Servo classification_servo;
 Servo shotball_servo;
+Servo classification_over_servo;
 
-const int shot_ball_pin = 34;
+const int shot_ball_pin = 50;
 const int shotball_servo_pin = 12;
 const int Lsonic_servo =47 ;
 const int Rsonic_servo = 13;
@@ -13,6 +14,7 @@ const int classification_servo_pin = 52;
 const int angle90 = 49;
 const int angle180 = 51;
 const int angle135 = 53;
+const int classification_over_servo_pin = 22;
 
 unsigned long shotservo_time = 0;
 
@@ -31,15 +33,18 @@ void LRservo135() {
 void setup() {
   pinMode(shot_ball_pin, OUTPUT);
   shotball_servo.attach(shotball_servo_pin);
-  
+
+  classification_over_servo.attach(classification_over_servo_pin);
   sonic_servoR.attach(Rsonic_servo);
   sonic_servoL.attach(Lsonic_servo);
+  
   classification_servo.attach(classification_servo_pin);
   
   pinMode(angle90, INPUT);
   pinMode(angle180, INPUT);
   pinMode(angle135, INPUT);
   classification_servo.write(130);
+  classification_over_servo.write(10);//放40 入球箱10
   shotball_servo.write(100);//壓球10擋球60放球90
   // put your setup code here, to run once:
   shotservo_time = millis();
