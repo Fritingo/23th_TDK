@@ -18,6 +18,10 @@ float base_yaw;
 float goal_yaw;
 
 
+//diffent
+const int is_shot_pin = 11;
+//
+
 const int in1 = 52;
 const int in2 = 50;
 const int in3 = 48;
@@ -694,6 +698,9 @@ void servo_reset() {
 }
 
 void setup() {
+  pinMode(is_shot_pin,OUTPUT);
+  digitalWrite(is_shot_pin,HIGH);
+  
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
@@ -731,6 +738,7 @@ void setup() {
   servo_reset();
   Motor_reset();
   digitalWrite(angle180, LOW);
+  flag = 29;
 }
 void loop() {
   if (!gyro_ready) {
@@ -750,435 +758,7 @@ void loop() {
   Serial.println(distance_R);
   //=====================
 
-
-  if (distance_R < 150 and flag == 0 and lai==0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 0) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-  if (flag == 1) {
-    if (millis() - pidtest_time < 4500) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-      pidtest_time = millis();
-    }
-  }
-
-  if (flag==2) {
-    if (millis() - pidtest_time < 3000) {
-      digitalWrite(pixy_color_flag_pin,LOW);
-      Motor_reset();
-    }
-    else {
-     flag++; 
-    }
-  }
-
-  if (distance_L > 70 and flag == 3 and lai==0) {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 3) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 4) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_R > 70 and flag == 5 and lai==0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 5) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 6) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_L > 70 and flag == 7 and lai==0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 7) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 8) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_R > 70 and flag == 9 and lai==0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 9) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 10) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_L > 70 and flag == 11 and lai==0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 11) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 12) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_R > 70 and flag == 13 and lai==0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 13) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 14) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-         flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-   if (distance_L > 70 and flag == 15 and lai==0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 15) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 16) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-         flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-   if (distance_R > 70 and flag == 17 and lai==0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 17) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 18) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-         flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-   if (distance_L > 70 and flag == 19 and lai==0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 19) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 20) {
-    if (millis() - pidtest_time < 1500) {
-      PIDF();
-    } else {
-      Motor_reset();
-         flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-   if (distance_R > 70 and flag == 21 and lai==0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 21) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 22) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-     
-    } else {
-      Motor_reset();
-      flag++;
-      pidtest_time = millis();
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-  if (flag==23) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-    }
-    else {
-     flag++; 
-    }
-  }
-
-   if (distance_R < 100 and flag == 24 and lai==0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 24) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-      speed_n1=70;
-      speed_ne1 = -80;
-      speed_pu1 = 80;
-    }
-  }
-
-   if (distance_L > 180 and flag == 25 and lai==0)
-  {
-    PIDF1();
-    pidtest_time = millis();
-  } else if (flag == 25) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-   if (relative_yaw<46 and flag==26 and lai==0)
-   {
-      LeftAround1();
-      pidtest_time = millis();
-    } else if (flag == 26) {
-    if (millis() - pidtest_time < 5000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-    //  servo_reset();
-    //  digitalWrite(angle90, LOW);
-    }
-  }   
-
-
-   if (relative_yaw>1 and flag==27 and lai==0)
-   {
-      RightAround1();
-      pidtest_time = millis();
-    } else if (flag == 27) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai=1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai=0;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }   
-
-
-  if (flag==28) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-    }
-    else {
-     flag++; 
-    }
-  }
-
-  
-   if (distance_L > 280 and flag == 29 and lai==0)
+   if (distance_R < 275 and flag == 29 and lai==0)
   {
     PIDR1();
     pidtest_time = millis();
@@ -1195,10 +775,11 @@ void loop() {
       speed_n1=70;
       speed_ne1 = -80;
       speed_pu1 = 80;
+      digitalWrite(is_shot_pin,LOW);
     }
   }
 
-   if (distance_R > 61 and flag == 30 and lai==0)
+   if (distance_R > 71 and flag == 30 and lai==0)
   {
     PIDF1();
     pidtest_time = millis();
@@ -1207,6 +788,7 @@ void loop() {
       Motor_reset();
       lai=1;
     } else {
+      
       flag++;
       pidtest_time = millis();
       lai=0;
