@@ -16,6 +16,7 @@ float relative_yaw;
 float base_yaw;
 float goal_yaw;
 int team_color = 1;
+bool run_step = false;
 
 const int in1 = 52;
 const int in2 = 50;
@@ -756,12 +757,16 @@ void setup() {
 
   digitalWrite(riseball_pin, HIGH);
   digitalWrite(sweepball_pin, HIGH);
+
 }
 void loop() {
-  if (digitalRead(start_bt_pin) == HIGH) {
-    flag = 29;
-    digitalWrite(riseball_pin, HIGH);
-    digitalWrite(sweepball_pin, HIGH);
+  if (run_step == false) {
+    if (digitalRead(start_bt_pin) == HIGH) {
+      flag = 29;
+      digitalWrite(riseball_pin, HIGH);
+      digitalWrite(sweepball_pin, HIGH);
+      run_step = true;
+    }
   }
   if (!gyro_ready) {
     return;
