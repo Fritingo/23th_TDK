@@ -9,7 +9,7 @@ Servo classification_servo;
 Servo shotball_servo;
 Servo classification_over_servo;
 
-const int shot_ball_pin = 50;
+const int shot_ball_pin = 46;
 const int shotball_servo_pin = 12;
 const int Lsonic_servo = 47 ;
 const int Rsonic_servo = 13;
@@ -19,6 +19,7 @@ const int angle180 = 51;
 const int angle135 = 53;
 const int classification_over_servo_pin = 22;
 const int is_shot_pin = 11;
+const int team_color_pin = 48;
 bool is_shot = false;
 bool shot_motor_is_ok = false;
 bool is_team_color = false;
@@ -56,6 +57,7 @@ void setup() {
   pinMode(angle90, INPUT_PULLUP);
   pinMode(angle180, INPUT_PULLUP);
   pinMode(angle135, INPUT_PULLUP);
+  pinMode(team_color_pin, INPUT_PULLUP);
   classification_servo.write(100);
   classification_over_servo.write(10);//放40 入球箱10
   shotball_servo.write(60);//壓球10擋球60放球90
@@ -63,6 +65,11 @@ void setup() {
   pixy.init();
   pinMode(is_shot_pin, INPUT_PULLUP);
   delay(3000);
+  if(digitalRead(team_color_pin) == LOW){
+    team_color = 1;//黃
+  }else{
+    team_color = 2;//橘
+  }
 }
 
 void loop() {
@@ -112,6 +119,7 @@ void loop() {
       }
     }
   } else if (digitalRead(is_shot_pin) == LOW) {
+    Serial.println("shoot!!");
     shotservo_time = millis();
     is_shot = true;
     digitalWrite(shot_ball_pin, HIGH);
