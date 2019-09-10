@@ -3,12 +3,16 @@
 
 #define KS103_L 0x74
 #define KS103_R 0x75
-
+#define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 
 MPU6050 mpu;
-unsigned long ks103_time;
+
+//----------gobal_var---------
+
 int ks103_state = 0;
 int distance_R, distance_L;
+int team_color = 1;
+unsigned long ks103_time;
 unsigned long step_start;
 unsigned long initial;
 float original_z = 0;
@@ -16,9 +20,8 @@ bool gyro_ready = false;
 float relative_yaw;
 float base_yaw;
 float goal_yaw;
-int team_color = 1;
 
-
+//----------pin-----------
 const int in1 = 52;
 const int in2 = 50;
 const int in3 = 48;
@@ -42,8 +45,9 @@ const int team_color_bt_pin = 34;
 const int start_bt_pin = 35;
 const int riseball_pin = 33;
 const int sweepball_pin = 32;
+const int is_start_pin = 31;
 
-#define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
+
 
 //----------pid------------
 int kp = 3;
@@ -73,8 +77,10 @@ int speed_R1;
 int speed_LI1;
 int speed_RI1;
 int flag = 0;
-long pidtest_time;
+unsigned long pidtest_time;
 int lai = 0;
+
+//---------func-----------
 
 void PIDR() {
   e = relative_yaw;
@@ -280,7 +286,6 @@ void PIDF1() {
   }
 }
 
-
 void RightAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -415,6 +420,7 @@ void Leftward1() {
   analogWrite(en3, 60);
   analogWrite(en4, 60);
 }
+
 void Forward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -444,7 +450,7 @@ void Forward1() {
   analogWrite(en3, speed_n1);
   analogWrite(en4, speed_n1);
 }
-//---------------------
+
 void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
@@ -698,13 +704,18 @@ void led_green() {
   digitalWrite(Buzzer1, HIGH);
   digitalWrite(Buzzer2, LOW);
 }
+
 void led_red() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, HIGH);
 }
+//----------setup------------
 void setup() {
+  //--------output------------
   pinMode(is_shot_pin, OUTPUT);
   digitalWrite(is_shot_pin, HIGH);
+  pinMode(pixy_color_flag_pin, OUTPUT);
+  digitalWrite(pixy_color_flag_pin, HIGH);
 
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
@@ -728,15 +739,15 @@ void setup() {
   pinMode(sweepball_pin, OUTPUT);
   digitalWrite(riseball_pin, LOW);
   digitalWrite(sweepball_pin, LOW);
-
-  pinMode(team_color_bt_pin, INPUT_PULLUP);
-  pinMode(start_bt_pin, INPUT_PULLUP);
-
-  pinMode(pixy_color_flag_pin, OUTPUT);
-  digitalWrite(pixy_color_flag_pin, HIGH);
-
+  
   pinMode(Buzzer1, OUTPUT);
   pinMode(Buzzer2, OUTPUT);
+  pinMode(is_start_pin, OUTPUT);
+
+//---------input---------
+  pinMode(team_color_bt_pin, INPUT_PULLUP);
+  pinMode(start_bt_pin, INPUT_PULLUP);
+//--------sensor---------
   led_red();
   Wire.begin();
   setting_ks103(KS103_L, 0x75);
@@ -760,6 +771,7 @@ void loop() {
 //  Serial.println(digitalRead(start_bt_pin));
   if (digitalRead(start_bt_pin) == HIGH) {
     digitalWrite(is_shot_pin, LOW);
+    digitalWrite(is_start_pin, LOW);
     digitalWrite(riseball_pin, HIGH);
     digitalWrite(sweepball_pin, HIGH);
   }
