@@ -16,7 +16,8 @@ const int angle90 = 49;
 const int team_color_pin = 48;
 const int Lsonic_servo = 47 ;
 const int shot_ball_pin = 46;
-const int is_start_pin = 45;
+
+const int is_start_pin = 44;
 
 const int classification_servo_pin = 24;
 
@@ -63,7 +64,7 @@ void setup() {
   sonic_servoR.attach(Rsonic_servo);
   sonic_servoL.attach(Lsonic_servo);
   classification_servo.attach(classification_servo_pin);
-  classification_servo.write(90);
+  classification_servo.write(92);
   classification_over_servo.write(10);//放40 入球箱10
   shotball_servo.write(60);//壓球10擋球60放球90
   //------input---------
@@ -87,7 +88,7 @@ void setup() {
 void loop() {
   //-------check_start------
   if (is_start == false) {
-    if (is_start_pin == LOW) {
+    if (digitalRead(is_start_pin) == LOW) {
       is_start = true;
       classification_servo.write(100);
     }

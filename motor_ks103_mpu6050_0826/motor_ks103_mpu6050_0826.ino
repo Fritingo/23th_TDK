@@ -45,7 +45,7 @@ const int team_color_bt_pin = 34;
 const int start_bt_pin = 35;
 const int riseball_pin = 33;
 const int sweepball_pin = 32;
-const int is_start_pin = 31;
+const int is_start_pin = 30;
 
 
 
@@ -743,6 +743,7 @@ void setup() {
   pinMode(Buzzer1, OUTPUT);
   pinMode(Buzzer2, OUTPUT);
   pinMode(is_start_pin, OUTPUT);
+  digitalWrite(is_start_pin, HIGH);
 
 //---------input---------
   pinMode(team_color_bt_pin, INPUT_PULLUP);
