@@ -51,19 +51,19 @@ const int is_start_pin = 30;
 
 
 //----------pid------------
-int kp = 3;
-int kd = 2;
-int kp1 = 1.5;
-int kd1 = 0.5;
+int kp = 15;
+int kd = 10;
+int kp1 = 8;
+int kd1 = 6;
 int speed_n = 100;
-int speed_ne = -110;
-int speed_pu = 110;
+int speed_ne = 80;
+int speed_pu = 120;
 //int speed_n2 = 50;
 //int speed_ne2 = -60;
 //int speed_pu2 = 60;
-int speed_n1 = 90;
-int speed_ne1 = -100;
-int speed_pu1 = 100;
+int speed_n1 = 160;
+int speed_ne1 = 140;
+int speed_pu1 = 180;
 int e;
 int e1;
 int e_pre = 0;
@@ -85,36 +85,37 @@ int lai = 0;
 
 void PIDR() {
   e = relative_yaw;
-  e1 = abs(relative_yaw);
-  control = kp * e1 + kd * (e1 - e_pre);
+//  e1 = abs(relative_yaw);
+  control = kp * e + kd * (e - e_pre);
   speed_L = speed_n + control;
-  // speed_R = speed_n - control;
+  speed_R = speed_n - control;
   if (speed_L > speed_pu) {
     speed_L = speed_pu;
   }
-  //  if (speed_L < speed_ne) {
-  //    speed_L = speed_ne;
-  //  }
+    if (speed_L < speed_ne) {
+      speed_L = speed_ne;
+    }
   if (speed_R > speed_pu) {
     speed_R = speed_pu;
   }
-  //  if (speed_R < speed_ne) {
-  //    speed_R = speed_ne;
-  //  }
-  speed_L = abs(speed_L);
-  //  speed_R = abs(speed_R);
+    if (speed_R < speed_ne) {
+      speed_R = speed_ne;
+    }
+//  speed_L = abs(speed_L);
+//  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-  //  speed_RI = floor(speed_R);
-  e_pre = e1;
-  if (e > 2) {
-    RightAround();
-  }
-  else if (e < -2) {
-    LeftAround();
-  }
-  else {
-    Rightward();
-  }
+  speed_RI = floor(speed_R);
+  e_pre = e;
+  Rightward();
+//  if (e > 2) {
+//    RightAround();
+//  }
+//  else if (e < -2) {
+//    LeftAround();
+//  }
+//  else {
+//    Rightward();
+//  }
 }
 
 void PIDR1() {
@@ -221,36 +222,37 @@ void PIDL1() {
 
 void PIDF() {
   e = relative_yaw;
-  e1 = abs(relative_yaw);
-  control1 = kp1 * e1 + kd1 * (e1 - e_pre);
+ // e1 = abs(relative_yaw);
+  control1 = kp1 * e + kd1 * (e - e_pre);
   speed_L1 = speed_n1 + control1;
-  //  speed_R1 = speed_n1 - control1;
+    speed_R1 = speed_n1 - control1;
   if (speed_L1 > speed_pu1) {
     speed_L1 = speed_pu1;
   }
-  //  if (speed_L1 < speed_ne1) {
-  //    speed_L1 = speed_ne1;
-  //  }
-  //  if (speed_R1 > speed_pu1) {
-  //    speed_R1 = speed_pu1;
-  //  }
-  //  if (speed_R1 < speed_ne1) {
-  //    speed_R1 = speed_ne1;
-  //  }
-  speed_L1 = abs(speed_L1);
+    if (speed_L1 < speed_ne1) {
+      speed_L1 = speed_ne1;
+    }
+    if (speed_R1 > speed_pu1) {
+      speed_R1 = speed_pu1;
+    }
+    if (speed_R1 < speed_ne1) {
+      speed_R1 = speed_ne1;
+    }
+ // speed_L1 = abs(speed_L1);
   //  speed_R1 = abs(speed_R1);
-  speed_LI = floor(speed_L1);
-  //  speed_RI1 = floor(speed_R1);
-  e_pre = e1;
-  if (e > 2) {
-    RightAround();
-  }
-  else if (e < -2) {
-    LeftAround();
-  }
-  else {
-    Forward();
-  }
+  speed_LI1 = floor(speed_L1);
+  speed_RI1 = floor(speed_R1);
+  e_pre = e;
+  Forward();
+//  if (e > 2) {
+//    RightAround();
+//  }
+//  else if (e < -2) {
+//    LeftAround();
+//  }
+//  else {
+//    Forward();
+//  }
 }
 
 void PIDF1() {
@@ -356,10 +358,10 @@ void Rightward() {
   digitalWrite(in6, HIGH);
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
-  analogWrite(en1, speed_n);
-  analogWrite(en2, speed_n);
-  analogWrite(en3, speed_n);
-  analogWrite(en4, speed_n);
+  analogWrite(en1, speed_RI);
+  analogWrite(en2, speed_LI);
+  analogWrite(en3, speed_RI);
+  analogWrite(en4, speed_LI);
 }
 
 void RightAround1() {
@@ -431,10 +433,10 @@ void Forward() {
   digitalWrite(in6, HIGH);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
-  analogWrite(en1, 160);
-  analogWrite(en2, 160);
-  analogWrite(en3, 160);
-  analogWrite(en4, 160);
+  analogWrite(en1, speed_LI1);
+  analogWrite(en2, speed_LI1);
+  analogWrite(en3, speed_RI1);
+  analogWrite(en4, speed_RI1);
 }
 
 void Forward1() {
@@ -792,470 +794,470 @@ void loop() {
   Serial.print("R:");
   Serial.println(distance_R);
   //=====================
+  PIDF();
 
-
-  if (distance_R < 150 and flag == 0 and lai == 0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 0) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-  if (flag == 1) {
-    if (millis() - pidtest_time < 3000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-      pidtest_time = millis();
-    }
-  }
-
-  if (flag == 2) {
-    if (millis() - pidtest_time < 3000) {
-      digitalWrite(pixy_color_flag_pin, LOW);
-      Motor_reset();
-    }
-    else {
-      flag++;
-    }
-  }
-
-  if (distance_L > 70 and flag == 3 and lai == 0) {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 3) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 4) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-      digitalWrite(riseball_pin, HIGH);
-      digitalWrite(sweepball_pin, HIGH);
-    }
-  }
-
-
-  if (distance_R > 70 and flag == 5 and lai == 0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 5) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 6) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_L > 70 and flag == 7 and lai == 0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 7) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 8) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_R > 70 and flag == 9 and lai == 0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 9) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 10) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_L > 70 and flag == 11 and lai == 0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 11) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 12) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-
-  if (distance_R > 70 and flag == 13 and lai == 0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 13) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 14) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-  if (distance_L > 70 and flag == 15 and lai == 0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 15) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 16) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-  if (distance_R > 70 and flag == 17 and lai == 0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 17) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 18) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-  if (distance_L > 70 and flag == 19 and lai == 0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 19) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 20) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-  if (distance_R > 70 and flag == 21 and lai == 0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 21) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 22) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-
-    } else {
-      Motor_reset();
-      flag++;
-      pidtest_time = millis();
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-  //---------------------------
-  if (distance_L > 70 and flag == 23 and lai == 0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 23) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 24) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-    } else {
-      Motor_reset();
-      flag++;
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-  if (distance_R > 70 and flag == 25 and lai == 0)
-  {
-    PIDL1();
-    pidtest_time = millis();
-  } else if (flag == 25) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-
-  if (flag == 26) {
-    if (millis() - pidtest_time < 2000) {
-      PIDF();
-
-    } else {
-      Motor_reset();
-      flag++;
-      pidtest_time = millis();
-      servo_reset();
-      digitalWrite(angle180, LOW);
-    }
-  }
-
-  //--------find_plus----------
-  if (flag == 27) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-    }
-    else {
-      flag++;
-    }
-  }
-
-  if (distance_L > 130 and flag == 28 and lai == 0)
-  {
-    PIDR1();
-    pidtest_time = millis();
-  } else if (flag == 28) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-      speed_n1 = 70;
-      speed_ne1 = -80;
-      speed_pu1 = 80;
-    }
-  }
-
-  if (distance_L > 160 and flag == 29 and lai == 0)
-  {
-    PIDF1();
-    pidtest_time = millis();
-  } else if (flag == 29) {
-    if (millis() - pidtest_time < 1000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      servo_reset();
-      digitalWrite(angle90, LOW);
-      digitalWrite(is_shot_pin, LOW);//射球
-    }
-  }
-
-  if (relative_yaw > -46 and flag == 30 and lai == 0)
-  {
-    RightAround1();
-    pidtest_time = millis();
-  } else if (flag == 30) {
-    if (millis() - pidtest_time < 10000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      //  servo_reset();
-      //  digitalWrite(angle90, LOW);
-    }
-  }
+//  if (distance_R < 150 and flag == 0 and lai == 0)
+//  {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 0) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//  if (flag == 1) {
+//    if (millis() - pidtest_time < 3000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//      pidtest_time = millis();
+//    }
+//  }
+//
+//  if (flag == 2) {
+//    if (millis() - pidtest_time < 3000) {
+//      digitalWrite(pixy_color_flag_pin, LOW);
+//      Motor_reset();
+//    }
+//    else {
+//      flag++;
+//    }
+//  }
+//
+//  if (distance_L > 70 and flag == 3 and lai == 0) {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 3) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 4) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//      digitalWrite(riseball_pin, HIGH);
+//      digitalWrite(sweepball_pin, HIGH);
+//    }
+//  }
+//
+//
+//  if (distance_R > 70 and flag == 5 and lai == 0)
+//  {
+//    PIDL1();
+//    pidtest_time = millis();
+//  } else if (flag == 5) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 6) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//
+//  if (distance_L > 70 and flag == 7 and lai == 0)
+//  {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 7) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 8) {
+//    if (millis() - pidtest_time < 1500) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//
+//  if (distance_R > 70 and flag == 9 and lai == 0)
+//  {
+//    PIDL1();
+//    pidtest_time = millis();
+//  } else if (flag == 9) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 10) {
+//    if (millis() - pidtest_time < 1500) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//
+//  if (distance_L > 70 and flag == 11 and lai == 0)
+//  {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 11) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 12) {
+//    if (millis() - pidtest_time < 1500) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//
+//  if (distance_R > 70 and flag == 13 and lai == 0)
+//  {
+//    PIDL1();
+//    pidtest_time = millis();
+//  } else if (flag == 13) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 14) {
+//    if (millis() - pidtest_time < 1500) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//  if (distance_L > 70 and flag == 15 and lai == 0)
+//  {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 15) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 16) {
+//    if (millis() - pidtest_time < 1500) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//  if (distance_R > 70 and flag == 17 and lai == 0)
+//  {
+//    PIDL1();
+//    pidtest_time = millis();
+//  } else if (flag == 17) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 18) {
+//    if (millis() - pidtest_time < 1500) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//  if (distance_L > 70 and flag == 19 and lai == 0)
+//  {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 19) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 20) {
+//    if (millis() - pidtest_time < 1500) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//  if (distance_R > 70 and flag == 21 and lai == 0)
+//  {
+//    PIDL1();
+//    pidtest_time = millis();
+//  } else if (flag == 21) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 22) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      pidtest_time = millis();
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//  //---------------------------
+//  if (distance_L > 70 and flag == 23 and lai == 0)
+//  {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 23) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 24) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//  if (distance_R > 70 and flag == 25 and lai == 0)
+//  {
+//    PIDL1();
+//    pidtest_time = millis();
+//  } else if (flag == 25) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//    }
+//  }
+//
+//
+//  if (flag == 26) {
+//    if (millis() - pidtest_time < 2000) {
+//      PIDF();
+//
+//    } else {
+//      Motor_reset();
+//      flag++;
+//      pidtest_time = millis();
+//      servo_reset();
+//      digitalWrite(angle180, LOW);
+//    }
+//  }
+//
+//  //--------find_plus----------
+//  if (flag == 27) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//    }
+//    else {
+//      flag++;
+//    }
+//  }
+//
+//  if (distance_L > 130 and flag == 28 and lai == 0)
+//  {
+//    PIDR1();
+//    pidtest_time = millis();
+//  } else if (flag == 28) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//      speed_n1 = 70;
+//      speed_ne1 = -80;
+//      speed_pu1 = 80;
+//    }
+//  }
+//
+//  if (distance_R > 150 and flag == 29 and lai == 0)
+//  {
+//    PIDF1();
+//    pidtest_time = millis();
+//  } else if (flag == 29) {
+//    if (millis() - pidtest_time < 1000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      servo_reset();
+//      digitalWrite(angle90, LOW);
+//      digitalWrite(is_shot_pin, LOW);//射球
+//    }
+//  }
+//
+//  if (relative_yaw > -46 and flag == 30 and lai == 0)
+//  {
+//    RightAround1();
+//    pidtest_time = millis();
+//  } else if (flag == 30) {
+//    if (millis() - pidtest_time < 10000) {
+//      Motor_reset();
+//      lai = 1;
+//    } else {
+//      
+//      flag++;
+//      pidtest_time = millis();
+//      lai = 0;
+//      //  servo_reset();
+//      //  digitalWrite(angle90, LOW);
+//    }
+//  }
 //
 //
 //  if (relative_yaw < -1 and flag == 31 and lai == 0)

@@ -53,8 +53,8 @@ const int is_start_pin = 30;
 //----------pid------------
 int kp = 3;
 int kd = 2;
-int kp1 = 1.5;
-int kd1 = 0.5;
+int kp1 = 3;
+int kd1 = 2;
 int speed_n = 100;
 int speed_ne = -110;
 int speed_pu = 110;
@@ -913,7 +913,7 @@ void loop() {
 
 
   if (flag == 8) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1500) {
       PIDF();
     } else {
       Motor_reset();
@@ -943,7 +943,7 @@ void loop() {
 
 
   if (flag == 10) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1500) {
       PIDF();
     } else {
       Motor_reset();
@@ -973,7 +973,7 @@ void loop() {
 
 
   if (flag == 12) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1500) {
       PIDF();
     } else {
       Motor_reset();
@@ -1003,7 +1003,7 @@ void loop() {
 
 
   if (flag == 14) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1500) {
       PIDF();
     } else {
       Motor_reset();
@@ -1032,7 +1032,7 @@ void loop() {
 
 
   if (flag == 16) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1500) {
       PIDF();
     } else {
       Motor_reset();
@@ -1061,7 +1061,7 @@ void loop() {
 
 
   if (flag == 18) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1500) {
       PIDF();
     } else {
       Motor_reset();
@@ -1090,7 +1090,7 @@ void loop() {
 
 
   if (flag == 20) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1500) {
       PIDF();
     } else {
       Motor_reset();
@@ -1221,7 +1221,7 @@ void loop() {
     }
   }
 
-  if (distance_L > 160 and flag == 29 and lai == 0)
+  if (distance_R > 150 and flag == 29 and lai == 0)
   {
     PIDF1();
     pidtest_time = millis();

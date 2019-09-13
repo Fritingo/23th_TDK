@@ -58,6 +58,9 @@ int kd1 = 0.5;
 int speed_n = 100;
 int speed_ne = -110;
 int speed_pu = 110;
+int speed_n2 = 60;
+int speed_ne2 = -70;
+int speed_pu2 = 70;
 //int speed_n2 = 50;
 //int speed_ne2 = -60;
 //int speed_pu2 = 60;
@@ -150,7 +153,39 @@ void PIDR1() {
     Rightward();
   }
 }
-
+void PIDR2() {
+  e = relative_yaw;
+  e1 = abs(relative_yaw);
+  control = kp * e1 + kd * (e1 - e_pre);
+  speed_L = speed_n2 + control;
+  // speed_R = speed_n - control;
+  if (speed_L > speed_pu2) {
+    speed_L = speed_pu2;
+  }
+  //  if (speed_L < speed_ne) {
+  //    speed_L = speed_ne;
+  //  }
+  if (speed_R > speed_pu2) {
+    speed_R = speed_pu2;
+  }
+  //  if (speed_R < speed_ne) {
+  //    speed_R = speed_ne;
+  //  }
+  speed_L = abs(speed_L);
+  //  speed_R = abs(speed_R);
+  speed_LI = floor(speed_L);
+  //  speed_RI = floor(speed_R);
+  e_pre = e1;
+  if (e > 1) {
+    RightAround();
+  }
+  else if (e < -1) {
+    LeftAround();
+  }
+  else {
+    Rightward2();
+  }
+}
 void PIDL() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
@@ -216,6 +251,40 @@ void PIDL1() {
   }
   else {
     Leftward();
+  }
+}
+
+void PIDL2() {
+  e = relative_yaw;
+  e1 = abs(relative_yaw);
+  control = kp * e1 + kd * (e1 - e_pre);
+  speed_L = speed_n2 + control;
+  //  speed_R = speed_n - control;
+  if (speed_L > speed_pu2) {
+    speed_L = speed_pu2;
+  }
+  //  if (speed_L < speed_ne) {
+  //    speed_L = speed_ne;
+  //  }
+  if (speed_R > speed_pu2) {
+    speed_R = speed_pu2;
+  }
+  //  if (speed_R < speed_ne) {
+  //    speed_R = speed_ne;
+  //  }
+  speed_L = abs(speed_L);
+  //  speed_R = abs(speed_R);
+  speed_LI = floor(speed_L);
+  //  speed_RI = floor(speed_R);
+  e_pre = e1;
+  if (e > 1) {
+    RightAround();
+  }
+  else if (e < -1) {
+    LeftAround();
+  }
+  else {
+    Leftward2();
   }
 }
 
@@ -362,6 +431,21 @@ void Rightward() {
   analogWrite(en4, speed_n);
 }
 
+void Rightward2() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  analogWrite(en1, speed_n2);
+  analogWrite(en2, speed_n2);
+  analogWrite(en3, speed_n2);
+  analogWrite(en4, speed_n2);
+}
+
 void RightAround1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -421,7 +505,20 @@ void Leftward1() {
   analogWrite(en3, 60);
   analogWrite(en4, 60);
 }
-
+void Leftward2() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_n2);
+  analogWrite(en2, speed_n2);
+  analogWrite(en3, speed_n2);
+  analogWrite(en4, speed_n2);
+}
 void Forward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -1201,11 +1298,15 @@ void loop() {
     }
   }
 
-  if (distance_L > 130 and flag == 28 and lai == 0)
+  if (distance_L > 250 and flag == 28 and lai == 0)
   {
     PIDR1();
     pidtest_time = millis();
-  } else if (flag == 28) {
+  } else if (distance_L > 130 and distance_L <= 250 and flag == 28 and lai == 0)
+  {
+    PIDR2();
+    pidtest_time = millis();
+  }  else if (flag == 28) {
     if (millis() - pidtest_time < 1000) {
       Motor_reset();
       lai = 1;
@@ -1286,11 +1387,15 @@ void loop() {
 //  }
 //
 //
-//  if (distance_L < 230 and flag == 33 and lai == 0)
+//  if (distance_L < 130 and flag == 33 and lai == 0)
 //  {
 //    PIDL1();
 //    pidtest_time = millis();
-//  } else if (flag == 33) {
+//  } else if (distance_L < 230 and distance_L >= 130 and flag == 33 and lai == 0)
+//  {
+//    PIDL2();
+//    pidtest_time = millis();
+//  }else if (flag == 33) {
 //    if (millis() - pidtest_time < 1000) {
 //      Motor_reset();
 //      lai = 1;
