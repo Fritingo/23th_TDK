@@ -8,6 +8,7 @@ Servo sonic_servoL;
 Servo classification_servo;
 Servo shotball_servo;
 Servo classification_over_servo;
+Servo save_ball_servo;
 
 //-------pin----------
 const int angle135 = 53;
@@ -16,8 +17,10 @@ const int angle90 = 49;
 const int team_color_pin = 48;
 const int Lsonic_servo = 47 ;
 const int shot_ball_pin = 46;
-
+const int shot_ball_plus_pin = 45;
 const int is_start_pin = 44;
+const int is_no_ball = 43;
+const int plus_ball_over_pin = 42;
 
 const int classification_servo_pin = 24;
 
@@ -26,14 +29,20 @@ const int classification_over_servo_pin = 22;
 const int Rsonic_servo = 13;
 const int shotball_servo_pin = 12;
 const int is_shot_pin = 11;
+const int stir_ball_pin = 10;
+const int save_ball_servo_pin = 9;
 
 //---------global_var---------
 bool is_shot = false;
+bool is_shot_plus = false;
 bool shot_motor_is_ok = false;
 bool is_team_color = false;
-int team_color = 1;
 bool is_first_ball = false;
 bool is_start = false;
+bool plus_ball_over = false;
+int team_color = 1;
+int have_team_ball = 0;
+
 
 unsigned long close_team_color = 0;
 unsigned long is_team_color_time = 0;
@@ -58,6 +67,12 @@ void setup() {
   //-------output--------
   pinMode(shot_ball_pin, OUTPUT);
   digitalWrite(shot_ball_pin, LOW);
+  pinMode(stir_ball_pin, OUTPUT);
+  digitalWrite(stir_ball_pin, LOW);
+  pinMode(is_no_ball, OUTPUT);
+  digitalWrite(is_no_ball, HIGH);
+  pinMode(plus_ball_over_pin, OUTPUT);
+  digitalWrite(plus_ball_over_pin, HIGH);
   //-------servo---------
   shotball_servo.attach(shotball_servo_pin);
   classification_over_servo.attach(classification_over_servo_pin);
@@ -67,6 +82,8 @@ void setup() {
   classification_servo.write(92);
   classification_over_servo.write(10);//放40 入球箱10
   shotball_servo.write(60);//壓球10擋球60放球90
+  save_ball_servo.attach(save_ball_servo_pin);
+  save_ball_servo.write(100);
   //------input---------
   pinMode(angle90, INPUT_PULLUP);
   pinMode(angle180, INPUT_PULLUP);
@@ -74,6 +91,7 @@ void setup() {
   pinMode(team_color_pin, INPUT_PULLUP);
   pinMode(is_start_pin, INPUT_PULLUP);
   pinMode(is_shot_pin, INPUT_PULLUP);
+  pinMode(shot_ball_plus_pin, INPUT_PULLUP);
   //------pixy----------
   pixy.init();
   //-----check_bt-------
@@ -114,13 +132,73 @@ void loop() {
         is_team_color = false;
         is_first_ball = false;
         classification_over_servo.write(10);
+        have_team_ball++;
       } else if (millis() - is_team_color_time > 500) {
         classification_over_servo.write(40);
       }
     }
   }
-//----------shoot---------------
+  //----------no_team_ball--------
+  if (have_team_ball != 0 and is_no_ball == LOW) {
+    digitalWrite(is_no_ball, HIGH);
+  }
+  //----------shoot---------------
+  //---------10_point-------------
+  if (plus_ball_over == false) {
+    if (is_shot_plus == true) {
+      if (millis() - shotservo_time < 5000 and shot_motor_is_ok == false) {
+        shotball_servo.write(60);
+      } else if (shot_motor_is_ok == false) {
+        shot_motor_is_ok = true;
+      } else {
+        if (have_team_ball <= 0) {
+          plus_ball_over == true;
+          digitalWrite(plus_ball_over_pin, LOW);
+          shotball_servo.write(60);
+        }
+        if (have_team_ball > 3) {
+          if (millis() - shotservo_time < 500) {
+            shotball_servo.write(60);
+          } else if (millis() - shotservo_time < 980) {
+            shotball_servo.write(90);
+          } else if (millis() - shotservo_time < 1500) {
+            shotball_servo.write(60);
+          } else if (millis() - shotservo_time < 2000) {
+            shotball_servo.write(10);
+          } else {
+            shotservo_time = millis();
+            have_team_ball--;
+          }
+        } else {
+          if (millis() - shotservo_time < 500) {
+            shotball_servo.write(60);
+          } else if (millis() - shotservo_time < 1250) {
+            shotball_servo.write(90);
+          } else if (millis() - shotservo_time < 1500) {
+            shotball_servo.write(60);
+          } else if (millis() - shotservo_time < 2000) {
+            shotball_servo.write(10);
+          } else {
+            shotservo_time = millis();
+            have_team_ball--;
+          }
+        }
+      }
+    } else if (digitalRead(shot_ball_plus_pin) == LOW) {
+      Serial.println("shoot10!!");
+      shotservo_time = millis();
+      is_shot_plus = true;
+      digitalWrite(shot_ball_pin, HIGH);
+      have_team_ball = have_team_ball + 3;
+    }
+  }
+  //---------------3_point-----------------------
   if (is_shot == true) {
+    if(millis() - shotservo_time < 1000){
+      save_ball_servo.write(80);
+    }else{
+      save_ball_servo.write(100);
+    }
     if (millis() - shotservo_time < 5000 and shot_motor_is_ok == false) {
       shotball_servo.write(60);
     } else if (shot_motor_is_ok == false) {
@@ -129,7 +207,7 @@ void loop() {
       if (millis() - shotservo_time < 500) {
         shotball_servo.write(60);
       } else if (millis() - shotservo_time < 980) {
-        shotball_servo.write(105);
+        shotball_servo.write(90);
       } else if (millis() - shotservo_time < 1500) {
         shotball_servo.write(60);
       } else if (millis() - shotservo_time < 2000) {
@@ -142,17 +220,17 @@ void loop() {
     Serial.println("shoot!!");
     shotservo_time = millis();
     is_shot = true;
+    digitalWrite(stir_ball_pin, HIGH);
     digitalWrite(shot_ball_pin, HIGH);
   }
-//-----------ks103_servo------------
+  //-----------ks103_servo------------
   if (digitalRead(angle90) == 0) {
     LRservo90();
-
   } else if (digitalRead(angle180) == 0) {
     LRservo180();
   } else if (digitalRead(angle135) == 0) {
     LRservo135();
   }
-  // put your main code here, to run repeatedly:
+
 
 }

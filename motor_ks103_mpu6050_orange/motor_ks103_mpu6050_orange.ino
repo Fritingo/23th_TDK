@@ -46,8 +46,10 @@ const int team_color_bt_pin = 34;
 const int start_bt_pin = 35;
 const int riseball_pin = 33;
 const int sweepball_pin = 32;
+const int is_shot_plus_pin = 31;
 const int is_start_pin = 30;
-
+const int is_no_ball = 29;
+const int plus_ball_over_pin = 28;
 
 
 //----------pid------------
@@ -715,6 +717,8 @@ void setup() {
   //--------output------------
   pinMode(is_shot_pin, OUTPUT);
   digitalWrite(is_shot_pin, HIGH);
+  pinMode(is_shot_plus_pin, OUTPUT);
+  digitalWrite(is_shot_plus_pin, HIGH);
   pinMode(pixy_color_flag_pin, OUTPUT);
   digitalWrite(pixy_color_flag_pin, HIGH);
 
@@ -749,6 +753,9 @@ void setup() {
   //---------input---------
   pinMode(team_color_bt_pin, INPUT_PULLUP);
   pinMode(start_bt_pin, INPUT_PULLUP);
+  pinMode(is_no_ball, INPUT_PULLUP);
+  pinMode(plus_ball_over_pin, INPUT_PULLUP);
+
   //--------sensor---------
   led_red();
   Wire.begin();
@@ -1235,7 +1242,13 @@ void loop() {
       lai = 0;
       servo_reset();
       digitalWrite(angle90, LOW);
-      digitalWrite(is_shot_pin, LOW);//射球
+      if (digitalRead(is_no_ball) == LOW) {
+        servo_reset();
+        digitalWrite(angle180, LOW);
+        flag = 32;
+      } else {
+        digitalWrite(is_shot_plus_pin, LOW);//射球
+      }
     }
   }
 
@@ -1243,12 +1256,12 @@ void loop() {
   {
     RightAround1();
     pidtest_time = millis();
-  } else if (flag == 30) {
+  } else if (flag == 30 and digitalRead(plus_ball_over_pin) == LOW) {
     if (millis() - pidtest_time < 10000) {
       Motor_reset();
       lai = 1;
     } else {
-      
+
       flag++;
       pidtest_time = millis();
       lai = 0;
@@ -1256,71 +1269,72 @@ void loop() {
       //  digitalWrite(angle90, LOW);
     }
   }
-//
-//
-//  if (relative_yaw < -1 and flag == 31 and lai == 0)
-//  {
-//    LeftAround1();
-//    pidtest_time = millis();
-//  } else if (flag == 31) {
-//    if (millis() - pidtest_time < 1000) {
-//      Motor_reset();
-//      lai = 1;
-//    } else {
-//      flag++;
-//      pidtest_time = millis();
-//      lai = 0;
-//      servo_reset();
-//      digitalWrite(angle180, LOW);
-//    }
-//  }
-//
-//
-//  if (flag == 32) {
-//    if (millis() - pidtest_time < 1000) {
-//      Motor_reset();
-//    }
-//    else {
-//      flag++;
-//    }
-//  }
-//
-//
-//  if (distance_L < 230 and flag == 33 and lai == 0)
-//  {
-//    PIDL1();
-//    pidtest_time = millis();
-//  } else if (flag == 33) {
-//    if (millis() - pidtest_time < 1000) {
-//      Motor_reset();
-//      lai = 1;
-//    } else {
-//      flag++;
-//      pidtest_time = millis();
-//      lai = 0;
-//      servo_reset();
-//      digitalWrite(angle90, LOW);
-//      speed_n1 = 70;
-//      speed_ne1 = -80;
-//      speed_pu1 = 80;
-//    }
-//  }
-//
-//  if (distance_R > 70 and flag == 34 and lai == 0)
-//  {
-//    PIDF1();
-//    pidtest_time = millis();
-//  } else if (flag == 34) {
-//    if (millis() - pidtest_time < 1000) {
-//      Motor_reset();
-//      lai = 1;
-//    } else {
-//      flag++;
-//      pidtest_time = millis();
-//      lai = 0;
-//      servo_reset();
-//      digitalWrite(angle90, LOW);
-//    }
-//  }
+  //
+  //
+  //  if (relative_yaw < -1 and flag == 31 and lai == 0)
+  //  {
+  //    LeftAround1();
+  //    pidtest_time = millis();
+  //  } else if (flag == 31) {
+  //    if (millis() - pidtest_time < 1000) {
+  //      Motor_reset();
+  //      lai = 1;
+  //    } else {
+  //      flag++;
+  //      pidtest_time = millis();
+  //      lai = 0;
+  //      servo_reset();
+  //      digitalWrite(angle180, LOW);
+  //    }
+  //  }
+  //
+  //
+  //  if (flag == 32) {
+  //    if (millis() - pidtest_time < 1000) {
+  //      Motor_reset();
+  //    }
+  //    else {
+  //      flag++;
+  //    }
+  //  }
+  //
+  //
+  //  if (distance_L < 230 and flag == 33 and lai == 0)
+  //  {
+  //    PIDL1();
+  //    pidtest_time = millis();
+  //  } else if (flag == 33) {
+  //    if (millis() - pidtest_time < 1000) {
+  //      Motor_reset();
+  //      lai = 1;
+  //    } else {
+  //      flag++;
+  //      pidtest_time = millis();
+  //      lai = 0;
+  //      servo_reset();
+  //      digitalWrite(angle90, LOW);
+  //      speed_n1 = 70;
+  //      speed_ne1 = -80;
+  //      speed_pu1 = 80;
+  //    }
+  //  }
+  //
+  //  if (distance_R > 70 and flag == 34 and lai == 0)
+  //  {
+  //    PIDF1();
+  //    pidtest_time = millis();
+  //  } else if (flag == 34) {
+  //    if (millis() - pidtest_time < 1000) {
+  //      Motor_reset();
+  //      lai = 1;
+  //    } else {
+  //      flag++;
+  //      pidtest_time = millis();
+  //      lai = 0;
+  //      servo_reset();
+  //      digitalWrite(angle90, LOW);
+  //      digitalWrite(is_shot_plus_pin, LOW);//射球
+  //    }
+  //  }
 
 }
