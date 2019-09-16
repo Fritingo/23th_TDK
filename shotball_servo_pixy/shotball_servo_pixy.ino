@@ -5,24 +5,23 @@ Pixy2 pixy;
 
 Servo sonic_servoR;
 Servo sonic_servoL;
-Servo classification_servo;
 Servo shotball_servo;
 Servo classification_over_servo;
 Servo save_ball_servo;
 
 //-------pin----------
-const int angle135 = 53;
-const int angle180 = 51;
+//const int angle135 = 53;
+//const int angle180 = 51;
 const int angle90 = 49;
 const int team_color_pin = 48;
 const int Lsonic_servo = 47 ;
 const int shot_ball_pin = 46;
 const int shot_ball_plus_pin = 45;
-const int is_start_pin = 44;
+//const int is_start_pin = 44;
 const int is_no_ball = 43;
 const int plus_ball_over_pin = 42;
 
-const int classification_servo_pin = 24;
+//const int classification_servo_pin = 24;
 
 const int classification_over_servo_pin = 22;
 
@@ -78,18 +77,18 @@ void setup() {
   classification_over_servo.attach(classification_over_servo_pin);
   sonic_servoR.attach(Rsonic_servo);
   sonic_servoL.attach(Lsonic_servo);
-  classification_servo.attach(classification_servo_pin);
-  classification_servo.write(92);
+  //  classification_servo.attach(classification_servo_pin);
+  //  classification_servo.write(92);
   classification_over_servo.write(10);//放40 入球箱10
   shotball_servo.write(60);//壓球10擋球60放球90
   save_ball_servo.attach(save_ball_servo_pin);
   save_ball_servo.write(100);
   //------input---------
   pinMode(angle90, INPUT_PULLUP);
-  pinMode(angle180, INPUT_PULLUP);
-  pinMode(angle135, INPUT_PULLUP);
+//  pinMode(angle180, INPUT_PULLUP);
+  //  pinMode(angle135, INPUT_PULLUP);
   pinMode(team_color_pin, INPUT_PULLUP);
-  pinMode(is_start_pin, INPUT_PULLUP);
+  //  pinMode(is_start_pin, INPUT_PULLUP);
   pinMode(is_shot_pin, INPUT_PULLUP);
   pinMode(shot_ball_plus_pin, INPUT_PULLUP);
   //------pixy----------
@@ -105,36 +104,38 @@ void setup() {
 
 void loop() {
   //-------check_start------
-  if (is_start == false) {
-    if (digitalRead(is_start_pin) == LOW) {
-      is_start = true;
-      classification_servo.write(100);
-    }
-  }
+  //  if (is_start == false) {
+  //    if (digitalRead(is_start_pin) == LOW) {
+  //      is_start = true;
+  //      classification_servo.write(100);
+  //    }
+  //  }
   //--------classification---------
-  pixy.ccc.getBlocks();
-  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-    //      Serial.println(pixy.ccc.blocks[i].m_signature);
-    if (pixy.ccc.blocks[i].m_signature == team_color and pixy.ccc.blocks[i].m_x < 125) {
-      classification_over_servo.write(10);
-      is_team_color = true;
-      close_team_color = millis();
-
-    }
-  }
-  if (is_team_color == true) {
-    if (is_first_ball == false) {
-      is_team_color_time = millis();
-      close_team_color = millis();
-      is_first_ball = true;
-    } else {
-      if (millis() - close_team_color > 600) {
-        is_team_color = false;
-        is_first_ball = false;
+  if (is_shot == false) {
+    pixy.ccc.getBlocks();
+    for (int i = 0; i < pixy.ccc.numBlocks; i++) {
+      //      Serial.println(pixy.ccc.blocks[i].m_signature);
+      if (pixy.ccc.blocks[i].m_signature == team_color and pixy.ccc.blocks[i].m_x < 125) {
         classification_over_servo.write(10);
-        have_team_ball++;
-      } else if (millis() - is_team_color_time > 500) {
-        classification_over_servo.write(40);
+        is_team_color = true;
+        close_team_color = millis();
+
+      }
+    }
+    if (is_team_color == true) {
+      if (is_first_ball == false) {
+        is_team_color_time = millis();
+        close_team_color = millis();
+        is_first_ball = true;
+      } else {
+        if (millis() - close_team_color > 600) {
+          is_team_color = false;
+          is_first_ball = false;
+          classification_over_servo.write(10);
+          have_team_ball++;
+        } else if (millis() - is_team_color_time > 500) {
+          classification_over_servo.write(40);
+        }
       }
     }
   }
@@ -152,11 +153,11 @@ void loop() {
         shot_motor_is_ok = true;
       } else {
         if (have_team_ball <= 0) {
+          classification_over_servo.write(40);
           plus_ball_over == true;
           digitalWrite(plus_ball_over_pin, LOW);
           shotball_servo.write(60);
-        }
-        if (have_team_ball > 3) {
+        } else if (have_team_ball > 3) {
           if (millis() - shotservo_time < 500) {
             shotball_servo.write(60);
           } else if (millis() - shotservo_time < 980) {
@@ -194,9 +195,9 @@ void loop() {
   }
   //---------------3_point-----------------------
   if (is_shot == true) {
-    if(millis() - shotservo_time < 1000){
+    if (millis() - shotservo_time < 1000) {
       save_ball_servo.write(80);
-    }else{
+    } else {
       save_ball_servo.write(100);
     }
     if (millis() - shotservo_time < 5000 and shot_motor_is_ok == false) {
@@ -222,15 +223,21 @@ void loop() {
     is_shot = true;
     digitalWrite(stir_ball_pin, HIGH);
     digitalWrite(shot_ball_pin, HIGH);
+    classification_over_servo.write(40);
   }
   //-----------ks103_servo------------
   if (digitalRead(angle90) == 0) {
     LRservo90();
-  } else if (digitalRead(angle180) == 0) {
+  } else {
     LRservo180();
-  } else if (digitalRead(angle135) == 0) {
-    LRservo135();
   }
+  //  if (digitalRead(angle90) == 0) {
+  //    LRservo90();
+  //  } else if (digitalRead(angle180) == 0) {
+  //    LRservo180();
+  //  } else if (digitalRead(angle135) == 0) {
+  //    LRservo135();
+
 
 
 }

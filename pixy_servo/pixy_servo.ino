@@ -6,9 +6,10 @@ const int red_servo_pin = 10;
 const int green_servo_pin = 11;
 const int blue_servo_pin = 12;
 const int black_servo_pin = 13;
-const int pixy_color_flag_pin = 53;
-const int collect_ball_pin = 35;
-const int pullup_ball_pin = 36;
+const int pixy_color_flag_pin = 25;
+const int collect_ball_pin = 22;
+const int pullup_ball_pin = 23;
+const int classification_servo_pin = 24;
 
 Pixy2 pixy;
 
@@ -16,6 +17,7 @@ Servo red_servo;  // create servo object to control a servo
 Servo green_servo;
 Servo blue_servo;
 Servo black_servo;
+Servo classification_servo;
 
 int pos = 0;    // variable to store the servo position
 
@@ -86,12 +88,14 @@ void setup() {
   blue_servo.attach(blue_servo_pin);
   black_servo.attach(black_servo_pin);
   pinMode(pixy_color_flag_pin, INPUT_PULLUP);
-  pinMode(collect_ball_pin,OUTPUT);
-  pinMode(pullup_ball_pin,OUTPUT);
-  digitalWrite(collect_ball_pin,LOW);
-  digitalWrite(pullup_ball_pin,LOW);
+  pinMode(collect_ball_pin, OUTPUT);
+  pinMode(pullup_ball_pin, OUTPUT);
+  digitalWrite(collect_ball_pin, LOW);
+  digitalWrite(pullup_ball_pin, LOW);
   servo_setup();
   pixy.init();
+  classification_servo.attach(classification_servo_pin);
+  classification_servo.write(92);
   delay(5000);
 
 }
@@ -142,7 +146,9 @@ void loop() {
         }
       }
     } else {
-    
+      digitalWrite(collect_ball_pin, HIGH);
+      digitalWrite(pullup_ball_pin, HIGH);
+      classification_servo.write(100);
       if (get2color == true) {
         if (rg == max(max(rg, gb), rb)) {
           rg_servo();
@@ -167,8 +173,8 @@ void loop() {
         }
         Serial.println("黑");
       }
-      digitalWrite(collect_ball_pin,HIGH);
-      digitalWrite(pullup_ball_pin,HIGH);
+      //      digitalWrite(collect_ball_pin,HIGH);
+      //      digitalWrite(pullup_ball_pin,HIGH);
     }
   }
 }
