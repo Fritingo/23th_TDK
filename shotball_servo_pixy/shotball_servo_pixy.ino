@@ -147,7 +147,7 @@ void loop() {
   //---------10_point-------------
   if (plus_ball_over == false and is_shot != true) {
     if (is_shot_plus == true) {
-      if (millis() - shotservo_time < 10000 and shot_motor_is_ok == false) {
+      if (millis() - shotservo_time < 7000 and shot_motor_is_ok == false) {
         shotball_servo.write(170);
       } else if (shot_motor_is_ok == false) {
         shot_motor_is_ok = true;
@@ -182,6 +182,7 @@ void loop() {
       shotservo_time = millis();
       is_shot_plus = true;
       digitalWrite(shot_ball_pin, HIGH);
+      digitalWrite(stir_ball_pin, HIGH);
       have_team_ball = have_team_ball + 3;
     }
   }
