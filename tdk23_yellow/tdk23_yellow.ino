@@ -852,8 +852,8 @@ void setup() {
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial.println("start");
+//  Serial.begin(115200);
+//  Serial.println("start");
 
   mpu6050_setup();
   //  Motor_reset();
@@ -882,12 +882,12 @@ void loop() {
   //---------------------
 
   //=======debug=========
-  Serial.print("relative_yaw:");
-  Serial.println(relative_yaw);
-  Serial.print("L:");
-  Serial.print(distance_L);
-  Serial.print("R:");
-  Serial.println(distance_R);
+//  Serial.print("relative_yaw:");
+//  Serial.println(relative_yaw);
+//  Serial.print("L:");
+//  Serial.print(distance_L);
+//  Serial.print("R:");
+//  Serial.println(distance_R);
   //=====================
   if (distance_L < 110 and flag == 0 and lai == 0) {
     PIDL1();

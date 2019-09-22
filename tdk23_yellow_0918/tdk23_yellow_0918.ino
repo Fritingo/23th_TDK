@@ -889,11 +889,11 @@ void loop() {
   Serial.print("R:");
   Serial.println(distance_R);
   //=====================
-  if (distance_R < 150 and flag == 0 and lai == 0) {
-    PIDR1();
+  if (distance_L < 110 and flag == 0 and lai == 0) {
+    PIDL1();
     pidtest_time = millis();
   } else if (flag == 0) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -926,11 +926,11 @@ void loop() {
     }
   }
 
-  if (distance_L > 65 and flag == 3 and lai == 0) {
-    PIDR1();
+  if (distance_R >70  and flag == 3 and lai == 0) {
+    PIDL1();
     pidtest_time = millis();
   } else if (flag == 3) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -943,7 +943,7 @@ void loop() {
   }
 
   if (flag == 4) {
-    if (millis() - pidtest_time < 2200) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -954,11 +954,11 @@ void loop() {
     }
   }
 
-  if (distance_R > 70 and flag == 5 and lai == 0) {
-    PIDL1();
+  if (distance_L > 65 and flag == 5 and lai == 0) {
+    PIDR1();
     pidtest_time = millis();
   } else if (flag == 5) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -971,7 +971,7 @@ void loop() {
   }
 
   if (flag == 6) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -981,11 +981,11 @@ void loop() {
     }
   }
 
-  if (distance_L > 65 and flag == 7 and lai == 0) {
-    PIDR1();
+  if (distance_R > 70 and flag == 7 and lai == 0) {
+    PIDL1();
     pidtest_time = millis();
   } else if (flag == 7) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -998,7 +998,7 @@ void loop() {
   }
 
   if (flag == 8) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1008,11 +1008,11 @@ void loop() {
     }
   }
 
-  if (distance_R > 70 and flag == 9 and lai == 0) {
-    PIDL1();
+  if (distance_L > 65 and flag == 9 and lai == 0) {
+    PIDR1();
     pidtest_time = millis();
   } else if (flag == 9) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1025,7 +1025,7 @@ void loop() {
   }
 
   if (flag == 10) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1035,8 +1035,8 @@ void loop() {
     }
   }
 
-  if (distance_L > 65 and flag == 11 and lai == 0) {
-    PIDR1();
+  if (distance_R > 70 and flag == 11 and lai == 0) {
+    PIDL1();
     pidtest_time = millis();
   } else if (flag == 11) {
     if (millis() - pidtest_time < 1000) {
@@ -1052,7 +1052,7 @@ void loop() {
   }
 
   if (flag == 12) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1062,11 +1062,11 @@ void loop() {
     }
   }
 
-  if (distance_R > 70 and flag == 13 and lai == 0) {
-    PIDL1();
+  if (distance_L > 65 and flag == 13 and lai == 0) {
+    PIDR1();
     pidtest_time = millis();
   } else if (flag == 13) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1079,7 +1079,7 @@ void loop() {
   }
 
   if (flag == 14) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1089,11 +1089,11 @@ void loop() {
     }
   }
 
-  if (distance_L > 65 and flag == 15 and lai == 0) {
-    PIDR1();
+  if (distance_R > 70 and flag == 15 and lai == 0) {
+    PIDL1();
     pidtest_time = millis();
   } else if (flag == 15) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1106,7 +1106,7 @@ void loop() {
   }
 
   if (flag == 16) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1116,11 +1116,11 @@ void loop() {
     }
   }
 
-  if (distance_R > 70 and flag == 17 and lai == 0) {
-    PIDL1();
+  if (distance_L > 65 and flag == 17 and lai == 0) {
+    PIDR1();
     pidtest_time = millis();
   } else if (flag == 17) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1133,7 +1133,7 @@ void loop() {
   }
 
   if (flag == 18) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1143,11 +1143,11 @@ void loop() {
     }
   }
 
-  if (distance_L > 65 and flag == 19 and lai == 0) {
-    PIDR1();
+  if (distance_R > 70 and flag == 19 and lai == 0) {
+    PIDL1();
     pidtest_time = millis();
   } else if (flag == 19) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1160,7 +1160,7 @@ void loop() {
   }
 
   if (flag == 20) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1170,11 +1170,11 @@ void loop() {
     }
   }
 
-  if (distance_R > 70 and flag == 21 and lai == 0) {
-    PIDL1();
+  if (distance_L > 65 and flag == 21 and lai == 0) {
+    PIDR1();
     pidtest_time = millis();
   } else if (flag == 21) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1187,7 +1187,7 @@ void loop() {
   }
 
   if (flag == 22) {
-    if (millis() - pidtest_time < 1800) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
 
     } else {
@@ -1199,11 +1199,11 @@ void loop() {
     }
   }
   //---------------------------
-  if (distance_L > 65 and flag == 23 and lai == 0) {
-    PIDR1();
+  if (distance_R > 70 and flag == 23 and lai == 0) {
+    PIDL1();
     pidtest_time = millis();
   } else if (flag == 23) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1216,7 +1216,7 @@ void loop() {
   }
 
   if (flag == 24) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1226,11 +1226,11 @@ void loop() {
     }
   }
 
-  if (distance_R > 70 and flag == 25 and lai == 0) {
-    PIDL1();
+  if (distance_L > 65 and flag == 25 and lai == 0) {
+    PIDR1();
     pidtest_time = millis();
   } else if (flag == 25) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1243,7 +1243,7 @@ void loop() {
   }
 
   if (flag == 26) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < 1700) {
       PIDF();
     } else {
       Motor_reset();
@@ -1265,13 +1265,13 @@ void loop() {
     }
   }
   //===============flag change==========
-  if (distance_L > 250 and flag == 28 and lai == 0)
+  if (distance_R > 250 and flag == 28 and lai == 0)
   {
-    PIDR1();
+    PIDL1();
     pidtest_time = millis();
-  } else if (distance_L > 130 and distance_L <= 250 and flag == 28 and lai == 0)
+  } else if (distance_R > 130 and distance_R <= 250 and flag == 28 and lai == 0)
   {
-    PIDR2();
+    PIDL2();
     pidtest_time = millis();
   } else if (flag == 28) {
     if (millis() - pidtest_time < 1000) {
@@ -1290,7 +1290,7 @@ void loop() {
     }
   }
 
-  if (distance_R > 160 and flag == 29 and lai == 0) {
+  if (distance_L > 160 and flag == 29 and lai == 0) {
     PIDF1();
     pidtest_time = millis();
   } else if (flag == 29) {
@@ -1313,8 +1313,8 @@ void loop() {
     }
   }
 
-  if (relative_yaw > -46 and flag == 30 and lai == 0) {
-    RightAround1();
+  if (relative_yaw < 42 and flag == 30 and lai == 0) {
+    LeftAround1();
     pidtest_time = millis();
   } else if (flag == 30) {// and
     if (millis() - pidtest_time < 14000 and digitalRead(plus_ball_over_pin) == HIGH) {// or digitalRead(plus_ball_over_pin) == LOW
@@ -1329,8 +1329,8 @@ void loop() {
     }
   }
 
-  if (relative_yaw < -1 and flag == 31 and lai == 0) {
-    LeftAround1();
+  if (relative_yaw > 0.5 and flag == 31 and lai == 0) {
+    RightAround1();
     pidtest_time = millis();
   } else if (flag == 31) {
     if (millis() - pidtest_time < 1000) {
@@ -1354,13 +1354,13 @@ void loop() {
     }
   }
 
-  if (distance_L < 130 and flag == 33 and lai == 0)
+  if (distance_R < 130 and flag == 33 and lai == 0)
   {
-    PIDL1();
+    PIDR1();
     pidtest_time = millis();
-  } else if (distance_L < 240 and distance_L >= 130 and flag == 33 and lai == 0)
+  } else if (distance_R < 290 and distance_R >= 130 and flag == 33 and lai == 0)
   {
-    PIDL2();
+    PIDR2();
     pidtest_time = millis();
   } else if (flag == 33) {
     if (millis() - pidtest_time < 1000) {
@@ -1378,7 +1378,7 @@ void loop() {
     }
   }
 
-  if (distance_R > 70 and flag == 34 and lai == 0) {
+  if (distance_R > 80 and flag == 34 and lai == 0) {
     PIDF1();
     pidtest_time = millis();
   } else if (flag == 34) {

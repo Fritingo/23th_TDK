@@ -62,7 +62,7 @@ void LRservo135() {
 }
 //-----------setup------------
 void setup() {
-  Serial.begin(115200);
+//  Serial.begin(115200);
   //-------output--------
   pinMode(shot_ball_pin, OUTPUT);
   digitalWrite(shot_ball_pin, LOW);
@@ -147,7 +147,7 @@ void loop() {
   //---------10_point-------------
   if (plus_ball_over == false and is_shot != true) {
     if (is_shot_plus == true) {
-      if (millis() - shotservo_time < 7000 and shot_motor_is_ok == false) {
+      if (millis() - shotservo_time < 10000 and shot_motor_is_ok == false) {
         shotball_servo.write(170);
       } else if (shot_motor_is_ok == false) {
         shot_motor_is_ok = true;
@@ -160,7 +160,7 @@ void loop() {
         } else if (have_team_ball > 3) {
           if (millis() - shotservo_time < 500) {
             shotball_servo.write(140);
-          } else if (millis() - shotservo_time < 1500) {
+          } else if (millis() - shotservo_time < 1300) {
             shotball_servo.write(170);
           } else {
             shotservo_time = millis();
@@ -169,7 +169,7 @@ void loop() {
         } else {
           if (millis() - shotservo_time < 500) {
             shotball_servo.write(140);
-          } else if (millis() - shotservo_time < 1500) {
+          } else if (millis() - shotservo_time < 1300) {
             shotball_servo.write(170);
           } else {
             shotservo_time = millis();
@@ -178,7 +178,7 @@ void loop() {
         }
       }
     } else if (digitalRead(shot_ball_plus_pin) == LOW) {
-      Serial.println("shoot10!!");
+//      Serial.println("shoot10!!");
       shotservo_time = millis();
       is_shot_plus = true;
       digitalWrite(shot_ball_pin, HIGH);
@@ -187,7 +187,7 @@ void loop() {
   }
   //---------------3_point-----------------------
   if (is_shot == true) {
-    if (millis() - shotservo_time < 750) {
+    if (millis() - shotservo_time < 550) {
       save_ball_servo.write(80);
     } else {
       save_ball_servo.write(100);
@@ -199,14 +199,14 @@ void loop() {
     } else {
       if (millis() - shotservo_time < 500) {
         shotball_servo.write(140);
-      } else if (millis() - shotservo_time < 1500) {
+      } else if (millis() - shotservo_time < 1300) {
         shotball_servo.write(170);
       } else {
         shotservo_time = millis();
       }
     }
   } else if (digitalRead(is_shot_pin) == LOW) {
-    Serial.println("shoot!!");
+//    Serial.println("shoot!!");
     shotservo_time = millis();
     is_shot = true;
     digitalWrite(stir_ball_pin, HIGH);

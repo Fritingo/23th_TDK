@@ -82,7 +82,7 @@ void bblack_servo() {
   black_servo.write(30);//0平 30舉
 }
 void setup() {
-  Serial.begin(115200);
+//  Serial.begin(115200);
   red_servo.attach(red_servo_pin);
   green_servo.attach(green_servo_pin);
   blue_servo.attach(blue_servo_pin);
@@ -152,26 +152,26 @@ void loop() {
       if (get2color == true) {
         if (rg == max(max(rg, gb), rb)) {
           rg_servo();
-          Serial.println("rg");
+//          Serial.println("rg");
         } else if (gb == max(max(rg, gb), rb)) {
           gb_servo();
-          Serial.println("gb");
+//          Serial.println("gb");
         } else if (rb == max(max(rg, gb), rb)) {
           rb_servo();
-          Serial.println("rb");
+//          Serial.println("rb");
         }
       } else {
         if (color[0] == 1) {
           rblack_servo();
-          Serial.println("red");
+//          Serial.println("red");
         } else if (color[1] == 1) {
           gblack_servo();
-          Serial.println("green");
+//          Serial.println("green");
         } else {
           bblack_servo();
-          Serial.println("blue");
+//          Serial.println("blue");
         }
-        Serial.println("黑");
+//        Serial.println("黑");
       }
       //      digitalWrite(collect_ball_pin,HIGH);
       //      digitalWrite(pullup_ball_pin,HIGH);
