@@ -852,6 +852,7 @@ void led_off() {
 }
 
 void setup() {
+  
   //  pinMode(is_shot_plus_pin, OUTPUT);
   //  digitalWrite(is_shot_plus_pin, HIGH);
   pinMode(is_shot_pin, OUTPUT);
@@ -896,6 +897,8 @@ void setup() {
   pinMode(Buzzer2, OUTPUT);
   led_red();
   Wire.begin();
+  digitalWrite(SDA,LOW);
+  digitalWrite(SCL,LOW);
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
   // put your setup code here, to run once:
@@ -912,6 +915,8 @@ void setup() {
   }
 
   digitalWrite(angle90, HIGH);//HIGH 180 LOW 90
+
+  
 }
 
 void loop() {
@@ -924,16 +929,19 @@ void loop() {
   }
 
   if (!gyro_ready) {
+//    Serial.println("not ready");
     return;
   }
   //------sensor更新------
-  mpu6050_update();
-  ks103_update();
+  
+//  ks103_update();
   //---------------------
 
   //=======debug=========
+  mpu6050_update();
   Serial.print("relative_yaw:");
   Serial.println(relative_yaw);
+  ks103_update();
   Serial.print("L:");
   Serial.print(distance_L);
   Serial.print("R:");
@@ -1367,7 +1375,7 @@ void yello_team() {
   }
 
 
-
+  mpu6050_update();
   //--------find_plus----------
   if (flag == 31) {
     if (millis() - pidtest_time < 1000) {
@@ -1877,6 +1885,7 @@ void orange_team() {
     }
   }
 
+  mpu6050_update();
   //--------find_plus----------
   if (flag == 27) {
     if (millis() - pidtest_time < 1000) {
