@@ -623,7 +623,7 @@ void mpu6050_setup() {
   // initialize device
   Serial.println(F("Initializing I2C devices..."));
   mpu.initialize();
-  pinMode(INTERRUPT_PIN, INPUT);
+  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
 
   // verify connection
   Serial.println(F("Testing device connections..."));
@@ -638,7 +638,7 @@ void mpu6050_setup() {
   mpu.setYGyroOffset(76);
   mpu.setZGyroOffset(-85);
   mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
-
+  mpu.setRate(9);
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
     // turn on the DMP, now that it's ready

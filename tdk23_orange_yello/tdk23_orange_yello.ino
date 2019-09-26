@@ -897,8 +897,8 @@ void setup() {
   pinMode(Buzzer2, OUTPUT);
   led_red();
   Wire.begin();
-  digitalWrite(SDA,LOW);
-  digitalWrite(SCL,LOW);
+//  digitalWrite(SDA,LOW);
+//  digitalWrite(SCL,LOW);
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
   // put your setup code here, to run once:
@@ -919,7 +919,9 @@ void setup() {
   
 }
 
+
 void loop() {
+
   if (run_step == false) {
     if (digitalRead(start_bt_pin) == HIGH) {
       flag = 0;

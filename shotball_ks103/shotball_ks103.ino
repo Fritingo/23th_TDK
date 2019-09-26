@@ -226,10 +226,6 @@ void loop() {
       }
     }
   }
-  //----------no_team_ball--------
-  //  if (have_team_ball != 0 and is_no_ball == LOW) {
-  //    digitalWrite(is_no_ball, HIGH);
-  //  }
   //----------shoot---------------
   //---------10_point-------------
   if (plus_ball_over == false and is_shot != true) {

@@ -15,8 +15,8 @@ Servo save_ball_servo;
 const int angle90 = 49;
 const int team_color_pin = 48;
 const int Lsonic_servo = 47 ;
-const int shot_ball_pin = 46;
-const int shot_ball_plus_pin = 45;
+const int shot_ball_pin = 43;
+const int shot_ball_plus_pin = 39;
 //const int is_start_pin = 44;
 //const int is_no_ball = 43;
 const int plus_ball_over_pin = 42;
@@ -25,11 +25,11 @@ const int plus_ball_over_pin = 42;
 
 const int classification_over_servo_pin = 22;
 
-const int Rsonic_servo = 13;
+const int Rsonic_servo = 24;
 const int shotball_servo_pin = 40;//140 170
-const int is_shot_pin = 11;
-const int stir_ball_pin = 10;
-const int save_ball_servo_pin = 9;
+const int is_shot_pin = 26;
+const int stir_ball_pin = 28;
+const int save_ball_servo_pin = 30;
 
 //---------global_var---------
 bool is_shot = false;

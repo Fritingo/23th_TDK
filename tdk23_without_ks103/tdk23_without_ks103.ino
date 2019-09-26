@@ -15,6 +15,8 @@ int team_color = 1;
 bool run_step = false;
 bool led_state = false;
 
+
+
 //----------pin-----------
 const int in1 = 52;
 const int in2 = 50;
@@ -44,6 +46,11 @@ const int move_A = 31;
 const int move_B = 30;
 const int move_slow = 29;
 const int change_pid = 28;
+//-----------------------------
+const int yaw_in_0 = 11;
+const int yellow_yaw = 24;
+const int orange_yaw = 25;
+const int over_plus_ball = 23;
 //-----------------------------
 
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
@@ -877,6 +884,7 @@ void loop() {
   Serial.print("relative_yaw:");
   Serial.println(relative_yaw);
   //=====================
+  //move
   if (digitalRead(move_A) == HIGH and digitalRead(move_B) == HIGH) {
     Motor_reset();
   } else if (digitalRead(move_A) == LOW and digitalRead(move_B) == HIGH and digitalRead(move_slow) == HIGH) {
@@ -892,6 +900,7 @@ void loop() {
   } else if (digitalRead(move_A) == LOW and digitalRead(move_B) == LOW and digitalRead(move_slow) == LOW) {
     PIDF1();
   }
+  //change_pid
   if (digitalRead(change_pid) == LOW) {
     speed_n1 = 70;
     speed_ne1 = -80;
