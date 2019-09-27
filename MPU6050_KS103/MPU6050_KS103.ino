@@ -66,6 +66,16 @@ void dmpDataReady() {
   mpuInterrupt = true;
 }
 
+void Motor_reset() {
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+}
 void mpu6050_setup() {
   float first_yaw = 0;
   int counter_ready = 0;
@@ -319,6 +329,7 @@ void setup() {
   analogWrite(en4, 100);
   analogWrite(en2, 100);
   analogWrite(en3, 100);
+  Motor_reset();
 //  sonic_servoR.attach(Rsonic_servo);
 //    sonic_servoL.attach(Lsonic_servo);
 //   servo_test_time = millis();
