@@ -14,7 +14,8 @@ float goal_yaw;
 int team_color = 1;
 bool run_step = false;
 bool led_state = false;
-
+bool plus_ball_shotted = false;
+bool yaw_back_0 = false;
 
 
 //----------pin-----------
@@ -51,6 +52,7 @@ const int yaw_in_0 = 11;
 const int yellow_yaw = 24;
 const int orange_yaw = 25;
 const int over_plus_ball = 23;
+
 //-----------------------------
 
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
@@ -910,4 +912,27 @@ void loop() {
     speed_ne1 = -100;
     speed_pu1 = 100;
   }
+  //shot plus ball
+  if(plus_ball_shotted == false){
+    if (digitalRead(yellow_yaw) == LOW){
+      if(relative_yaw < 42){
+        LeftAround1();
+        pidtest_time = millis();
+      }else if(millis()-pidtest_time < 14000 and digitalRead(over_plus_ball) == HIGH){
+        Motor_reset();
+      }else{
+        plus_ball_shotted = true;
+      }
+  }
+    if(yaw_back_0 == false){
+     if(plus_ball_shotted == true){
+       if(relative_yaw > 0.5){
+         RightAround1();
+         pidtest_time = millis();
+       }else{
+         digitalWrite(yaw_in_0,LOW);
+         yaw_back_0 == true;
+       }
+     }
+    }
 }
