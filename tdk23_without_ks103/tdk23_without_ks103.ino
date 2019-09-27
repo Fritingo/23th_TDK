@@ -16,6 +16,7 @@ bool run_step = false;
 bool led_state = false;
 bool plus_ball_shotted = false;
 bool yaw_back_0 = false;
+bool in_change_yaw = false;
 
 
 //----------pin-----------
@@ -887,6 +888,7 @@ void loop() {
   Serial.println(relative_yaw);
   //=====================
   //move
+  if(in_change_yaw == false){
   if (digitalRead(move_A) == HIGH and digitalRead(move_B) == HIGH) {
     Motor_reset();
   } else if (digitalRead(move_A) == LOW and digitalRead(move_B) == HIGH and digitalRead(move_slow) == HIGH) {
@@ -902,6 +904,7 @@ void loop() {
   } else if (digitalRead(move_A) == LOW and digitalRead(move_B) == LOW and digitalRead(move_slow) == LOW) {
     PIDF1();
   }
+  }
   //change_pid
   if (digitalRead(change_pid) == LOW) {
     speed_n1 = 70;
@@ -915,6 +918,7 @@ void loop() {
   //shot plus ball
   if(plus_ball_shotted == false){
     if (digitalRead(yellow_yaw) == LOW){
+      in_change_yaw = true;
       if(relative_yaw < 42){
         LeftAround1();
         pidtest_time = millis();
@@ -931,7 +935,8 @@ void loop() {
          pidtest_time = millis();
        }else{
          digitalWrite(yaw_in_0,LOW);
-         yaw_back_0 == true;
+         yaw_back_0 = true;
+         in_change_yaw = false;
        }
      }
     }
