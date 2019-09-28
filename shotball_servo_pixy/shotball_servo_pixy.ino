@@ -160,7 +160,7 @@ void loop() {
         } else if (have_team_ball > 3) {
           if (millis() - shotservo_time < 720) {
             shotball_servo.write(125);
-          } else if (millis() - shotservo_time < 1300) {
+          } else if (millis() - shotservo_time < 2000) {
             shotball_servo.write(170);
           } else {
             shotservo_time = millis();
@@ -169,7 +169,7 @@ void loop() {
         } else {
           if (millis() - shotservo_time < 600) {
             shotball_servo.write(125);
-          } else if (millis() - shotservo_time < 1300) {
+          } else if (millis() - shotservo_time < 2000) {
             shotball_servo.write(170);
           } else {
             shotservo_time = millis();
@@ -188,7 +188,7 @@ void loop() {
   }
   //---------------3_point-----------------------
   if (is_shot == true) {
-    if (millis() - shotservo_time < 550) {
+    if (millis() - shotservo_time < 500) {
       save_ball_servo.write(80);
     } else {
       save_ball_servo.write(100);
@@ -200,7 +200,7 @@ void loop() {
     } else {
       if (millis() - shotservo_time < 600) {
         shotball_servo.write(125);
-      } else if (millis() - shotservo_time < 1300) {
+      } else if (millis() - shotservo_time < 2000) {
         shotball_servo.write(170);
       } else {
         shotservo_time = millis();
