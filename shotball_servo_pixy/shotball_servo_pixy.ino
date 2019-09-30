@@ -147,8 +147,8 @@ void loop() {
   //---------10_point-------------
   if (plus_ball_over == false and is_shot != true) {
     if (is_shot_plus == true) {
-      if (millis() - shotservo_time < 7000 and shot_motor_is_ok == false) {
-        shotball_servo.write(170);
+      if (millis() - shotservo_time < 7500 and shot_motor_is_ok == false) {
+        shotball_servo.write(180);
       } else if (shot_motor_is_ok == false) {
         shot_motor_is_ok = true;
       } else {
@@ -156,21 +156,21 @@ void loop() {
           classification_over_servo.write(40);
           plus_ball_over == true;
           digitalWrite(plus_ball_over_pin, LOW);
-          shotball_servo.write(170);
+          shotball_servo.write(180);
         } else if (have_team_ball > 3) {
-          if (millis() - shotservo_time < 720) {
-            shotball_servo.write(135);
-          } else if (millis() - shotservo_time < 2000) {
-            shotball_servo.write(170);
+          if (millis() - shotservo_time < 550) {
+            shotball_servo.write(142);
+          } else if (millis() - shotservo_time < 2350) {
+            shotball_servo.write(180);
           } else {
             shotservo_time = millis();
             have_team_ball--;
           }
         } else {
-          if (millis() - shotservo_time < 600) {
-            shotball_servo.write(135);
-          } else if (millis() - shotservo_time < 2000) {
-            shotball_servo.write(170);
+          if (millis() - shotservo_time < 550) {
+            shotball_servo.write(142);
+          } else if (millis() - shotservo_time < 2350) {
+            shotball_servo.write(180);
           } else {
             shotservo_time = millis();
             have_team_ball--;
@@ -193,15 +193,15 @@ void loop() {
     } else {
       save_ball_servo.write(100);
     }
-    if (millis() - shotservo_time < 7000 and shot_motor_is_ok == false) {
+    if (millis() - shotservo_time < 7500 and shot_motor_is_ok == false) {
       shotball_servo.write(170);
     } else if (shot_motor_is_ok == false) {
       shot_motor_is_ok = true;
     } else {
-      if (millis() - shotservo_time < 600) {
-        shotball_servo.write(135);
-      } else if (millis() - shotservo_time < 2000) {
-        shotball_servo.write(170);
+      if (millis() - shotservo_time < 550) {
+        shotball_servo.write(142);
+      } else if (millis() - shotservo_time < 2350) {
+        shotball_servo.write(180);
       } else {
         shotservo_time = millis();
       }

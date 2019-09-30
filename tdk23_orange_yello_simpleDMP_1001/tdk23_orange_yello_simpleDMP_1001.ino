@@ -880,11 +880,11 @@ void yello_team() {
     }
   }
 
-  if (distance_R <510 and flag == 5 and lai == 0) {
+  if (distance_R <500 and flag == 5) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 5) {
-    if (millis() - pidtest_time < 800) {
+    if (millis() - pidtest_time < 2000) {
       Motor_reset();
       lai = 1;
     } else {
@@ -937,11 +937,11 @@ void yello_team() {
     }
   }
 
-  if (distance_R<510 and flag == 9 and lai == 0) {
+  if (distance_R<500 and flag == 9 ) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 9) {
-    if (millis() - pidtest_time < 800) {
+    if (millis() - pidtest_time < 2000) {
       Motor_reset();
       lai = 1;
       digitalWrite(angle90, LOW);
@@ -995,11 +995,11 @@ void yello_team() {
     }
   }
 
-  if (distance_R < 510 and flag == 13 and lai == 0) {
+  if (distance_R < 500 and flag == 13) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 13) {
-    if (millis() - pidtest_time < 800) {
+    if (millis() - pidtest_time < 2000) {
       Motor_reset();
       lai = 1;
     } else {
@@ -1257,7 +1257,7 @@ void yello_team() {
   {
     PIDL1();
     pidtest_time = millis();
-  } else if (distance_R > 130 and distance_R <= 260 and flag == 32 and lai == 0){
+  } else if (distance_R > 130 and distance_R <= 265 and flag == 32 and lai == 0){
     PIDL2();
     pidtest_time = millis();
   } else if (flag == 32) {
@@ -1343,15 +1343,15 @@ void yello_team() {
     }
   }
 
-  if (distance_R <= 150 and flag == 37 and lai == 0 and distance_R < 515)
+  if (distance_R < 150 and flag == 37)
   {
     PIDR1();
     pidtest_time = millis();
-  } else if (distance_R < 330 and distance_R >= 150 and flag == 37 and lai == 0 and distance_R < 515){
+  } else if (distance_R < 330 and distance_R >= 150 and flag == 37){
     PIDR2();
     pidtest_time = millis();
   } else if (flag == 37) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 3000) {
       Motor_reset();
       lai = 1;
       digitalWrite(angle90, LOW);
