@@ -1751,7 +1751,7 @@ void orange_team() {
 
   //--------find_plus----------
   if (flag == 27) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
     }
     else {
@@ -1777,7 +1777,7 @@ void orange_team() {
   }
 
   if (flag == 29) {
-    if (millis() - pidtest_time < 1200) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1805,7 +1805,7 @@ void orange_team() {
   }
 
   if (flag == 31) {
-    if (millis() - pidtest_time < 1200) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1908,7 +1908,7 @@ void orange_team() {
   {
     PIDL1();
     pidtest_time = millis();
-  } else if (distance_L < 240 and distance_L >= 130 and flag == 37 and lai == 0) {
+  } else if (distance_R > 305 and distance_L >= 130 and flag == 37 and lai == 0) {
     PIDL2();
     pidtest_time = millis();
   } else if (flag == 37) {
@@ -1927,7 +1927,7 @@ void orange_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 38 and lai == 0) {
+  if (distance_R > 73 and flag == 38 and lai == 0) {
     PIDF1();
     pidtest_time = millis();
   } else if (flag == 38) {
