@@ -45,6 +45,14 @@ void servo_setup() {
   blue_servo.write(90);// 90平 45舉
   black_servo.write(0);//0平 30舉
 }
+
+void servo_all_up(){
+  red_servo.write(60);// 90平 60舉
+  green_servo.write(45); //0平 45舉
+  blue_servo.write(45);// 90平 45舉
+  black_servo.write(30);//0平 30舉
+}
+
 void rg_servo() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(45); //0平 45舉
@@ -87,17 +95,18 @@ void setup() {
   green_servo.attach(green_servo_pin);
   blue_servo.attach(blue_servo_pin);
   black_servo.attach(black_servo_pin);
+  servo_all_up();
   pinMode(pixy_color_flag_pin, INPUT_PULLUP);
   pinMode(collect_ball_pin, OUTPUT);
   pinMode(pullup_ball_pin, OUTPUT);
   digitalWrite(collect_ball_pin, LOW);
   digitalWrite(pullup_ball_pin, LOW);
-  servo_setup();
+  
   pixy.init();
   classification_servo.attach(classification_servo_pin);
   classification_servo.write(92);
   delay(5000);
-
+  servo_setup();
 }
 void loop() {
   if (digitalRead(pixy_color_flag_pin) == 0 and is_identification == false) {

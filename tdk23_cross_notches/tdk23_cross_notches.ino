@@ -26,6 +26,8 @@ float goal_yaw;
 int team_color = 1;
 bool run_step = false;
 bool led_state = false;
+int f_time = 1000;
+int cross_f_time = 2000;
 
 //----------pin-----------
 const int in1 = 52;
@@ -832,7 +834,7 @@ void yello_team() {
   }
 
   if (flag == 1) {
-    if (millis() - pidtest_time < 3000) {
+    if (millis() - pidtest_time < 2000) {
       PIDF();
     } else {
       Motor_reset();
@@ -870,7 +872,7 @@ void yello_team() {
   }
 
   if (flag == 4) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -895,7 +897,7 @@ void yello_team() {
   }
 
   if (flag == 6) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < cross_f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -922,7 +924,7 @@ void yello_team() {
   }
 
   if (flag == 8) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -946,7 +948,7 @@ void yello_team() {
   }
 
   if (flag == 10) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < cross_f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -960,7 +962,7 @@ void yello_team() {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 11) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       Motor_reset();
       lai = 1;
     } else {
@@ -973,7 +975,7 @@ void yello_team() {
   }
 
   if (flag == 12) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1002,7 +1004,7 @@ void yello_team() {
   }
 
   if (flag == 14) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1029,7 +1031,7 @@ void yello_team() {
   }
 
   if (flag == 16) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1056,7 +1058,7 @@ void yello_team() {
   }
 
   if (flag == 18) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1083,7 +1085,7 @@ void yello_team() {
   }
 
   if (flag == 20) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1110,7 +1112,7 @@ void yello_team() {
   }
 
   if (flag == 22) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
 
     } else {
@@ -1139,7 +1141,7 @@ void yello_team() {
   }
 
   if (flag == 24) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1166,7 +1168,7 @@ void yello_team() {
   }
 
   if (flag == 26) {
-    if (millis() - pidtest_time < 1400) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1193,7 +1195,7 @@ void yello_team() {
   }
 
   if (flag == 28) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1221,7 +1223,7 @@ void yello_team() {
   }
 
   if (flag == 30) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1345,7 +1347,7 @@ void yello_team() {
   {
     PIDR1();
     //  pidtest_time = millis();
-  } else if ((distance_R < 318 and distance_R >= 150 and flag == 37 and lai == 0) or distance_R == 519) {
+  } else if ((distance_L > 270 and distance_R >= 150 and flag == 37 and lai == 0) or distance_R == 519) {
     PIDR2();
     pidtest_time = millis();
   } else if (flag == 37) {
@@ -1408,7 +1410,7 @@ void orange_team() {
   }
 
   if (flag == 1) {
-    if (millis() - pidtest_time < 3000) {
+    if (millis() - pidtest_time < 2000) {
       PIDF();
     } else {
       Motor_reset();
@@ -1446,7 +1448,7 @@ void orange_team() {
   }
 
   if (flag == 4) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1469,7 +1471,7 @@ void orange_team() {
   }
 
   if (flag == 6) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < cross_f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1495,7 +1497,7 @@ void orange_team() {
   }
 
   if (flag == 8) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1517,7 +1519,7 @@ void orange_team() {
   }
 
   if (flag == 10) {
-    if (millis() - pidtest_time < 2000) {
+    if (millis() - pidtest_time < cross_f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1544,7 +1546,7 @@ void orange_team() {
   }
 
   if (flag == 12) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1571,7 +1573,7 @@ void orange_team() {
   }
 
   if (flag == 14) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1625,7 +1627,7 @@ void orange_team() {
   }
 
   if (flag == 18) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1652,7 +1654,7 @@ void orange_team() {
   }
 
   if (flag == 20) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1679,7 +1681,7 @@ void orange_team() {
   }
 
   if (flag == 22) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
 
     } else {
@@ -1708,7 +1710,7 @@ void orange_team() {
   }
 
   if (flag == 24) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1735,7 +1737,7 @@ void orange_team() {
   }
 
   if (flag == 26) {
-    if (millis() - pidtest_time < 1700) {
+    if (millis() - pidtest_time < f_time) {
       PIDF();
     } else {
       Motor_reset();
