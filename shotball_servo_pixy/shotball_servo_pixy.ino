@@ -168,7 +168,7 @@ void loop() {
           }
         } else {
           if (millis() - shotservo_time < 550) {
-            shotball_servo.write(142);
+            shotball_servo.write(136);
           } else if (millis() - shotservo_time < 2350) {
             shotball_servo.write(180);
           } else {
@@ -188,7 +188,7 @@ void loop() {
   }
   //---------------3_point-----------------------
   if (is_shot == true) {
-    if (millis() - shotservo_time < 500) {
+    if (millis() - shotservo_time < 250) {
       save_ball_servo.write(80);
     } else {
       save_ball_servo.write(100);

@@ -28,7 +28,7 @@ bool run_step = false;
 bool led_state = false;
 int f_time = 1000;
 int cross_f_time = 2000;
-
+float relative_yaw_error = 0;
 //----------pin-----------
 const int in1 = 52;
 const int in2 = 50;
@@ -73,6 +73,7 @@ void get_yaw(int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *timestamp) 
     mpu.GetYawPitchRoll(ypr, &q, &gravity);
     mpu.ConvertToDegrees(ypr, xyz);
     relative_yaw = (ypr[0] * 180) / PI;
+    relative_yaw = relative_yaw - relative_yaw_error;
   }
 }
 //----------pid------------
@@ -1848,18 +1849,27 @@ void orange_team() {
       Motor_reset();
       lai = 1;
     } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
+      if (distance_L - distance_R > 3) {
+        lai = 1;
+        LeftAround1();
+      } else if (distance_R - distance_L > 3) {
+        lai = 1;
+        RightAround1();
+      } else {
+        relative_yaw_error = relative_yaw;
+        flag++;
+        pidtest_time = millis();
+        lai = 0;
 
-      digitalWrite(angle90, LOW);
-      //      if (digitalRead(is_no_ball) == LOW) {
-      //
-      //        digitalWrite(angle90, HIGH);
-      //        flag = 32;
-      //      } else {
-      digitalWrite(is_shot_plus_pin, LOW);//射球
-      //      }
+        digitalWrite(angle90, LOW);
+        //      if (digitalRead(is_no_ball) == LOW) {
+        //
+        //        digitalWrite(angle90, HIGH);
+        //        flag = 32;
+        //      } else {
+        digitalWrite(is_shot_plus_pin, LOW);//射球
+        //      }
+      }
     }
   }
 
@@ -1908,7 +1918,7 @@ void orange_team() {
   {
     PIDL1();
     pidtest_time = millis();
-  } else if (distance_R > 310 and distance_L >= 130 and flag == 37 and lai == 0) {
+  } else if (distance_R > 305 and distance_L >= 130 and flag == 37 and lai == 0) {
     PIDL2();
     pidtest_time = millis();
   } else if (flag == 37) {
