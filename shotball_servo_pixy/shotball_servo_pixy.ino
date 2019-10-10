@@ -159,7 +159,7 @@ void loop() {
           shotball_servo.write(180);
         } else if (have_team_ball > 3) {
           if (millis() - shotservo_time < 550) {
-            shotball_servo.write(142);
+            shotball_servo.write(136);
           } else if (millis() - shotservo_time < 2350) {
             shotball_servo.write(180);
           } else {
@@ -168,7 +168,7 @@ void loop() {
           }
         } else {
           if (millis() - shotservo_time < 550) {
-            shotball_servo.write(136);
+            shotball_servo.write(130);
           } else if (millis() - shotservo_time < 2350) {
             shotball_servo.write(180);
           } else {
@@ -199,7 +199,7 @@ void loop() {
       shot_motor_is_ok = true;
     } else {
       if (millis() - shotservo_time < 550) {
-        shotball_servo.write(142);
+        shotball_servo.write(136);
       } else if (millis() - shotservo_time < 2350) {
         shotball_servo.write(180);
       } else {

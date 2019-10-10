@@ -27,8 +27,9 @@ float goal_yaw;
 int team_color = 1;
 bool run_step = false;
 bool led_state = false;
-int f_time = 950;
-int cross_f_time = 1600;
+int orange_f_time = 950;
+int yellow_f_time = 900;
+int cross_f_time = 1550;
 float relative_yaw_error = 0;
 //----------pin-----------
 const int in1 = 52;
@@ -78,22 +79,22 @@ void get_yaw(int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *timestamp) 
   }
 }
 //----------pid------------
-int kp = 0.8;
-int kd = 0.5;
-int kp1 = 0.5;
-int kd1 = 0.3;
+int kp = 5;
+int kd = 3;
+int kp1 = 5;
+int kd1 = 3;
 int speed_n = 100;
-int speed_n3 = 70;
-int speed_ne3 = -80;
-int speed_pu3 = 80;
+int speed_n3 = 100;
+int speed_ne3 = 90;
+int speed_pu3 = 110;
 int speed_ne = -110;
 int speed_pu = 110;
 int speed_n2 = 50;
-int speed_ne2 = -60;
+int speed_ne2 = 40;
 int speed_pu2 = 60;
-int speed_n1 = 90;
-int speed_ne1 = -100;
-int speed_pu1 = 100;
+int speed_n1 = 180;
+int speed_ne1 =170;
+int speed_pu1 = 190;
 int e;
 int e1;
 int e_pre = 0;
@@ -151,32 +152,29 @@ void PIDR() {
 
 void PIDR1() {
   e = relative_yaw - relative_yaw1;
-  e1 = abs(e);
-  control = kp * e1 + kd * (e1 - e_pre);
+ // e1 = abs(e);
+  control = kp * e + kd * (e - e_pre);
   speed_L = speed_n3 + control;
-  // speed_R = speed_n - control;
+  speed_R = speed_n3 - control;
   if (speed_L > speed_pu3) {
     speed_L = speed_pu3;
   }
-  //  if (speed_L < speed_ne) {
-  //    speed_L = speed_ne;
-  //  }
+    if (speed_L < speed_ne3) {
+      speed_L = speed_ne3;
+    }
   if (speed_R > speed_pu3) {
     speed_R = speed_pu3;
   }
-  //  if (speed_R < speed_ne) {
-  //    speed_R = speed_ne;
-  //  }
-  speed_L = abs(speed_L);
-  //  speed_R = abs(speed_R);
-  speed_LI = floor(speed_L);
-  //  speed_RI = floor(speed_R);
-  e_pre = e1;
-  if (e > 1) {
+    if (speed_R < speed_ne3) {
+      speed_R = speed_ne3;
+    }
+//  speed_L = abs(speed_L);
+//    speed_R = abs(speed_R);
+    speed_LI = floor(speed_L);
+    speed_RI = floor(speed_R);
+  e_pre = e;
+  if (e > 0 or e < 0) {
     RightAround();
-  }
-  else if (e < -1) {
-    LeftAround();
   }
   else {
     Rightward();
@@ -184,32 +182,29 @@ void PIDR1() {
 }
 void PIDR2() {
   e = relative_yaw - relative_yaw1;
-  e1 = abs(e);
-  control = kp * e1 + kd * (e1 - e_pre);
+//  e1 = abs(e);
+  control = kp * e + kd * (e - e_pre);
   speed_L = speed_n2 + control;
-  // speed_R = speed_n - control;
+   speed_R = speed_n2 - control;
   if (speed_L > speed_pu2) {
     speed_L = speed_pu2;
   }
-  //  if (speed_L < speed_ne) {
-  //    speed_L = speed_ne;
-  //  }
+    if (speed_L < speed_ne2) {
+      speed_L = speed_ne2;
+    }
   if (speed_R > speed_pu2) {
     speed_R = speed_pu2;
   }
-  //  if (speed_R < speed_ne) {
-  //    speed_R = speed_ne;
-  //  }
-  speed_L = abs(speed_L);
+    if (speed_R < speed_ne2) {
+      speed_R = speed_ne2;
+    }
+ // speed_L = abs(speed_L);
   //  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-  //  speed_RI = floor(speed_R);
-  e_pre = e1;
-  if (e > 1) {
+  speed_RI = floor(speed_R);
+  e_pre = e;
+  if (e > 0 or e < 0) {
     RightAround();
-  }
-  else if (e < -1) {
-    LeftAround();
   }
   else {
     Rightward2();
@@ -251,32 +246,29 @@ void PIDL() {
 
 void PIDL1() {
   e = relative_yaw - relative_yaw1;
-  e1 = abs(e);
-  control = kp * e1 + kd * (e1 - e_pre);
+//  e1 = abs(e);
+  control = kp * e + kd * (e - e_pre);
   speed_L = speed_n3 + control;
-  //  speed_R = speed_n - control;
+    speed_R = speed_n3 - control;
   if (speed_L > speed_pu3) {
     speed_L = speed_pu3;
   }
-  //  if (speed_L < speed_ne) {
-  //    speed_L = speed_ne;
-  //  }
+    if (speed_L < speed_ne3) {
+      speed_L = speed_ne3;
+    }
   if (speed_R > speed_pu3) {
     speed_R = speed_pu3;
   }
-  //  if (speed_R < speed_ne) {
-  //    speed_R = speed_ne;
-  //  }
-  speed_L = abs(speed_L);
+    if (speed_R < speed_ne3) {
+      speed_R = speed_ne3;
+    }
+  //speed_L = abs(speed_L);
   //  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-  //  speed_RI = floor(speed_R);
-  e_pre = e1;
-  if (e > 1) {
-    RightAround();
-  }
-  else if (e < -1) {
-    LeftAround();
+  speed_RI = floor(speed_R);
+  e_pre = e;
+  if (e > 0 or e < 0) {
+     LeftAround();
   }
   else {
     Leftward();
@@ -284,65 +276,60 @@ void PIDL1() {
 }
 void PIDL2() {
   e = relative_yaw - relative_yaw1;
-  e1 = abs(e);
-  control = kp * e1 + kd * (e1 - e_pre);
+ // e1 = abs(e);
+  control = kp * e + kd * (e - e_pre);
   speed_L = speed_n2 + control;
-  //  speed_R = speed_n - control;
+    speed_R = speed_n2 - control;
   if (speed_L > speed_pu2) {
     speed_L = speed_pu2;
   }
-  //  if (speed_L < speed_ne) {
-  //    speed_L = speed_ne;
-  //  }
+    if (speed_L < speed_ne2) {
+      speed_L = speed_ne2;
+    }
   if (speed_R > speed_pu2) {
     speed_R = speed_pu2;
   }
-  //  if (speed_R < speed_ne) {
-  //    speed_R = speed_ne;
-  //  }
-  speed_L = abs(speed_L);
+    if (speed_R < speed_ne2) {
+      speed_R = speed_ne2;
+    }
+ // speed_L = abs(speed_L);
   //  speed_R = abs(speed_R);
   speed_LI = floor(speed_L);
-  //  speed_RI = floor(speed_R);
-  e_pre = e1;
-  if (e > 1) {
-    RightAround();
-  }
-  else if (e < -1) {
+  speed_RI = floor(speed_R);
+  e_pre = e;
+  if (e > 0 or e < 0) {
     LeftAround();
   }
   else {
     Leftward2();
   }
 }
+
 void PIDF() {
   e = relative_yaw - relative_yaw1;
-  e1 = abs(e);
-  control1 = kp1 * e1 + kd1 * (e1 - e_pre);
+//  e1 = abs(e);
+  control1 = kp1 * e + kd1 * (e - e_pre);
   speed_L1 = speed_n1 + control1;
-  //  speed_R1 = speed_n1 - control1;
+  speed_R1 = speed_n1 - control1;
   if (speed_L1 > speed_pu1) {
     speed_L1 = speed_pu1;
   }
-  //  if (speed_L1 < speed_ne1) {
-  //    speed_L1 = speed_ne1;
-  //  }
-  //  if (speed_R1 > speed_pu1) {
-  //    speed_R1 = speed_pu1;
-  //  }
-  //  if (speed_R1 < speed_ne1) {
-  //    speed_R1 = speed_ne1;
-  //  }
-  speed_L1 = abs(speed_L1);
+    if (speed_L1 < speed_ne1) {
+      speed_L1 = speed_ne1;
+    }
+    if (speed_R1 > speed_pu1) {
+      speed_R1 = speed_pu1;
+    }
+    if (speed_R1 < speed_ne1) {
+      speed_R1 = speed_ne1;
+    }
+  //speed_L1 = abs(speed_L1);
   //  speed_R1 = abs(speed_R1);
-  speed_LI = floor(speed_L1);
-  //  speed_RI1 = floor(speed_R1);
-  e_pre = e1;
-  if (e > 2) {
-    RightAround();
-  }
-  else if (e < -2) {
-    LeftAround();
+  speed_LI1 = floor(speed_L1);
+    speed_RI1 = floor(speed_R1);
+  e_pre = e;
+  if (e > 0 or e < 0) {
+    RightAround3();
   }
   else {
     Forward();
@@ -351,32 +338,29 @@ void PIDF() {
 
 void PIDF1() {
   e = relative_yaw - relative_yaw1;
-  e1 = abs(e);
-  control1 = kp1 * e1 + kd1 * (e1 - e_pre);
+//  e1 = abs(e);
+  control1 = kp1 * e + kd1 * (e - e_pre);
   speed_L1 = speed_n1 + control1;
-  //  speed_R1 = speed_n1 - control1;
+  speed_R1 = speed_n1 - control1;
   if (speed_L1 > speed_pu1) {
     speed_L1 = speed_pu1;
   }
-  //  if (speed_L1 < speed_ne1) {
-  //    speed_L1 = speed_ne1;
-  //  }
-  //  if (speed_R1 > speed_pu1) {
-  //    speed_R1 = speed_pu1;
-  //  }
-  //  if (speed_R1 < speed_ne1) {
-  //    speed_R1 = speed_ne1;
-  //  }
-  speed_L1 = abs(speed_L1);
+    if (speed_L1 < speed_ne1) {
+      speed_L1 = speed_ne1;
+    }
+    if (speed_R1 > speed_pu1) {
+      speed_R1 = speed_pu1;
+    }
+    if (speed_R1 < speed_ne1) {
+      speed_R1 = speed_ne1;
+    }
+  //speed_L1 = abs(speed_L1);
   //  speed_R1 = abs(speed_R1);
-  speed_LI = floor(speed_L1);
-  //  speed_RI1 = floor(speed_R1);
-  e_pre = e1;
-  if (e > 1) {
-    RightAround();
-  }
-  else if (e < -1) {
-    LeftAround();
+  speed_LI1 = floor(speed_L1);
+    speed_RI1 = floor(speed_R1);
+  e_pre = e;
+  if (e > 0 or e < 0) {
+    RightAround3();
   }
   else {
     Forward();
@@ -385,66 +369,63 @@ void PIDF1() {
 
 void PIDF2() {
   e = relative_yaw - relative_yaw1;
-  e1 = abs(e);
-  control1 = kp1 * e1 + kd1 * (e1 - e_pre);
+ // e1 = abs(e);
+  control1 = kp1 * e + kd1 * (e - e_pre);
   speed_L1 = speed_n1 + control1;
-  //  speed_R1 = speed_n1 - control1;
+    speed_R1 = speed_n1 - control1;
   if (speed_L1 > speed_pu1) {
     speed_L1 = speed_pu1;
   }
-  //  if (speed_L1 < speed_ne1) {
-  //    speed_L1 = speed_ne1;
-  //  }
-  //  if (speed_R1 > speed_pu1) {
-  //    speed_R1 = speed_pu1;
-  //  }
-  //  if (speed_R1 < speed_ne1) {
-  //    speed_R1 = speed_ne1;
-  //  }
-  speed_L1 = abs(speed_L1);
+    if (speed_L1 < speed_ne1) {
+      speed_L1 = speed_ne1;
+    }
+    if (speed_R1 > speed_pu1) {
+      speed_R1 = speed_pu1;
+    }
+    if (speed_R1 < speed_ne1) {
+      speed_R1 = speed_ne1;
+    }
+  //speed_L1 = abs(speed_L1);
   //  speed_R1 = abs(speed_R1);
-  speed_LI = floor(speed_L1);
-  //  speed_RI1 = floor(speed_R1);
-  e_pre = e1;
-  if (e > 1) {
-    RightAround();
-  }
-  else if (e < -1) {
-    LeftAround();
+  speed_LI1 = floor(speed_L1);
+  speed_RI1 = floor(speed_R1);
+  e_pre = e;
+  if (e > 0 or e < 0) {
+    RightAround3();
   }
   else {
-    Forward1();
+    Forward();
   }
 }
 
 void RightAround() {
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
-  digitalWrite(in5, HIGH);
-  digitalWrite(in6, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
-  analogWrite(en1, speed_LI);
-  analogWrite(en3, speed_LI);
+  analogWrite(en1, speed_RI);
+  analogWrite(en3, speed_RI);
   analogWrite(en2, speed_LI);
   analogWrite(en4, speed_LI);
 }
 
 void LeftAround() {
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, HIGH);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
   analogWrite(en1, speed_LI);
   analogWrite(en3, speed_LI);
-  analogWrite(en2, speed_LI);
-  analogWrite(en4, speed_LI);
+  analogWrite(en2, speed_RI);
+  analogWrite(en4, speed_RI);
 }
 
 void ForwardAround() {
@@ -486,10 +467,10 @@ void Rightward() {
   digitalWrite(in6, HIGH);
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
-  analogWrite(en1, speed_n);
-  analogWrite(en2, speed_n);
-  analogWrite(en3, speed_n);
-  analogWrite(en4, speed_n);
+  analogWrite(en1, speed_n3);
+  analogWrite(en2, speed_n3);
+  analogWrite(en3, speed_n3);
+  analogWrite(en4, speed_n3);
 }
 void Rightward2() {
   digitalWrite(in1, LOW);
@@ -563,6 +544,20 @@ void LeftAround2() {
   analogWrite(en2, 55);
   analogWrite(en4, 55);
 }
+void RightAround3() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  analogWrite(en1, speed_LI1);
+  analogWrite(en2, speed_LI1);
+  analogWrite(en3, speed_RI1);
+  analogWrite(en4, speed_RI1);
+}
 void Leftward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -572,10 +567,10 @@ void Leftward() {
   digitalWrite(in6, LOW);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
-  analogWrite(en1, speed_n);
-  analogWrite(en2, speed_n);
-  analogWrite(en3, speed_n);
-  analogWrite(en4, speed_n);
+  analogWrite(en1, speed_n3);
+  analogWrite(en2, speed_n3);
+  analogWrite(en3, speed_n3);
+  analogWrite(en4, speed_n3);
 }
 
 void Leftward1() {
@@ -615,10 +610,10 @@ void Forward() {
   digitalWrite(in6, HIGH);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
-  analogWrite(en1, 180);
-  analogWrite(en2, 180);
-  analogWrite(en3, 180);
-  analogWrite(en4, 180);
+  analogWrite(en1, speed_n1);
+  analogWrite(en2, speed_n1);
+  analogWrite(en3, speed_n1);
+  analogWrite(en4, speed_n1);
 }
 
 void Forward1() {
@@ -859,6 +854,7 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
@@ -869,7 +865,7 @@ void yello_team() {
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
       pidtest_time = millis();
       digitalWrite(pixy_color_flag_pin, LOW);
@@ -896,18 +892,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 4) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
       //  delay(100);
       pidtest_time = millis();
@@ -915,12 +911,14 @@ void yello_team() {
   }
 
   if (flag == 5) {
-    if (millis() - pidtest_time < 5000) {
+    if (millis() - pidtest_time < 4000) {
       PIDR1();
+    } else if ((millis() - pidtest_time >= 4000) and (millis() - pidtest_time < 5000)) {
+      Motor_reset();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
       pidtest_time = millis();
     }
@@ -932,7 +930,7 @@ void yello_team() {
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -948,30 +946,32 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 8) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
       pidtest_time = millis();
       //    delay(100);
     }
   }
   if (flag == 9) {
-    if (millis() - pidtest_time < 5000) {
+    if (millis() - pidtest_time < 4000) {
       PIDR1();
+    } else if ((millis() - pidtest_time >= 4000) and (millis() - pidtest_time < 5000)) {
+      Motor_reset();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
       pidtest_time = millis();
     }
@@ -983,7 +983,7 @@ void yello_team() {
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -999,18 +999,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 12) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
       //    delay(100);
     }
@@ -1027,19 +1027,19 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
 
     }
   }
 
   if (flag == 14) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1055,18 +1055,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 16) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1082,18 +1082,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 18) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1109,18 +1109,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 20) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1136,20 +1136,20 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 22) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
 
     } else {
       Motor_reset();
       flag++;
       pidtest_time = millis();
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1165,18 +1165,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 24) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1192,19 +1192,19 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 26) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
       pidtest_time = millis();
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1219,18 +1219,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 28) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
 
     }
@@ -1247,18 +1247,18 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 30) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < yellow_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1272,14 +1272,15 @@ void yello_team() {
     else {
       digitalWrite(angle90, HIGH);
       flag++;
+      e_pre = 0;
     }
   }
   //===============flag change==========
-  if (distance_R > 260 and flag == 32 and lai == 0)
+  if (distance_R > 270 and flag == 32 and lai == 0)
   {
     PIDL1();
     pidtest_time = millis();
-  } else if (distance_R > 130 and distance_R <= 260 and flag == 32 and lai == 0)
+  } else if (distance_R > 135 and distance_R <= 270 and flag == 32 and lai == 0)
   {
     PIDL2();
     pidtest_time = millis();
@@ -1292,11 +1293,11 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
-      speed_n1 = 70;
-      speed_ne1 = -80;
-      speed_pu1 = 80;
+      speed_n1 = 120;
+      speed_ne1 = 110;
+      speed_pu1 = 130;
     }
   }
 
@@ -1319,7 +1320,8 @@ void yello_team() {
         Motor_reset();
         flag++;
         pidtest_time = millis();
-        lai = 0;       
+        lai = 0;  
+        e_pre = 0;     
         digitalWrite(angle90, LOW);
         //      if (digitalRead(is_no_ball) == LOW) {
         //
@@ -1329,20 +1331,20 @@ void yello_team() {
         digitalWrite(is_shot_plus_pin, LOW);//射球
         mpu.dmp_read_fifo();
         relative_yaw2 = relative_yaw;
-        relative_yaw1 = relative_yaw2;
+ //       relative_yaw1 = relative_yaw2;
       }
-
-    }
+      }
   }
   if (flag == 34) {
     if (millis() - pidtest_time < 800) {
       Motor_reset();
     } else {      
       flag++;
+      e_pre = 0;
     }
   }
   
-  if (relative_yaw- relative_yaw2 < 42 and flag == 35 and lai == 0) {
+  if (relative_yaw- relative_yaw2 < 41 and flag == 35 and lai == 0) {
     LeftAround1();
     pidtest_time = millis();
   } else if (flag == 35) {// and
@@ -1353,6 +1355,7 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
+      e_pre = 0;
       //
       //  digitalWrite(angle90, LOW);
     }
@@ -1369,7 +1372,7 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1380,6 +1383,7 @@ void yello_team() {
     }
     else {
       flag++;
+      e_pre = 0;
     }
   }
 
@@ -1387,7 +1391,7 @@ void yello_team() {
   {
     PIDR1();
     //  pidtest_time = millis();
-  } else if ((distance_L > 280 and distance_R >= 150 and flag == 38 and lai == 0) or distance_R == 519) {
+  } else if ((distance_R < 345 and distance_R >= 150 and flag == 38 and lai == 0) or distance_R == 519) {
     PIDR2();
     pidtest_time = millis();
   } else if (flag == 38) {
@@ -1398,11 +1402,11 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
-      speed_n1 = 70;
-      speed_ne1 = -80;
-      speed_pu1 = 80;
+      speed_n1 = 120;
+      speed_ne1 = 110;
+      speed_pu1 = 130;
     }
   }
 
@@ -1424,12 +1428,25 @@ void yello_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
       digitalWrite(is_shot_pin, LOW);//射球
+      relative_yaw2=relative_yaw;
     }
   }
-
+  
+   if (relative_yaw-relative_yaw2 < 1 and flag ==40  and lai == 0) {
+    LeftAround2();
+    pidtest_time = millis();
+  } else if(flag ==40){
+      Motor_reset();
+      flag++;
+      pidtest_time = millis();
+      lai = 1;
+      e_pre = 0;
+      digitalWrite(angle90, LOW);
+      digitalWrite(is_shot_pin, LOW);//射球
+  }
 }
 
 void orange_team() {
@@ -1444,6 +1461,7 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
@@ -1454,7 +1472,7 @@ void orange_team() {
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
       pidtest_time = millis();
       digitalWrite(pixy_color_flag_pin, LOW);
@@ -1481,30 +1499,34 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 4) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
+      pidtest_time = millis();
       digitalWrite(angle90, HIGH);
 
     }
   }
 
   if (flag == 5) {
-    if (millis() - pidtest_time < 5000) {
-      PIDL1();
+    if (millis() - pidtest_time < 4000) {
+      PIDL1();  
+    } else if ((millis() - pidtest_time >= 4000) and (millis() - pidtest_time < 5000)) {
+      Motor_reset();
     } else {
       flag++;
       pidtest_time = millis();
       lai = 0;
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
@@ -1515,6 +1537,7 @@ void orange_team() {
     } else {
       Motor_reset();
       flag++;
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1530,29 +1553,33 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 8) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
-      digitalWrite(angle90, HIGH);
+      e_pre = 0;
+      pidtest_time = millis();
+      digitalWrite(angle90, HIGH);     
     }
   }
 
   if (flag == 9) {
-    if (millis() - pidtest_time < 5000) {
+    if (millis() - pidtest_time < 4000) {
       PIDL1();
+    } else if ((millis() - pidtest_time >= 4000) and (millis() - pidtest_time < 5000)) {
+      Motor_reset();
     } else {
       flag++;
       pidtest_time = millis();
       lai = 0;
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
@@ -1563,7 +1590,7 @@ void orange_team() {
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1579,18 +1606,18 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 12) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1606,18 +1633,18 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 14) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1633,18 +1660,18 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 16) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1660,18 +1687,18 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 18) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1687,18 +1714,18 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 20) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1714,20 +1741,20 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 22) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
 
     } else {
       Motor_reset();
       flag++;
       pidtest_time = millis();
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1743,18 +1770,18 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 24) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1770,19 +1797,19 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 26) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
       pidtest_time = millis();
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1810,18 +1837,18 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 29) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
       flag++;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
 
     }
@@ -1838,13 +1865,13 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
     }
   }
 
   if (flag == 31) {
-    if (millis() - pidtest_time < f_time) {
+    if (millis() - pidtest_time < orange_f_time) {
       PIDF();
     } else {
       Motor_reset();
@@ -1871,11 +1898,11 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
-      speed_n1 = 70;
-      speed_ne1 = -80;
-      speed_pu1 = 80;
+      speed_n1 = 120;
+      speed_ne1 = 110;
+      speed_pu1 = 130;
     }
   }
 
@@ -1899,6 +1926,7 @@ void orange_team() {
         flag++;
         pidtest_time = millis();
         lai = 0;
+        e_pre=0;
         mpu.dmp_read_fifo();
         relative_yaw2 = relative_yaw;
         digitalWrite(angle90, LOW);
@@ -1908,8 +1936,7 @@ void orange_team() {
         //        flag = 32;
         //      } else {
         digitalWrite(is_shot_plus_pin, LOW);//射球
-        relative_yaw1 = relative_yaw2;
-        //      }
+       // relative_yaw1 = relative_yaw2;
       }
     }
   }
@@ -1920,7 +1947,7 @@ void orange_team() {
       flag++;
     }
   }
-  if (relative_yaw - relative_yaw2 > -46 and flag == 35 and lai == 0) {
+  if (relative_yaw - relative_yaw2  > -46 and flag == 35 and lai == 0) {
     RightAround1();
     pidtest_time = millis();
   } else if (flag == 35) {// and
@@ -1931,6 +1958,7 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
+      e_pre = 0;
       //
       //  digitalWrite(angle90, LOW);
     }
@@ -1947,7 +1975,7 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, HIGH);
     }
   }
@@ -1966,7 +1994,7 @@ void orange_team() {
   {
     PIDL1();
     pidtest_time = millis();
-  } else if (distance_L < 240 and distance_L >= 130 and flag == 38 and lai == 0) {
+  } else if (distance_L < 220 and distance_L >= 130 and flag == 38 and lai == 0) {
     PIDL2();
     pidtest_time = millis();
   } else if (flag == 38) {
@@ -1977,15 +2005,15 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre = 0;
       digitalWrite(angle90, LOW);
-      speed_n1 = 70;
-      speed_ne1 = -80;
-      speed_pu1 = 80;
+      speed_n1 = 120;
+      speed_ne1 = 110;
+      speed_pu1 = 130;
     }
   }
 
-  if (distance_R > 65 and flag == 39 and lai == 0) {
+  if (distance_R > 68 and flag == 39 and lai == 0) {
     PIDF2();
     pidtest_time = millis();
   } else if (flag == 39) {
@@ -1996,7 +2024,7 @@ void orange_team() {
       lai = 1;
       LeftAround2();
     }
-    else if (distance_R - distance_L > 3) {
+      else if (distance_R - distance_L > 3) {
       lai = 1;
       RightAround2();
     } else {
@@ -2004,10 +2032,24 @@ void orange_team() {
       flag++;
       pidtest_time = millis();
       lai = 0;
-
+      e_pre=0;
       digitalWrite(angle90, LOW);
       digitalWrite(is_shot_pin, LOW);//射球
+      relative_yaw2=relative_yaw;
     }
   }
-
+  
+   if (relative_yaw-relative_yaw2 < 1 and flag ==40  and lai == 0) {
+    LeftAround2();
+    pidtest_time = millis();
+  } else if(flag ==40){
+      Motor_reset();
+      flag++;
+      pidtest_time = millis();
+      lai = 1;
+      e_pre = 0;
+      digitalWrite(angle90, LOW);
+      digitalWrite(is_shot_pin, LOW);//射球
+  }
+  
 }
