@@ -157,9 +157,9 @@ void loop() {
           plus_ball_over == true;
           digitalWrite(plus_ball_over_pin, LOW);
           shotball_servo.write(180);
-        } else if (have_team_ball > 3) {
+        } else if (have_team_ball > 4) {
           if (millis() - shotservo_time < 550) {
-            shotball_servo.write(136);
+            shotball_servo.write(134);
           } else if (millis() - shotservo_time < 2350) {
             shotball_servo.write(180);
           } else {
@@ -183,7 +183,7 @@ void loop() {
       is_shot_plus = true;
       digitalWrite(shot_ball_pin, LOW);
       digitalWrite(stir_ball_pin, HIGH);
-      have_team_ball = have_team_ball + 3;
+      have_team_ball = have_team_ball + 4;
     }
   }
   //---------------3_point-----------------------

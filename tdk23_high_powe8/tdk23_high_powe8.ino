@@ -6,6 +6,7 @@
 Simple_MPU6050 mpu;
 ENABLE_MPU_OVERFLOW_PROTECTION();
 //============================
+#include "I2Cdev.h"
 #include "Wire.h"
 
 #define KS103_L 0x74
@@ -27,10 +28,12 @@ float goal_yaw;
 int team_color = 1;
 bool run_step = false;
 bool led_state = false;
-int orange_f_time = 950;
-int yellow_f_time = 1000; //900
-int cross_f_time = 1600; //1550
+int orange_f_time =800;  //900
+int yellow_f_time = 800; //900 //1000
+int cross_f_time = 1550; //1550 //1600
 float relative_yaw_error = 0;
+bool check_x = 0;
+bool check_y = 0;
 //----------pin-----------
 const int in1 = 52;
 const int in2 = 50;
@@ -112,7 +115,7 @@ int flag = -1;
 unsigned long pidtest_time;
 int lai = 0;
 int lai1 = 0;
-long lai2 = 0;
+//unsigned long lai2 = 0;
 int lai3 = 2;
 
 //---------func-----------
@@ -553,10 +556,10 @@ void RightAround2() {
   digitalWrite(in6, LOW);
   digitalWrite(in7, LOW);
   digitalWrite(in8, HIGH);
-  analogWrite(en1, 55);
-  analogWrite(en3, 55);
-  analogWrite(en2, 55);
-  analogWrite(en4, 55);
+  analogWrite(en1, 57);
+  analogWrite(en3, 57);
+  analogWrite(en2, 57);
+  analogWrite(en4, 57);
 }
 
 void LeftAround2() {
@@ -568,10 +571,10 @@ void LeftAround2() {
   digitalWrite(in6, HIGH);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
-  analogWrite(en1, 55);
-  analogWrite(en3, 55);
-  analogWrite(en2, 55);
-  analogWrite(en4, 55);
+  analogWrite(en1, 57);
+  analogWrite(en3, 57);
+  analogWrite(en2, 57);
+  analogWrite(en4, 57);
 }
 void RightAround3() {
   digitalWrite(in1, HIGH);
@@ -1332,10 +1335,10 @@ void yello_team() {
     }
   }
   //===============flag change==========
-  if (distance_R > 280 and flag == 32 and lai == 0){
+  if (distance_R > 300 and flag == 32 and lai == 0){
     PIDL1();
     pidtest_time = millis();
-  } else if (distance_R > 138 and distance_R <= 280 and flag == 32 and lai == 0) {
+  } else if (distance_R > 180 and distance_R <= 300 and flag == 32 and lai == 0) {
     PIDL2();
     pidtest_time = millis();
   } else if (flag == 32) {
@@ -1360,24 +1363,37 @@ void yello_team() {
         lai3 = 1;
       }
       flag++;
+      check_y = 0;
+      check_x = 0;
     }
   }
 
-  if ((distance_L > 165 or distance_L == 519) and flag == 33 and lai == 0 and lai3 == 0) {
+  if ((distance_L > 165 or distance_L == 519) and check_y == 0 and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
     PIDF2();
+    //=================
     pidtest_time = millis();
-  } else if (flag == 33 and lai3 == 0) {
+  } else if ((millis() - pidtest_time < 1000) and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
+    digitalWrite(angle90, HIGH);
+    Motor_reset();
+    check_y = 1;
+  } else if ((distance_R > 138) and (millis() - pidtest_time >= 1000) and check_y == 1 and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
+    PIDL2();
+  } else if ((distance_R <= 138) and (millis() - pidtest_time >= 1000) and check_y == 1 and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
+    check_x = 1;
+    pidtest_time = millis();
+  } else if (flag == 33 and lai3 == 0 and check_y == 1 and check_x == 1) {
+    //=================
     if (millis() - pidtest_time < 1000) {
       Motor_reset();
       lai = 1;
     } else {
-      if (distance_L - distance_R > 3) {
-        lai = 1;
-        LeftAround2();
-      } else if (distance_R - distance_L > 3) {
-        lai = 1;
-        RightAround2();
-      } else {
+//      if (distance_L - distance_R > 3) {
+//        lai = 1;
+//        LeftAround2();
+//      } else if (distance_R - distance_L > 3) {
+//        lai = 1;
+//        RightAround2();
+//      } else {
         //    relative_yaw_error = relative_yaw;
         Motor_reset();
         flag++;
@@ -1394,21 +1410,17 @@ void yello_team() {
         mpu.dmp_read_fifo();
         relative_yaw2 = relative_yaw;
         //       relative_yaw1 = relative_yaw2;
-      }
+//      }
     }
   }
 
   if ((millis() - pidtest_time < 3000) and flag == 33 and lai == 0 and lai3 == 1) {
     PIDB();
-    digitalWrite(angle90, HIGH);
-  } else if (distance_R < 135 and flag == 33 and lai == 0 and lai3 == 1) {
-    PIDR2();
   } else if (flag == 33 and lai3 == 1) {
     digitalWrite(angle90, LOW);
     if (millis() - pidtest_time < 4500) {
       Motor_reset();
       lai = 1;
-      
     } else {
       pidtest_time = millis();
       lai3 = 0;
@@ -1471,7 +1483,7 @@ void yello_team() {
   {
     PIDR1();
     //  pidtest_time = millis();
-  } else if ((distance_L > 270 and distance_R >= 150 or distance_R == 519) and flag == 38 and lai == 0) {
+  } else if ((distance_R <= 310 and distance_R >= 150 or distance_R == 519) and flag == 38) {
     PIDR2();
     pidtest_time = millis();
   } else if (flag == 38) {
@@ -1497,10 +1509,10 @@ void yello_team() {
     if (millis() - pidtest_time < 1000) {
       Motor_reset();
       lai = 1;
-    } else if (distance_L - distance_R > 2) {
+    } else if (distance_L - distance_R > 3) {
       lai = 1;
       LeftAround2();
-    } else if (distance_R - distance_L > 2) {
+    } else if (distance_R - distance_L > 3) {
       lai = 1;
       RightAround2();
     } else {
@@ -1962,11 +1974,11 @@ void orange_team() {
     }
   }
   //===============flag change==========
-  if (distance_L > 250 and flag == 32 and lai == 0)
+  if (distance_L > 300 and flag == 32 and lai == 0)
   {
     PIDR1();
     pidtest_time = millis();
-  } else if (distance_L > 120 and distance_L <= 250 and flag == 32 and lai == 0) {
+  } else if (distance_L > 180 and distance_L <= 300 and flag == 32 and lai == 0) {
     PIDR2();
     pidtest_time = millis();
   } else if (flag == 32) {
@@ -1979,7 +1991,9 @@ void orange_team() {
       pidtest_time = millis();
       lai = 0;
       e_pre = 0;
-      if (distance_R > 160) {
+      check_x = 0;
+      check_y = 0;
+      if (distance_R > 152) {
         lai3 = 0;
       } else {
         lai3 = 1;
@@ -1991,21 +2005,30 @@ void orange_team() {
     }
   }
 
-  if ((distance_R > 160 or distance_R == 519) and flag == 33 and lai == 0 and lai3 == 0) {
+  if ((distance_R > 152 or distance_R == 519) and check_y == 0 and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
     PIDF2();
     pidtest_time = millis();
-  } else if (flag == 33 and lai3 == 0) {
+  } else if ((millis() - pidtest_time < 1000) and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
+    digitalWrite(angle90, HIGH);
+    Motor_reset();
+    check_y = 1;
+  } else if ((distance_L > 105) and (millis() - pidtest_time >= 1000) and check_y == 1 and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
+    PIDR2();
+  } else if ((distance_L <= 105) and (millis() - pidtest_time >= 1000) and check_y == 1 and check_x == 0 and flag == 33 and lai == 0 and lai3 == 0) {
+    check_x = 1;
+    pidtest_time = millis();
+  } else if (flag == 33 and lai3 == 0 and check_y == 1 and check_x == 1) {
     if (millis() - pidtest_time < 1000) {
       Motor_reset();
       lai = 1;
     } else {
-      if (distance_L - distance_R > 3) {
-        lai = 1;
-        LeftAround2();
-      } else if (distance_R - distance_L > 3) {
-        lai = 1;
-        RightAround2();
-      } else {
+//      if (distance_L - distance_R > 10) {
+//        lai = 1;
+//        LeftAround2();
+//      } else if (distance_R - distance_L > 10) {
+//        lai = 1;
+//        RightAround2();
+//      } else {
         //    relative_yaw_error = relative_yaw;
         Motor_reset();
         flag++;
@@ -2022,16 +2045,11 @@ void orange_team() {
         //      } else {
         digitalWrite(is_shot_plus_pin, LOW);//射球
         // relative_yaw1 = relative_yaw2;
-      }
+//      }
     }
   }
   if ((millis() - pidtest_time < 3000) and flag == 33 and lai == 0 and lai3 == 1) {
     PIDB();
-    digitalWrite(angle90, HIGH);
-  } else if (distance_L < 90 and flag == 33 and lai == 0 and lai3 == 1) {
-    PIDL2();
-  } else if (distance_L > 110 and flag == 33 and lai == 0 and lai3 == 1) {
-    PIDR2();
   } else if (flag == 33 and lai3 == 1) {
     digitalWrite(angle90, LOW);
     if (millis() - pidtest_time < 4500) {
@@ -2045,7 +2063,7 @@ void orange_team() {
   }
  
   if (flag == 34) {
-    if (millis() - pidtest_time < 800) {
+    if (millis() - pidtest_time < 500) {
       Motor_reset();
     } else {
       flag++;
@@ -2098,11 +2116,11 @@ void orange_team() {
   {
     PIDL1();
     pidtest_time = millis();
-  } else if ((distance_L < 220 and distance_L >= 130 or distance_L == 519) and flag == 38 and lai == 0) {
+  } else if ((distance_L < 240 and distance_L >= 130 or distance_L == 519) and flag == 38) {
     PIDL2();
     pidtest_time = millis();
   } else if (flag == 38) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 2000) {
       Motor_reset();
       lai = 1;
     } else {
