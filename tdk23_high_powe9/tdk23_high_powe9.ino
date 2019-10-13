@@ -1483,7 +1483,7 @@ void yello_team() {
   {
     PIDR1();
     //  pidtest_time = millis();
-  } else if (((distance_R <= 310 and distance_R >= 150) or (distance_R == 519 and STOP1==1)) and flag == 38) {
+  } else if (((distance_L > 250 and distance_R >= 150) or (distance_R == 519 and STOP1==1)) and flag == 38) {
     PIDR2();
     pidtest_time = millis();
     STOP1=1;
