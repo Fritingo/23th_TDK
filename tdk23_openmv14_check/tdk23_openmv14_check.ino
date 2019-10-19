@@ -942,7 +942,7 @@ void yello_team() {
     }
   }
 
-  if (distance_R > 70  and flag == 3 and lai == 0) {
+  if (distance_R > 67  and flag == 3 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 3) {
@@ -996,7 +996,7 @@ void yello_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 7 and lai == 0) {
+  if (distance_R > 67 and flag == 7 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 7) {
@@ -1049,7 +1049,7 @@ void yello_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 11 and lai == 0) {
+  if (distance_R > 67 and flag == 11 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 11) {
@@ -1077,7 +1077,7 @@ void yello_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 13 and lai == 0) {
+  if (distance_L > 67 and flag == 13 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 13) {
@@ -1105,7 +1105,7 @@ void yello_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 15 and lai == 0) {
+  if (distance_R > 67 and flag == 15 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 15) {
@@ -1132,7 +1132,7 @@ void yello_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 17 and lai == 0) {
+  if (distance_L > 67 and flag == 17 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 17) {
@@ -1159,7 +1159,7 @@ void yello_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 19 and lai == 0) {
+  if (distance_R > 67 and flag == 19 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 19) {
@@ -1186,7 +1186,7 @@ void yello_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 21 and lai == 0) {
+  if (distance_L > 67 and flag == 21 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 21) {
@@ -1215,7 +1215,7 @@ void yello_team() {
     }
   }
   //---------------------------
-  if (distance_R > 70 and flag == 23 and lai == 0) {
+  if (distance_R > 67 and flag == 23 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 23) {
@@ -1242,7 +1242,7 @@ void yello_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 25 and lai == 0) {
+  if (distance_L > 67 and flag == 25 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 25) {
@@ -1269,7 +1269,7 @@ void yello_team() {
       digitalWrite(angle90, HIGH);
     }
   }
-  if (distance_R > 70  and flag == 27 and lai == 0) {
+  if (distance_R > 67  and flag == 27 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 27) {
@@ -1297,7 +1297,7 @@ void yello_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 29 and lai == 0) {
+  if (distance_L > 67 and flag == 29 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 29) {
@@ -1602,7 +1602,7 @@ void orange_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 3 and lai == 0) {
+  if (distance_L > 67 and flag == 3 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 3) {
@@ -1656,7 +1656,7 @@ void orange_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 7 and lai == 0) {
+  if (distance_L > 67 and flag == 7 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 7) {
@@ -1709,7 +1709,7 @@ void orange_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 11 and lai == 0) {
+  if (distance_L > 67 and flag == 11 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 11) {
@@ -1736,7 +1736,7 @@ void orange_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 13 and lai == 0) {
+  if (distance_R > 67 and flag == 13 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 13) {
@@ -1763,7 +1763,7 @@ void orange_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 15 and lai == 0) {
+  if (distance_L > 67 and flag == 15 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 15) {
@@ -1790,7 +1790,7 @@ void orange_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 17 and lai == 0) {
+  if (distance_R > 67 and flag == 17 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 17) {
@@ -1817,7 +1817,7 @@ void orange_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 19 and lai == 0) {
+  if (distance_L > 67 and flag == 19 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 19) {
@@ -1844,7 +1844,7 @@ void orange_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 21 and lai == 0) {
+  if (distance_R > 67 and flag == 21 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 21) {
@@ -1873,7 +1873,7 @@ void orange_team() {
     }
   }
   //---------------------------
-  if (distance_L > 70 and flag == 23 and lai == 0) {
+  if (distance_L > 67 and flag == 23 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 23) {
@@ -1900,7 +1900,7 @@ void orange_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 25 and lai == 0) {
+  if (distance_R > 67 and flag == 25 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 25) {
@@ -1940,7 +1940,7 @@ void orange_team() {
     }
   }
 
-  if (distance_L > 70 and flag == 28 and lai == 0) {
+  if (distance_L > 67 and flag == 28 and lai == 0) {
     PIDR1();
     pidtest_time = millis();
   } else if (flag == 28) {
@@ -1968,7 +1968,7 @@ void orange_team() {
     }
   }
 
-  if (distance_R > 70 and flag == 30 and lai == 0) {
+  if (distance_R > 67 and flag == 30 and lai == 0) {
     PIDL1();
     pidtest_time = millis();
   } else if (flag == 30) {
