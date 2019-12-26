@@ -8,7 +8,7 @@ http://tdk.ncut.edu.tw/23th/
 
 <br>
 <p>Arduino Mega Pin</p>
-![Alt text](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/arduino-mega-pinout-diagram.png?token=AIF6LV6CELDRMWHB7JLNL425FZVFK)
+![image](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/Arduino-mega.png)
 
 <br>
 <br>
