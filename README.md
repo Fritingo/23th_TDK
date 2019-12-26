@@ -3,19 +3,13 @@
 23th_TDK
 http://tdk.ncut.edu.tw/23th/
 <br>
-libaries https://drive.google.com/drive/folders/16mDyKnIE1gfyiKFq1Xvyf8gZZfd_qUZl
+
 ---------------
-newPing
-https://bitbucket.org/teckel12/arduino-new-ping/downloads/
-pixy2
-https://pixycam.com/downloads-pixy2/
-紅外線
-https://github.com/z3t0/Arduino-IRremote
-陀螺儀
-https://github.com/jrowberg/i2cdevlib
+
 <br>
 <p>Arduino Mega Pin</p>
-![image](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/arduino-mega-pinout-diagram.png?token=AIF6LV6CELDRMWHB7JLNL425FZVFK)
+![Alt text](https://raw.githubusercontent.com/cbc106013/23th_TDK/master/pictures/arduino-mega-pinout-diagram.png?token=AIF6LV6CELDRMWHB7JLNL425FZVFK)
+
 <br>
 <br>
 <p>麥克納姆輪移動</p>
