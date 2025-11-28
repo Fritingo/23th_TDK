@@ -1,3 +1,12 @@
+/**
+ * @file demo_flag.ino
+ * @brief Demo sketch for testing servo flags and ball collection mechanism.
+ *
+ * This sketch demonstrates the movement of flag servos and the activation of ball collection pins
+ * based on the state of an input pin (likely simulating a signal from the Pixy camera or a switch).
+ * It includes code for Pixy2 integration but the main logic currently toggles states based on digital input.
+ */
+
 #include <Servo.h>
 #include <Pixy2.h>
 
@@ -33,12 +42,22 @@ bool get2color = false;
 bool is_identification = false;
 
 int j;
+
+/**
+ * @brief Resets the color coordinate array.
+ *
+ * Clears the `colorxy` array to zeros.
+ */
 void reset_color() {
   for (j = 0; j < 3; j++) {
     colorxy[j][0] = 0;
     colorxy[j][1] = 0;
   }
 }
+
+/**
+ * @brief Sets servos to their default "neutral" or "flat" positions.
+ */
 void servo_setup() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(0); //0平 45舉
@@ -46,6 +65,9 @@ void servo_setup() {
   black_servo.write(0);//0平 30舉
 }
 
+/**
+ * @brief Raises all flag servos.
+ */
 void servo_all_up() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(45); //0平 45舉
@@ -53,42 +75,71 @@ void servo_all_up() {
   black_servo.write(30);//0平 30舉
 }
 
+/**
+ * @brief Raises Red and Green flags.
+ */
 void rg_servo() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(45); //0平 45舉
   blue_servo.write(90);// 90平 45舉
   black_servo.write(0);//0平 30舉
 }
+
+/**
+ * @brief Raises Green and Blue flags.
+ */
 void gb_servo() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(45); //0平 45舉
   blue_servo.write(45);// 90平 45舉
   black_servo.write(0);//0平 30舉
 }
+
+/**
+ * @brief Raises Red and Blue flags.
+ */
 void rb_servo() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(0); //0平 45舉
   blue_servo.write(45);// 90平 45舉
   black_servo.write(0);//0平 30舉
 }
+
+/**
+ * @brief Raises Red and Black flags.
+ */
 void rblack_servo() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(0); //0平 45舉
   blue_servo.write(90);// 90平 45舉
   black_servo.write(30);//0平 30舉
 }
+
+/**
+ * @brief Raises Green and Black flags.
+ */
 void gblack_servo() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(45); //0平 45舉
   blue_servo.write(90);// 90平 45舉
   black_servo.write(30);//0平 30舉
 }
+
+/**
+ * @brief Raises Blue and Black flags.
+ */
 void bblack_servo() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(0); //0平 45舉
   blue_servo.write(45);// 90平 45舉
   black_servo.write(30);//0平 30舉
 }
+
+/**
+ * @brief Setup function.
+ *
+ * Attaches servos and sets pins.
+ */
 void setup() {
   //  Serial.begin(115200);
   red_servo.attach(red_servo_pin);
@@ -108,6 +159,12 @@ void setup() {
   delay(5000);
   servo_setup();
 }
+
+/**
+ * @brief Main loop.
+ *
+ * Toggles servo positions and ball collection pins based on `pixy_color_flag_pin`.
+ */
 void loop() {
   if (digitalRead(pixy_color_flag_pin) == 0) {
     red_servo.write(90);// 90平 60舉

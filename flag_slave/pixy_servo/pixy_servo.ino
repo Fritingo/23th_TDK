@@ -1,3 +1,13 @@
+/**
+ * @file pixy_servo.ino
+ * @brief Controls servos for flag raising based on Pixy2 camera color detection.
+ *
+ * This sketch interfaces with a Pixy2 camera to detect colored blocks (signatures).
+ * Based on the detected colors and their relative positions, it raises specific servos
+ * representing different flag combinations (Red, Green, Blue, Black).
+ * It also controls auxiliary ball collection pins.
+ */
+
 #include <Servo.h>
 #include <Pixy2.h>
 
@@ -33,12 +43,24 @@ bool get2color = false;
 bool is_identification = false;
 
 int j;
+
+/**
+ * @brief Resets the color coordinate array.
+ *
+ * Clears the `colorxy` array to zeros.
+ */
 void reset_color() {
   for (j = 0; j < 3; j++) {
     colorxy[j][0] = 0;
     colorxy[j][1] = 0;
   }
 }
+
+/**
+ * @brief Sets servos to their default "neutral" or "flat" positions.
+ *
+ * Red: 90, Green: 0, Blue: 90, Black: 0.
+ */
 void servo_setup() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(0); //0平 45舉
@@ -46,6 +68,11 @@ void servo_setup() {
   black_servo.write(0);//0平 30舉
 }
 
+/**
+ * @brief Raises all flag servos.
+ *
+ * Red: 60, Green: 45, Blue: 45, Black: 30.
+ */
 void servo_all_up(){
   red_servo.write(60);// 90平 60舉
   green_servo.write(45); //0平 45舉
@@ -53,42 +80,83 @@ void servo_all_up(){
   black_servo.write(30);//0平 30舉
 }
 
+/**
+ * @brief Raises Red and Green flags.
+ *
+ * Red: 60 (up), Green: 45 (up), Blue: 90 (flat), Black: 0 (flat).
+ */
 void rg_servo() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(45); //0平 45舉
   blue_servo.write(90);// 90平 45舉
   black_servo.write(0);//0平 30舉
 }
+
+/**
+ * @brief Raises Green and Blue flags.
+ *
+ * Red: 90 (flat), Green: 45 (up), Blue: 45 (up), Black: 0 (flat).
+ */
 void gb_servo() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(45); //0平 45舉
   blue_servo.write(45);// 90平 45舉
   black_servo.write(0);//0平 30舉
 }
+
+/**
+ * @brief Raises Red and Blue flags.
+ *
+ * Red: 60 (up), Green: 0 (flat), Blue: 45 (up), Black: 0 (flat).
+ */
 void rb_servo() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(0); //0平 45舉
   blue_servo.write(45);// 90平 45舉
   black_servo.write(0);//0平 30舉
 }
+
+/**
+ * @brief Raises Red and Black flags.
+ *
+ * Red: 60 (up), Green: 0 (flat), Blue: 90 (flat), Black: 30 (up).
+ */
 void rblack_servo() {
   red_servo.write(60);// 90平 60舉
   green_servo.write(0); //0平 45舉
   blue_servo.write(90);// 90平 45舉
   black_servo.write(30);//0平 30舉
 }
+
+/**
+ * @brief Raises Green and Black flags.
+ *
+ * Red: 90 (flat), Green: 45 (up), Blue: 90 (flat), Black: 30 (up).
+ */
 void gblack_servo() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(45); //0平 45舉
   blue_servo.write(90);// 90平 45舉
   black_servo.write(30);//0平 30舉
 }
+
+/**
+ * @brief Raises Blue and Black flags.
+ *
+ * Red: 90 (flat), Green: 0 (flat), Blue: 45 (up), Black: 30 (up).
+ */
 void bblack_servo() {
   red_servo.write(90);// 90平 60舉
   green_servo.write(0); //0平 45舉
   blue_servo.write(45);// 90平 45舉
   black_servo.write(30);//0平 30舉
 }
+
+/**
+ * @brief Setup function.
+ *
+ * Attaches servos, configures pins, initializes Pixy2, and sets initial servo positions.
+ */
 void setup() {
 //  Serial.begin(115200);
   red_servo.attach(red_servo_pin);
@@ -108,6 +176,15 @@ void setup() {
   delay(5000);
   servo_setup();
 }
+
+/**
+ * @brief Main loop.
+ *
+ * Monitors the `pixy_color_flag_pin` to trigger identification.
+ * Uses Pixy2 to detect blocks and counts color pairs (Red-Green, Green-Blue, Red-Blue).
+ * After a timeout, it activates the appropriate servos based on the most frequent pair detected,
+ * or defaults to Black combinations if no pair is found.
+ */
 void loop() {
   if (digitalRead(pixy_color_flag_pin) == 0 and is_identification == false) {
     is_identification = true;
