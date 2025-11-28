@@ -1,3 +1,12 @@
+/**
+ * @file demo.ino
+ * @brief Demonstration sketch for robot movement with Bluetooth control.
+ *
+ * This sketch demonstrates the integration of MPU6050, KS103 sensors, and PID movement control.
+ * It also includes a Bluetooth serial command interface (receiving characters 'u', 'd', 'l', 'r', 'a', 'b', 'g', 'o')
+ * to trigger specific movements or sequences.
+ */
+
 #include "Simple_MPU6050.h"
 #define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
 #define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)
@@ -70,6 +79,9 @@ int command = 0;
 #define spamtimer(t) for (static uint32_t SpamTimer; (uint32_t)(millis() - SpamTimer) >= (t); SpamTimer = millis()) // (BLACK BOX) Ya, don't complain that I used "for(;;){}" instead of "if(){}" for my Blink Without Delay Timer macro. It works nicely!!!
 #define printfloatx(Name,Variable,Spaces,Precision,EndTxt) print(Name); {char S[(Spaces + Precision + 3)];Serial.print(F(" ")); Serial.print(dtostrf((float)Variable,Spaces,Precision ,S));}Serial.print(EndTxt);//Name,Variable,Spaces,Precision,EndTxt
 
+/**
+ * @brief Reads MPU6050 data and updates yaw.
+ */
 void get_yaw(int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *timestamp) {
   Quaternion q;
   VectorFloat gravity;
@@ -122,6 +134,10 @@ int lai1 = 0;
 int lai3 = 2;
 int STOP1 = 1;
 //---------func-----------
+
+/**
+ * @brief PID control for rightward movement (variant 0).
+ */
 void PIDR() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -156,6 +172,9 @@ void PIDR() {
   }
 }
 
+/**
+ * @brief PID control for rightward movement (variant 1).
+ */
 void PIDR1() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -186,6 +205,10 @@ void PIDR1() {
     Rightward();
   }
 }
+
+/**
+ * @brief PID control for rightward movement (variant 2).
+ */
 void PIDR2() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -216,6 +239,10 @@ void PIDR2() {
     Rightward2();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 0).
+ */
 void PIDL() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -250,6 +277,9 @@ void PIDL() {
   }
 }
 
+/**
+ * @brief PID control for leftward movement (variant 1).
+ */
 void PIDL1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -280,6 +310,10 @@ void PIDL1() {
     Leftward();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 2).
+ */
 void PIDL2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -311,6 +345,9 @@ void PIDL2() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 0).
+ */
 void PIDF() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -342,6 +379,9 @@ void PIDF() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 1).
+ */
 void PIDF1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -373,6 +413,9 @@ void PIDF1() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 2).
+ */
 void PIDF2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -403,6 +446,10 @@ void PIDF2() {
     Forward();
   }
 }
+
+/**
+ * @brief PID control for backward movement.
+ */
 void PIDB() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -433,6 +480,10 @@ void PIDB() {
     Backward();
   }
 }
+
+/**
+ * @brief Rotates robot right.
+ */
 void RightAround() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -448,6 +499,9 @@ void RightAround() {
   analogWrite(en4, speed_LI);
 }
 
+/**
+ * @brief Rotates robot left.
+ */
 void LeftAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -463,6 +517,9 @@ void LeftAround() {
   analogWrite(en4, speed_RI);
 }
 
+/**
+ * @brief Moves robot forward-right (strafe).
+ */
 void ForwardAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -478,6 +535,9 @@ void ForwardAround() {
   analogWrite(en3, speed_LI1);
 }
 
+/**
+ * @brief Moves robot backward-left (strafe).
+ */
 void BackAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -493,6 +553,9 @@ void BackAround() {
   analogWrite(en3, speed_RI1);
 }
 
+/**
+ * @brief Moves robot rightward.
+ */
 void Rightward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -507,6 +570,10 @@ void Rightward() {
   analogWrite(en3, speed_n3);
   analogWrite(en4, speed_n3);
 }
+
+/**
+ * @brief Moves robot rightward (speed 2).
+ */
 void Rightward2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -521,6 +588,10 @@ void Rightward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates robot right (variant 1).
+ */
 void RightAround1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -536,6 +607,9 @@ void RightAround1() {
   analogWrite(en4, 70);
 }
 
+/**
+ * @brief Rotates robot left (variant 1).
+ */
 void LeftAround1() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -550,6 +624,10 @@ void LeftAround1() {
   analogWrite(en2, 70);
   analogWrite(en4, 70);
 }
+
+/**
+ * @brief Rotates robot right (variant 2).
+ */
 void RightAround2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -565,6 +643,9 @@ void RightAround2() {
   analogWrite(en4, 60);
 }
 
+/**
+ * @brief Rotates robot left (variant 2).
+ */
 void LeftAround2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -579,6 +660,10 @@ void LeftAround2() {
   analogWrite(en2, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Rotates robot right (variant 3).
+ */
 void RightAround3() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -593,6 +678,10 @@ void RightAround3() {
   analogWrite(en3, speed_RI1);
   analogWrite(en4, speed_RI1);
 }
+
+/**
+ * @brief Moves robot leftward.
+ */
 void Leftward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -608,6 +697,9 @@ void Leftward() {
   analogWrite(en4, speed_n3);
 }
 
+/**
+ * @brief Moves robot leftward (variant 1).
+ */
 void Leftward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -622,6 +714,10 @@ void Leftward1() {
   analogWrite(en3, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Moves robot leftward (variant 2).
+ */
 void Leftward2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -636,6 +732,10 @@ void Leftward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates robot left (variant 3).
+ */
 void LeftAround3() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -650,6 +750,10 @@ void LeftAround3() {
   analogWrite(en3, speed_LI1);
   analogWrite(en4, speed_LI1);
 }
+
+/**
+ * @brief Moves robot forward.
+ */
 void Forward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -664,6 +768,10 @@ void Forward() {
   analogWrite(en3, speed_n1);
   analogWrite(en4, speed_n1);
 }
+
+/**
+ * @brief Moves robot backward.
+ */
 void Backward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -678,6 +786,10 @@ void Backward() {
   analogWrite(en3, 110);
   analogWrite(en4, 110);
 }
+
+/**
+ * @brief Moves robot forward (variant 1).
+ */
 void Forward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -687,13 +799,16 @@ void Forward1() {
   digitalWrite(in6, HIGH);
   digitalWrite(in7, HIGH);
   digitalWrite(in8, LOW);
-  analogWrite(en1, 100);
-  analogWrite(en2, 100);
-  analogWrite(en3, 100);
-  analogWrite(en4, 100);
+  analogWrite(en1, 120);
+  analogWrite(en2, 120);
+  analogWrite(en3, 120);
+  analogWrite(en4, 120);
 }
 
 //---------------------
+/**
+ * @brief Stops all motors.
+ */
 void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
@@ -705,7 +820,9 @@ void Motor_reset() {
   digitalWrite(in8, LOW);
 }
 
-
+/**
+ * @brief Configures a KS103 sensor via I2C.
+ */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
   Wire.write(byte(0x02));
@@ -714,6 +831,9 @@ void setting_ks103(byte addr, byte command) {
   delay(1000);
 }
 
+/**
+ * @brief Updates distance readings from KS103 sensors (non-blocking).
+ */
 void ks103_update() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_L);
@@ -771,21 +891,36 @@ void ks103_update() {
 //  digitalWrite(angle135, HIGH);
 //}
 
+/**
+ * @brief Sets status indicator to Green.
+ */
 void led_green() {
   digitalWrite(Buzzer1, HIGH);
   digitalWrite(Buzzer2, LOW);
 }
 
+/**
+ * @brief Sets status indicator to Red.
+ */
 void led_red() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, HIGH);
 }
 
+/**
+ * @brief Turns off status indicator.
+ */
 void led_off() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, LOW);
 }
 
+/**
+ * @brief Setup function.
+ *
+ * Initializes sensors, I2C, Serial, and Serial1.
+ * Loads MPU offsets.
+ */
 void setup() {
   pinMode(to_openmv, OUTPUT);
   digitalWrite(to_openmv, HIGH);
@@ -860,6 +995,12 @@ void setup() {
 }
 
 
+/**
+ * @brief Main loop.
+ *
+ * listens for Bluetooth commands to execute moves.
+ * Runs state machines if game is active.
+ */
 void loop() {
 
   if (run_step == false) {
@@ -945,6 +1086,9 @@ void loop() {
   }
 }
 
+/**
+ * @brief Strategy for Yellow team (Demo).
+ */
 void yello_team() {
 
   if (distance_R > 30 and flag == 0 and lai == 0) {
@@ -1049,6 +1193,9 @@ void yello_team() {
 
 }
 
+/**
+ * @brief Strategy for Orange team (Demo).
+ */
 void orange_team() {
  if (distance_R > 30 and flag == 0 and lai == 0) {
     PIDL2();

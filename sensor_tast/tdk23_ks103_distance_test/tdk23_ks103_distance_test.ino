@@ -820,7 +820,10 @@ void Motor_reset() {
 }
 
 /**
- * @brief Configures a KS103 sensor.
+ * @brief Configures a KS103 sensor via I2C.
+ *
+ * @param addr I2C address.
+ * @param command Command byte.
  */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
@@ -832,6 +835,9 @@ void setting_ks103(byte addr, byte command) {
 
 /**
  * @brief Updates distance readings from KS103 sensors.
+ *
+ * Implements a state machine to query left and right sensors sequentially via I2C.
+ * Updates global `distance_L` and `distance_R`.
  */
 void ks103_update() {
   if (ks103_state == 0) {
@@ -891,7 +897,7 @@ void ks103_update() {
 //}
 
 /**
- * @brief Sets status indicator to Green.
+ * @brief Activates the green LED/buzzer state.
  */
 void led_green() {
   digitalWrite(Buzzer1, HIGH);
@@ -899,7 +905,7 @@ void led_green() {
 }
 
 /**
- * @brief Sets status indicator to Red.
+ * @brief Activates the red LED/buzzer state.
  */
 void led_red() {
   digitalWrite(Buzzer1, LOW);
@@ -907,7 +913,7 @@ void led_red() {
 }
 
 /**
- * @brief Turns off status indicator.
+ * @brief Turns off LED/buzzer indicators.
  */
 void led_off() {
   digitalWrite(Buzzer1, LOW);
@@ -917,7 +923,7 @@ void led_off() {
 /**
  * @brief Setup function.
  *
- * Initializes hardware and sensors.
+ * Configures pins, initializes sensors (MPU6050, KS103), and determines team color.
  */
 void setup() {
   pinMode(to_openmv,OUTPUT);
@@ -971,7 +977,7 @@ void setup() {
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
   // put your setup code here, to run once:
-  //  Serial.begin(115200);
+    Serial.begin(115200);
   //  Serial.println("start");
   //=============================
   uint8_t val;
@@ -995,16 +1001,20 @@ void setup() {
 /**
  * @brief Main loop.
  *
- * Executes the main game logic state machine for testing.
+ * Waits for start signal, updates sensors, and executes team strategy (yellow or orange)
+ * based on configuration.
  */
 void loop() {
 
   if (run_step == false) {
     if (digitalRead(start_bt_pin) == HIGH) {
-      flag = 0;
+      flag = 38;
       mpu.dmp_read_fifo();
       relative_yaw1 = relative_yaw;
       run_step = true;
+      STOP1 = 1;
+      digitalWrite(angle90, HIGH);
+      digitalWrite(to_openmv,LOW);
       //      digitalWrite(is_start_pin, LOW);
     }
   }
@@ -1044,7 +1054,7 @@ void loop() {
 }
 
 /**
- * @brief Strategy state machine for Yellow team (test version).
+ * @brief Strategy execution for the yellow team.
  */
 void yello_team() {
   if (((distance_L > 250) or (distance_R >= 500 and STOP1 == 1)) and flag == 38) {
@@ -1071,7 +1081,7 @@ void yello_team() {
 }
 
 /**
- * @brief Strategy state machine for Orange team (test version).
+ * @brief Strategy execution for the orange team.
  */
 void orange_team() {
   if (((distance_L < 220 and distance_L >= 130) or (distance_L >= 500 and STOP1 == 1)) and flag == 38) {
