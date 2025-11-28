@@ -1,3 +1,12 @@
+/**
+ * @file demo.ino
+ * @brief Demonstration sketch for robot movement with Bluetooth control.
+ *
+ * This sketch demonstrates the integration of MPU6050, KS103 sensors, and PID movement control.
+ * It also includes a Bluetooth serial command interface (receiving characters 'u', 'd', 'l', 'r', 'a', 'b', 'g', 'o')
+ * to trigger specific movements or sequences.
+ */
+
 #include "Simple_MPU6050.h"
 #define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
 #define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)
@@ -70,6 +79,9 @@ int command = 0;
 #define spamtimer(t) for (static uint32_t SpamTimer; (uint32_t)(millis() - SpamTimer) >= (t); SpamTimer = millis()) // (BLACK BOX) Ya, don't complain that I used "for(;;){}" instead of "if(){}" for my Blink Without Delay Timer macro. It works nicely!!!
 #define printfloatx(Name,Variable,Spaces,Precision,EndTxt) print(Name); {char S[(Spaces + Precision + 3)];Serial.print(F(" ")); Serial.print(dtostrf((float)Variable,Spaces,Precision ,S));}Serial.print(EndTxt);//Name,Variable,Spaces,Precision,EndTxt
 
+/**
+ * @brief Reads MPU6050 data and updates yaw.
+ */
 void get_yaw(int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *timestamp) {
   Quaternion q;
   VectorFloat gravity;
@@ -122,6 +134,10 @@ int lai1 = 0;
 int lai3 = 2;
 int STOP1 = 1;
 //---------func-----------
+
+/**
+ * @brief PID control for rightward movement (variant 0).
+ */
 void PIDR() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -156,6 +172,9 @@ void PIDR() {
   }
 }
 
+/**
+ * @brief PID control for rightward movement (variant 1).
+ */
 void PIDR1() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -186,6 +205,10 @@ void PIDR1() {
     Rightward();
   }
 }
+
+/**
+ * @brief PID control for rightward movement (variant 2).
+ */
 void PIDR2() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -216,6 +239,10 @@ void PIDR2() {
     Rightward2();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 0).
+ */
 void PIDL() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -250,6 +277,9 @@ void PIDL() {
   }
 }
 
+/**
+ * @brief PID control for leftward movement (variant 1).
+ */
 void PIDL1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -280,6 +310,10 @@ void PIDL1() {
     Leftward();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 2).
+ */
 void PIDL2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -311,6 +345,9 @@ void PIDL2() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 0).
+ */
 void PIDF() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -342,6 +379,9 @@ void PIDF() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 1).
+ */
 void PIDF1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -373,6 +413,9 @@ void PIDF1() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 2).
+ */
 void PIDF2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -403,6 +446,10 @@ void PIDF2() {
     Forward();
   }
 }
+
+/**
+ * @brief PID control for backward movement.
+ */
 void PIDB() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -433,6 +480,10 @@ void PIDB() {
     Backward();
   }
 }
+
+/**
+ * @brief Rotates robot right.
+ */
 void RightAround() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -448,6 +499,9 @@ void RightAround() {
   analogWrite(en4, speed_LI);
 }
 
+/**
+ * @brief Rotates robot left.
+ */
 void LeftAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -463,6 +517,9 @@ void LeftAround() {
   analogWrite(en4, speed_RI);
 }
 
+/**
+ * @brief Moves robot forward-right (diagonal/strafe).
+ */
 void ForwardAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -478,6 +535,9 @@ void ForwardAround() {
   analogWrite(en3, speed_LI1);
 }
 
+/**
+ * @brief Moves robot backward-left (diagonal/strafe).
+ */
 void BackAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -493,6 +553,9 @@ void BackAround() {
   analogWrite(en3, speed_RI1);
 }
 
+/**
+ * @brief Moves robot rightward.
+ */
 void Rightward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -507,6 +570,10 @@ void Rightward() {
   analogWrite(en3, speed_n3);
   analogWrite(en4, speed_n3);
 }
+
+/**
+ * @brief Moves robot rightward (speed 2).
+ */
 void Rightward2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -521,6 +588,10 @@ void Rightward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates robot right (variant 1).
+ */
 void RightAround1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -536,6 +607,9 @@ void RightAround1() {
   analogWrite(en4, 70);
 }
 
+/**
+ * @brief Rotates robot left (variant 1).
+ */
 void LeftAround1() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -550,6 +624,10 @@ void LeftAround1() {
   analogWrite(en2, 70);
   analogWrite(en4, 70);
 }
+
+/**
+ * @brief Rotates robot right (variant 2).
+ */
 void RightAround2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -565,6 +643,9 @@ void RightAround2() {
   analogWrite(en4, 60);
 }
 
+/**
+ * @brief Rotates robot left (variant 2).
+ */
 void LeftAround2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -579,6 +660,10 @@ void LeftAround2() {
   analogWrite(en2, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Rotates robot right (variant 3).
+ */
 void RightAround3() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -593,6 +678,10 @@ void RightAround3() {
   analogWrite(en3, speed_RI1);
   analogWrite(en4, speed_RI1);
 }
+
+/**
+ * @brief Moves robot leftward.
+ */
 void Leftward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -608,6 +697,9 @@ void Leftward() {
   analogWrite(en4, speed_n3);
 }
 
+/**
+ * @brief Moves robot leftward (variant 1).
+ */
 void Leftward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -622,6 +714,10 @@ void Leftward1() {
   analogWrite(en3, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Moves robot leftward (variant 2).
+ */
 void Leftward2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -636,6 +732,10 @@ void Leftward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates robot left (variant 3).
+ */
 void LeftAround3() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -650,6 +750,10 @@ void LeftAround3() {
   analogWrite(en3, speed_LI1);
   analogWrite(en4, speed_LI1);
 }
+
+/**
+ * @brief Moves robot forward.
+ */
 void Forward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -664,6 +768,10 @@ void Forward() {
   analogWrite(en3, speed_n1);
   analogWrite(en4, speed_n1);
 }
+
+/**
+ * @brief Moves robot backward.
+ */
 void Backward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -678,6 +786,10 @@ void Backward() {
   analogWrite(en3, 110);
   analogWrite(en4, 110);
 }
+
+/**
+ * @brief Moves robot forward (variant 1).
+ */
 void Forward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -694,6 +806,9 @@ void Forward1() {
 }
 
 //---------------------
+/**
+ * @brief Stops all motors.
+ */
 void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
@@ -705,7 +820,9 @@ void Motor_reset() {
   digitalWrite(in8, LOW);
 }
 
-
+/**
+ * @brief Configures a KS103 sensor via I2C.
+ */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
   Wire.write(byte(0x02));
@@ -714,6 +831,12 @@ void setting_ks103(byte addr, byte command) {
   delay(1000);
 }
 
+/**
+ * @brief Updates distance readings from KS103 sensors.
+ *
+ * Implements a state machine to query left and right sensors sequentially via I2C.
+ * Updates global `distance_L` and `distance_R`.
+ */
 void ks103_update() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_L);
@@ -771,25 +894,39 @@ void ks103_update() {
 //  digitalWrite(angle135, HIGH);
 //}
 
+/**
+ * @brief Activates the green LED/buzzer state.
+ */
 void led_green() {
   digitalWrite(Buzzer1, HIGH);
   digitalWrite(Buzzer2, LOW);
 }
 
+/**
+ * @brief Activates the red LED/buzzer state.
+ */
 void led_red() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, HIGH);
 }
 
+/**
+ * @brief Turns off LED/buzzer indicators.
+ */
 void led_off() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, LOW);
 }
 
+/**
+ * @brief Setup function.
+ *
+ * Configures pins, initializes sensors (MPU6050, KS103), and determines team color.
+ */
 void setup() {
-  pinMode(to_openmv, OUTPUT);
-  digitalWrite(to_openmv, HIGH);
-  pinMode(get_openmv, INPUT_PULLUP);
+  pinMode(to_openmv,OUTPUT);
+  digitalWrite(to_openmv,HIGH);
+  pinMode(get_openmv,INPUT_PULLUP);
 
   pinMode(is_shot_pin, OUTPUT);
   digitalWrite(is_shot_pin, HIGH);
@@ -838,16 +975,15 @@ void setup() {
   setting_ks103(KS103_L, 0x75);
   setting_ks103(KS103_R, 0x75);
   // put your setup code here, to run once:
-  //  Serial.begin(115200);
+    Serial.begin(115200);
   //  Serial.println("start");
   //=============================
   uint8_t val;
-  mpu.SetAddress(MPU6050_ADDRESS_AD0_LOW).load_DMP_Image(OFFSETS);
-  //  mpu.SetAddress(MPU6050_ADDRESS_AD0_LOW).CalibrateMPU().load_DMP_Image();// Does it all for you with Calibration
+  mpu.SetAddress(MPU6050_ADDRESS_AD0_LOW).CalibrateMPU().load_DMP_Image();// Does it all for you with Calibration
   mpu.on_FIFO(get_yaw);
   //=============================
   //  Motor_reset();
-  Serial1.begin(9600);
+
   if (digitalRead(team_color_pin) == LOW) {
     team_color = 1;//黃
   } else {
@@ -860,54 +996,25 @@ void setup() {
 }
 
 
+/**
+ * @brief Main loop.
+ *
+ * Waits for start signal, updates sensors, and executes team strategy (yellow or orange)
+ * based on configuration.
+ */
 void loop() {
 
   if (run_step == false) {
-    if (millis() - pidtest_time < 500) {
-      if (command == 117) {
-        PIDF();
-        //      Serial.print("F\n");
-      } else if (command == 100) {
-        PIDB();
-      } else if (command == 108) {
-        PIDR1();
-      } else if (command == 114) {
-        PIDL1();
-      } else if (command == 97) {
-        LeftAround2();
-      } else if (command == 98) {
-        RightAround2();
-      } else if (command == 103) {
-        flag = 0;
-        mpu.dmp_read_fifo();
-        relative_yaw1 = relative_yaw;
-        run_step = true;
-        digitalWrite(pixy_color_flag_pin, LOW);
-      }
-    } else {
-      Motor_reset();
-    }
     if (digitalRead(start_bt_pin) == HIGH) {
-      flag = 0;
+      flag = 38;
       mpu.dmp_read_fifo();
       relative_yaw1 = relative_yaw;
       run_step = true;
-      digitalWrite(pixy_color_flag_pin, LOW);
+      STOP1 = 1;
+      digitalWrite(angle90, HIGH);
+      digitalWrite(to_openmv,LOW);
       //      digitalWrite(is_start_pin, LOW);
     }
-  }
-  if ( Serial1.available() > 0)   {
-
-    pidtest_time = millis();
-    command = Serial1.read();// '85117/\''68100\/''76108<''82114>'
-
-  }
-  if (command == 111) {
-    flag = -1;
-    mpu.dmp_read_fifo();
-    relative_yaw1 = relative_yaw;
-    run_step = false;
-    digitalWrite(pixy_color_flag_pin, HIGH);
   }
 
   //------sensor更新------
@@ -937,7 +1044,6 @@ void loop() {
   //  //Serial.print("NTERRUPT:");
   //  //Serial.println(lai3);
   //=====================
-
   if (team_color == 1) {
     yello_team();
   } else {
@@ -945,208 +1051,55 @@ void loop() {
   }
 }
 
+/**
+ * @brief Strategy execution for the yellow team.
+ */
 void yello_team() {
-
-  if (distance_R > 30 and flag == 0 and lai == 0) {
-    PIDL2();
-    pidtest_time = millis();
-    digitalWrite(angle90, HIGH);
-  } else if (flag == 0) {
-    if (millis() - pidtest_time < 800) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      e_pre = 0;
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-  if (flag == 1) {
-    if (millis() - pidtest_time < yellow_f_time) {
-      Forward1();
-    } else {
-      Motor_reset();
-      flag++;
-      e_pre = 0;
-      digitalWrite(angle90, HIGH);
-      //    delay(100);
-    }
-  }
-
-  if (distance_L > 30 and flag == 2 and lai == 0) {
+  if (((distance_L > 250) or (distance_R >= 500 and STOP1 == 1)) and flag == 38) {
     PIDR2();
     pidtest_time = millis();
-  } else if (flag == 2) {
-    if (millis() - pidtest_time < 800) {
+    STOP1 = 1;
+  } else if (flag == 38) {
+    if (millis() - pidtest_time < 1000) {
       Motor_reset();
       lai = 1;
+      STOP1 = 0;
     } else {
       flag++;
       pidtest_time = millis();
       lai = 0;
       e_pre = 0;
       digitalWrite(angle90, LOW);
-    }
-  }
-
-  if (flag == 3) {
-    if (millis() - pidtest_time < yellow_f_time) {
-      Forward1();
-    } else {
-      Motor_reset();
-      flag++;
-      e_pre = 0;
-      digitalWrite(angle90, HIGH);
-      //    delay(100);
-    }
-  }
-
-
-  if (millis() - pidtest_time < 3000 and flag == 4 and lai == 0) {
-    PIDL2();
-    //    pidtest_time = millis();
-  } else if (flag == 4) {
-    if (millis() - pidtest_time < 3500) {
-      Motor_reset();
-      lai = 1;
-      digitalWrite(is_shot_plus_pin, LOW);//射球
-    } else {
-      if (digitalRead(plus_ball_over_pin) == HIGH) {
-        Motor_reset();
-        lai = 1;
-      } else {
-        flag++;
-        pidtest_time = millis();
-        lai = 0;
-        e_pre = 0;
-        digitalWrite(angle90, LOW);
-      }
-    }
-
-  }
-
-  if (millis() - pidtest_time < 1500 and flag == 5 and lai == 0 and digitalRead(plus_ball_over_pin) == LOW) {
-    PIDB();
-//    pidtest_time = millis();
-  } else if (flag == 5) {
-    if (millis() - pidtest_time < 2000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      Motor_reset();
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      e_pre = 0;
-      digitalWrite(angle90, LOW);
-      digitalWrite(is_shot_pin, LOW);//射球
-      relative_yaw2 = relative_yaw;
+      speed_n1 = 120;
+      speed_ne1 = 110;
+      speed_pu1 = 130;
     }
   }
 
 }
 
+/**
+ * @brief Strategy execution for the orange team.
+ */
 void orange_team() {
- if (distance_R > 30 and flag == 0 and lai == 0) {
+  if (((distance_L < 220 and distance_L >= 130) or (distance_L >= 500 and STOP1 == 1)) and flag == 38) {
     PIDL2();
     pidtest_time = millis();
-    digitalWrite(angle90, HIGH);
-  } else if (flag == 0) {
-    if (millis() - pidtest_time < 800) {
+    STOP1 = 1;
+  } else if (flag == 38) {
+    if (millis() - pidtest_time < 1000) {
       Motor_reset();
       lai = 1;
+      STOP1 = 0;
     } else {
       flag++;
       pidtest_time = millis();
       lai = 0;
       e_pre = 0;
       digitalWrite(angle90, LOW);
-    }
-  }
-
-  if (flag == 1) {
-    if (millis() - pidtest_time < yellow_f_time) {
-      Forward1();
-    } else {
-      Motor_reset();
-      flag++;
-      e_pre = 0;
-      digitalWrite(angle90, HIGH);
-      //    delay(100);
-    }
-  }
-
-  if (distance_L > 30 and flag == 2 and lai == 0) {
-    PIDR2();
-    pidtest_time = millis();
-  } else if (flag == 2) {
-    if (millis() - pidtest_time < 800) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      e_pre = 0;
-      digitalWrite(angle90, LOW);
-    }
-  }
-
-  if (flag == 3) {
-    if (millis() - pidtest_time < yellow_f_time) {
-      Forward1();
-    } else {
-      Motor_reset();
-      flag++;
-      e_pre = 0;
-      digitalWrite(angle90, HIGH);
-      //    delay(100);
-    }
-  }
-
-
-  if (millis() - pidtest_time < 3000 and flag == 4 and lai == 0) {
-    PIDL2();
-    //    pidtest_time = millis();
-  } else if (flag == 4) {
-    if (millis() - pidtest_time < 3500) {
-      Motor_reset();
-      lai = 1;
-      digitalWrite(is_shot_plus_pin, LOW);//射球
-    } else {
-      if (digitalRead(plus_ball_over_pin) == HIGH) {
-        Motor_reset();
-        lai = 1;
-      } else {
-        flag++;
-        pidtest_time = millis();
-        lai = 0;
-        e_pre = 0;
-        digitalWrite(angle90, LOW);
-      }
-    }
-
-  }
-
-  if (millis() - pidtest_time < 1500 and flag == 5 and lai == 0 and digitalRead(plus_ball_over_pin) == LOW) {
-    PIDB();
-//    pidtest_time = millis();
-  } else if (flag == 5) {
-    if (millis() - pidtest_time < 2000) {
-      Motor_reset();
-      lai = 1;
-    } else {
-      Motor_reset();
-      flag++;
-      pidtest_time = millis();
-      lai = 0;
-      e_pre = 0;
-      digitalWrite(angle90, LOW);
-      digitalWrite(is_shot_pin, LOW);//射球
-      relative_yaw2 = relative_yaw;
+      speed_n1 = 120;
+      speed_ne1 = 110;
+      speed_pu1 = 130;
     }
   }
 

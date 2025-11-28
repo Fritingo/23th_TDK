@@ -1,3 +1,12 @@
+/**
+ * @file tdk23_ks103_distance_test.ino
+ * @brief Robot control firmware focused on distance sensor testing and integration.
+ *
+ * This file is very similar to `tdk23_openmv15.ino` but seems to be a variation or an earlier version
+ * focused on testing KS103 sensors and movement logic.
+ * It contains PID control, MPU6050 integration, and team strategies.
+ */
+
 #include "Simple_MPU6050.h"
 #define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
 #define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)
@@ -67,6 +76,11 @@ const int plus_ball_over_pin = 28;
 #define spamtimer(t) for (static uint32_t SpamTimer; (uint32_t)(millis() - SpamTimer) >= (t); SpamTimer = millis()) // (BLACK BOX) Ya, don't complain that I used "for(;;){}" instead of "if(){}" for my Blink Without Delay Timer macro. It works nicely!!!
 #define printfloatx(Name,Variable,Spaces,Precision,EndTxt) print(Name); {char S[(Spaces + Precision + 3)];Serial.print(F(" ")); Serial.print(dtostrf((float)Variable,Spaces,Precision ,S));}Serial.print(EndTxt);//Name,Variable,Spaces,Precision,EndTxt
 
+/**
+ * @brief Callback for MPU6050 FIFO data processing.
+ *
+ * Calculates relative yaw from quaternion data.
+ */
 void get_yaw(int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *timestamp) {
   Quaternion q;
   VectorFloat gravity;
@@ -119,6 +133,10 @@ int lai1 = 0;
 int lai3 = 2;
 int STOP1 = 1;
 //---------func-----------
+
+/**
+ * @brief PID control for rightward movement (variant 0).
+ */
 void PIDR() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -153,6 +171,9 @@ void PIDR() {
   }
 }
 
+/**
+ * @brief PID control for rightward movement (variant 1).
+ */
 void PIDR1() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -183,6 +204,10 @@ void PIDR1() {
     Rightward();
   }
 }
+
+/**
+ * @brief PID control for rightward movement (variant 2).
+ */
 void PIDR2() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -213,6 +238,10 @@ void PIDR2() {
     Rightward2();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 0).
+ */
 void PIDL() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -247,6 +276,9 @@ void PIDL() {
   }
 }
 
+/**
+ * @brief PID control for leftward movement (variant 1).
+ */
 void PIDL1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -277,6 +309,10 @@ void PIDL1() {
     Leftward();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 2).
+ */
 void PIDL2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -308,6 +344,9 @@ void PIDL2() {
   }
 }
 
+/**
+ * @brief PID control for forward movement.
+ */
 void PIDF() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -339,6 +378,9 @@ void PIDF() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 1).
+ */
 void PIDF1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -370,6 +412,9 @@ void PIDF1() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 2).
+ */
 void PIDF2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -400,6 +445,10 @@ void PIDF2() {
     Forward();
   }
 }
+
+/**
+ * @brief PID control for backward movement.
+ */
 void PIDB() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -430,6 +479,10 @@ void PIDB() {
     Backward();
   }
 }
+
+/**
+ * @brief Rotates robot right.
+ */
 void RightAround() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -445,6 +498,9 @@ void RightAround() {
   analogWrite(en4, speed_LI);
 }
 
+/**
+ * @brief Rotates robot left.
+ */
 void LeftAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -460,6 +516,9 @@ void LeftAround() {
   analogWrite(en4, speed_RI);
 }
 
+/**
+ * @brief Moves robot forward-right (diagonal/strafe).
+ */
 void ForwardAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -475,6 +534,9 @@ void ForwardAround() {
   analogWrite(en3, speed_LI1);
 }
 
+/**
+ * @brief Moves robot backward-left (diagonal/strafe).
+ */
 void BackAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -490,6 +552,9 @@ void BackAround() {
   analogWrite(en3, speed_RI1);
 }
 
+/**
+ * @brief Moves robot rightward.
+ */
 void Rightward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -504,6 +569,10 @@ void Rightward() {
   analogWrite(en3, speed_n3);
   analogWrite(en4, speed_n3);
 }
+
+/**
+ * @brief Moves robot rightward (speed 2).
+ */
 void Rightward2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -518,6 +587,10 @@ void Rightward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates robot right (variant 1).
+ */
 void RightAround1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -533,6 +606,9 @@ void RightAround1() {
   analogWrite(en4, 70);
 }
 
+/**
+ * @brief Rotates robot left (variant 1).
+ */
 void LeftAround1() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -547,6 +623,10 @@ void LeftAround1() {
   analogWrite(en2, 70);
   analogWrite(en4, 70);
 }
+
+/**
+ * @brief Rotates robot right (variant 2).
+ */
 void RightAround2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -562,6 +642,9 @@ void RightAround2() {
   analogWrite(en4, 60);
 }
 
+/**
+ * @brief Rotates robot left (variant 2).
+ */
 void LeftAround2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -576,6 +659,10 @@ void LeftAround2() {
   analogWrite(en2, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Rotates robot right (variant 3).
+ */
 void RightAround3() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -590,6 +677,10 @@ void RightAround3() {
   analogWrite(en3, speed_RI1);
   analogWrite(en4, speed_RI1);
 }
+
+/**
+ * @brief Moves robot leftward.
+ */
 void Leftward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -605,6 +696,9 @@ void Leftward() {
   analogWrite(en4, speed_n3);
 }
 
+/**
+ * @brief Moves robot leftward (variant 1).
+ */
 void Leftward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -619,6 +713,10 @@ void Leftward1() {
   analogWrite(en3, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Moves robot leftward (variant 2).
+ */
 void Leftward2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -633,6 +731,10 @@ void Leftward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates robot left (variant 3).
+ */
 void LeftAround3() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -647,6 +749,10 @@ void LeftAround3() {
   analogWrite(en3, speed_LI1);
   analogWrite(en4, speed_LI1);
 }
+
+/**
+ * @brief Moves robot forward.
+ */
 void Forward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -661,6 +767,10 @@ void Forward() {
   analogWrite(en3, speed_n1);
   analogWrite(en4, speed_n1);
 }
+
+/**
+ * @brief Moves robot backward.
+ */
 void Backward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -675,6 +785,10 @@ void Backward() {
   analogWrite(en3, 110);
   analogWrite(en4, 110);
 }
+
+/**
+ * @brief Moves robot forward (variant 1).
+ */
 void Forward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -691,6 +805,9 @@ void Forward1() {
 }
 
 //---------------------
+/**
+ * @brief Stops all motors.
+ */
 void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
@@ -702,7 +819,12 @@ void Motor_reset() {
   digitalWrite(in8, LOW);
 }
 
-
+/**
+ * @brief Configures a KS103 sensor via I2C.
+ *
+ * @param addr I2C address.
+ * @param command Command byte.
+ */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
   Wire.write(byte(0x02));
@@ -711,11 +833,17 @@ void setting_ks103(byte addr, byte command) {
   delay(1000);
 }
 
+/**
+ * @brief Updates distance readings from KS103 sensors.
+ *
+ * Implements a state machine to query left and right sensors sequentially via I2C.
+ * Updates global `distance_L` and `distance_R`.
+ */
 void ks103_update() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_L);
     Wire.write(byte(0x02));
-    Wire.write(0xb4);     //量程设置为5m 带温度补偿0xb4
+    Wire.write(0xb4);     //量程设置为5m 带温度补偿
     Wire.endTransmission();
     //    ks103_time = millis();
     //    ks103_state++;
@@ -731,7 +859,6 @@ void ks103_update() {
       distance_L |= Wire.read();
       distance_L = distance_L / 10;
       //      ks103_state++;
-      
       ks103_state = 2;
     }
     ks103_time = millis();
@@ -769,26 +896,40 @@ void ks103_update() {
 //  digitalWrite(angle135, HIGH);
 //}
 
+/**
+ * @brief Activates the green LED/buzzer state.
+ */
 void led_green() {
   digitalWrite(Buzzer1, HIGH);
   digitalWrite(Buzzer2, LOW);
 }
 
+/**
+ * @brief Activates the red LED/buzzer state.
+ */
 void led_red() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, HIGH);
 }
 
+/**
+ * @brief Turns off LED/buzzer indicators.
+ */
 void led_off() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, LOW);
 }
 
-
+/**
+ * @brief Setup function.
+ *
+ * Configures pins, initializes sensors (MPU6050, KS103), and determines team color.
+ */
 void setup() {
+  pinMode(to_openmv,OUTPUT);
+  digitalWrite(to_openmv,HIGH);
+  pinMode(get_openmv,INPUT_PULLUP);
 
-  //  pinMode(is_shot_plus_pin, OUTPUT);
-  //  digitalWrite(is_shot_plus_pin, HIGH);
   pinMode(is_shot_pin, OUTPUT);
   digitalWrite(is_shot_pin, HIGH);
   pinMode(is_shot_plus_pin, OUTPUT);
@@ -857,6 +998,12 @@ void setup() {
 }
 
 
+/**
+ * @brief Main loop.
+ *
+ * Waits for start signal, updates sensors, and executes team strategy (yellow or orange)
+ * based on configuration.
+ */
 void loop() {
 
   if (run_step == false) {
@@ -867,11 +1014,13 @@ void loop() {
       run_step = true;
       STOP1 = 1;
       digitalWrite(angle90, HIGH);
+      digitalWrite(to_openmv,LOW);
       //      digitalWrite(is_start_pin, LOW);
     }
   }
 
   //------sensor更新------
+
   mpu.dmp_read_fifo();
   ks103_update();
   //  ks103_update();
@@ -882,10 +1031,10 @@ void loop() {
   //  Serial.println(relative_yaw);
   //
   //
-//    Serial.print("L:");
-//    Serial.print(distance_L);
-//    Serial.print("R:");
-//    Serial.println(distance_R);
+  //  Serial.print("L:");
+  //  Serial.print(distance_L);
+  //  Serial.print("R:");
+  //  Serial.println(distance_R);
   //  //Serial.print("Counter:");
   //  //Serial.println(lai2);
   //  if (digitalRead(2)==LOW) {
@@ -904,6 +1053,9 @@ void loop() {
   }
 }
 
+/**
+ * @brief Strategy execution for the yellow team.
+ */
 void yello_team() {
   if (((distance_L > 250) or (distance_R >= 500 and STOP1 == 1)) and flag == 38) {
     PIDR2();
@@ -928,6 +1080,9 @@ void yello_team() {
 
 }
 
+/**
+ * @brief Strategy execution for the orange team.
+ */
 void orange_team() {
   if (((distance_L < 220 and distance_L >= 130) or (distance_L >= 500 and STOP1 == 1)) and flag == 38) {
     PIDL2();
@@ -949,6 +1104,5 @@ void orange_team() {
       speed_pu1 = 130;
     }
   }
-
 
 }

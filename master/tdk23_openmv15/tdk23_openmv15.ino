@@ -1,3 +1,12 @@
+/**
+ * @file tdk23_openmv15.ino
+ * @brief Main control firmware for TDK23 OpenMV robot.
+ *
+ * This file contains the main logic for the robot, including PID control for omnidirectional movement,
+ * sensor integration (MPU6050 gyroscope, KS103 ultrasonic sensors), state machines for different team strategies (yellow and orange),
+ * and actuator control (motors, servos, LEDs).
+ */
+
 #include "Simple_MPU6050.h"
 #define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
 #define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)
@@ -68,6 +77,17 @@ const int get_openmv = 23;
 #define spamtimer(t) for (static uint32_t SpamTimer; (uint32_t)(millis() - SpamTimer) >= (t); SpamTimer = millis()) // (BLACK BOX) Ya, don't complain that I used "for(;;){}" instead of "if(){}" for my Blink Without Delay Timer macro. It works nicely!!!
 #define printfloatx(Name,Variable,Spaces,Precision,EndTxt) print(Name); {char S[(Spaces + Precision + 3)];Serial.print(F(" ")); Serial.print(dtostrf((float)Variable,Spaces,Precision ,S));}Serial.print(EndTxt);//Name,Variable,Spaces,Precision,EndTxt
 
+/**
+ * @brief Callback function to process MPU6050 FIFO data and update yaw.
+ *
+ * Calculates the relative yaw angle based on quaternion data from the MPU6050.
+ * Updates the global variable `relative_yaw`.
+ *
+ * @param gyro Pointer to gyroscope data (not used directly).
+ * @param accel Pointer to accelerometer data (not used directly).
+ * @param quat Pointer to quaternion data.
+ * @param timestamp Pointer to timestamp (not used directly).
+ */
 void get_yaw(int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *timestamp) {
   Quaternion q;
   VectorFloat gravity;
@@ -120,6 +140,21 @@ int lai1 = 0;
 int lai3 = 2;
 int STOP1=1;
 //---------func-----------
+
+/**
+ * @brief PID control for rightward movement (variant 0).
+ *
+ * Calculates PID output based on yaw error and adjusts motor speeds to maintain orientation
+ * while moving right.
+ *
+ * Global Inputs:
+ * - relative_yaw: Current yaw.
+ * - relative_yaw1: Target yaw.
+ * - kp, kd: PID coefficients.
+ *
+ * Global Outputs:
+ * - speed_LI, speed_RI: Motor speeds.
+ */
 void PIDR() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -154,6 +189,17 @@ void PIDR() {
   }
 }
 
+/**
+ * @brief PID control for rightward movement (variant 1).
+ *
+ * Similar to PIDR but with different speed calculation logic (differential).
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI, speed_RI.
+ */
 void PIDR1() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -184,6 +230,18 @@ void PIDR1() {
     Rightward();
   }
 }
+
+/**
+ * @brief PID control for rightward movement (variant 2).
+ *
+ * Uses lower base speed (speed_n2).
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI, speed_RI.
+ */
 void PIDR2() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -214,6 +272,19 @@ void PIDR2() {
     Rightward2();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 0).
+ *
+ * Calculates PID output based on yaw error and adjusts motor speeds to maintain orientation
+ * while moving left.
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI, speed_RI.
+ */
 void PIDL() {
   e = relative_yaw - relative_yaw1;
   e1 = abs(e);
@@ -248,6 +319,17 @@ void PIDL() {
   }
 }
 
+/**
+ * @brief PID control for leftward movement (variant 1).
+ *
+ * Similar to PIDL but with differential speed calculation.
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI, speed_RI.
+ */
 void PIDL1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -278,6 +360,18 @@ void PIDL1() {
     Leftward();
   }
 }
+
+/**
+ * @brief PID control for leftward movement (variant 2).
+ *
+ * Uses lower base speed (speed_n2).
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI, speed_RI.
+ */
 void PIDL2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -309,6 +403,19 @@ void PIDL2() {
   }
 }
 
+/**
+ * @brief PID control for forward movement.
+ *
+ * Calculates PID output based on yaw error and adjusts motor speeds to maintain orientation
+ * while moving forward.
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ * - kp1, kd1: PID coefficients (different set).
+ *
+ * Global Outputs:
+ * - speed_LI1, speed_RI1.
+ */
 void PIDF() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -340,6 +447,17 @@ void PIDF() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 1).
+ *
+ * Identical to PIDF but separated potentially for different tuning or usage context.
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI1, speed_RI1.
+ */
 void PIDF1() {
   e = relative_yaw - relative_yaw1;
   //  e1 = abs(e);
@@ -371,6 +489,17 @@ void PIDF1() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 2).
+ *
+ * Identical to PIDF but separated potentially for different tuning or usage context.
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI1, speed_RI1.
+ */
 void PIDF2() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -401,6 +530,19 @@ void PIDF2() {
     Forward();
   }
 }
+
+/**
+ * @brief PID control for backward movement.
+ *
+ * Calculates PID output based on yaw error and adjusts motor speeds to maintain orientation
+ * while moving backward. Uses hardcoded speed limits (110-130).
+ *
+ * Global Inputs:
+ * - relative_yaw, relative_yaw1.
+ *
+ * Global Outputs:
+ * - speed_LI1, speed_RI1.
+ */
 void PIDB() {
   e = relative_yaw - relative_yaw1;
   // e1 = abs(e);
@@ -431,6 +573,13 @@ void PIDB() {
     Backward();
   }
 }
+
+/**
+ * @brief Rotates the robot to the right using calculated speeds.
+ *
+ * Controls motor pins to execute a right rotation or turn.
+ * Uses `speed_RI` and `speed_LI`.
+ */
 void RightAround() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -446,6 +595,12 @@ void RightAround() {
   analogWrite(en4, speed_LI);
 }
 
+/**
+ * @brief Rotates the robot to the left using calculated speeds.
+ *
+ * Controls motor pins to execute a left rotation or turn.
+ * Uses `speed_LI` and `speed_RI`.
+ */
 void LeftAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -461,6 +616,12 @@ void LeftAround() {
   analogWrite(en4, speed_RI);
 }
 
+/**
+ * @brief Moves the robot in a "Forward Around" maneuver.
+ *
+ * Adjusts motor direction for a specific forward-turning or strafing motion.
+ * Uses `speed_RI1` and `speed_LI1`.
+ */
 void ForwardAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -476,6 +637,12 @@ void ForwardAround() {
   analogWrite(en3, speed_LI1);
 }
 
+/**
+ * @brief Moves the robot in a "Back Around" maneuver.
+ *
+ * Adjusts motor direction for a specific backward-turning or strafing motion.
+ * Uses `speed_LI1` and `speed_RI1`.
+ */
 void BackAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -491,6 +658,11 @@ void BackAround() {
   analogWrite(en3, speed_RI1);
 }
 
+/**
+ * @brief Moves the robot directly to the right.
+ *
+ * Sets all motors to move right at speed `speed_n3`.
+ */
 void Rightward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -505,6 +677,12 @@ void Rightward() {
   analogWrite(en3, speed_n3);
   analogWrite(en4, speed_n3);
 }
+
+/**
+ * @brief Moves the robot directly to the right (speed variant 2).
+ *
+ * Sets all motors to move right at speed `speed_n2`.
+ */
 void Rightward2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -519,6 +697,12 @@ void Rightward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates the robot right at a fixed low speed (70).
+ *
+ * Used for specific correction maneuvers.
+ */
 void RightAround1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -534,6 +718,11 @@ void RightAround1() {
   analogWrite(en4, 70);
 }
 
+/**
+ * @brief Rotates the robot left at a fixed low speed (70).
+ *
+ * Used for specific correction maneuvers.
+ */
 void LeftAround1() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -548,6 +737,12 @@ void LeftAround1() {
   analogWrite(en2, 70);
   analogWrite(en4, 70);
 }
+
+/**
+ * @brief Rotates the robot right at a fixed lower speed (60).
+ *
+ * Used for finer correction maneuvers.
+ */
 void RightAround2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -563,6 +758,11 @@ void RightAround2() {
   analogWrite(en4, 60);
 }
 
+/**
+ * @brief Rotates the robot left at a fixed lower speed (60).
+ *
+ * Used for finer correction maneuvers.
+ */
 void LeftAround2() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -577,6 +777,12 @@ void LeftAround2() {
   analogWrite(en2, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Rotates the robot right using PID calculated speeds.
+ *
+ * Uses `speed_LI1` and `speed_RI1`.
+ */
 void RightAround3() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -591,6 +797,12 @@ void RightAround3() {
   analogWrite(en3, speed_RI1);
   analogWrite(en4, speed_RI1);
 }
+
+/**
+ * @brief Moves the robot directly to the left.
+ *
+ * Sets all motors to move left at speed `speed_n3`.
+ */
 void Leftward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -606,6 +818,9 @@ void Leftward() {
   analogWrite(en4, speed_n3);
 }
 
+/**
+ * @brief Moves the robot to the left at a fixed low speed (60).
+ */
 void Leftward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -620,6 +835,10 @@ void Leftward1() {
   analogWrite(en3, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Moves the robot to the left at speed `speed_n2`.
+ */
 void Leftward2() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -634,6 +853,12 @@ void Leftward2() {
   analogWrite(en3, speed_n2);
   analogWrite(en4, speed_n2);
 }
+
+/**
+ * @brief Rotates the robot left using PID calculated speeds.
+ *
+ * Uses `speed_RI1` and `speed_LI1`.
+ */
 void LeftAround3() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -648,6 +873,12 @@ void LeftAround3() {
   analogWrite(en3, speed_LI1);
   analogWrite(en4, speed_LI1);
 }
+
+/**
+ * @brief Moves the robot forward.
+ *
+ * Uses speed `speed_n1` for all motors.
+ */
 void Forward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -662,6 +893,12 @@ void Forward() {
   analogWrite(en3, speed_n1);
   analogWrite(en4, speed_n1);
 }
+
+/**
+ * @brief Moves the robot backward.
+ *
+ * Uses fixed speed 110 for all motors.
+ */
 void Backward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -676,6 +913,12 @@ void Backward() {
   analogWrite(en3, 110);
   analogWrite(en4, 110);
 }
+
+/**
+ * @brief Moves the robot forward at a fixed higher speed.
+ *
+ * Uses fixed speed 120 for all motors.
+ */
 void Forward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -692,6 +935,11 @@ void Forward1() {
 }
 
 //---------------------
+/**
+ * @brief Stops all motors.
+ *
+ * Sets all motor control pins to LOW.
+ */
 void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
@@ -703,7 +951,12 @@ void Motor_reset() {
   digitalWrite(in8, LOW);
 }
 
-
+/**
+ * @brief Sends a configuration command to a KS103 ultrasonic sensor.
+ *
+ * @param addr I2C address of the sensor.
+ * @param command Command byte to send.
+ */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
   Wire.write(byte(0x02));
@@ -712,6 +965,12 @@ void setting_ks103(byte addr, byte command) {
   delay(1000);
 }
 
+/**
+ * @brief Updates distance readings from KS103 sensors.
+ *
+ * Implements a state machine to query left and right sensors sequentially via I2C.
+ * Updates global `distance_L` and `distance_R`.
+ */
 void ks103_update() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_L);
@@ -769,21 +1028,39 @@ void ks103_update() {
 //  digitalWrite(angle135, HIGH);
 //}
 
+/**
+ * @brief Activates the green LED/buzzer state.
+ *
+ * Sets Buzzer1 HIGH and Buzzer2 LOW.
+ */
 void led_green() {
   digitalWrite(Buzzer1, HIGH);
   digitalWrite(Buzzer2, LOW);
 }
 
+/**
+ * @brief Activates the red LED/buzzer state.
+ *
+ * Sets Buzzer1 LOW and Buzzer2 HIGH.
+ */
 void led_red() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, HIGH);
 }
 
+/**
+ * @brief Turns off LED/buzzer indicators.
+ */
 void led_off() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, LOW);
 }
 
+/**
+ * @brief Initial setup function.
+ *
+ * Configures pins, initializes sensors (MPU6050, KS103), and determines team color.
+ */
 void setup() {
   pinMode(to_openmv,OUTPUT);
   digitalWrite(to_openmv,HIGH);
@@ -857,6 +1134,12 @@ void setup() {
 }
 
 
+/**
+ * @brief Main execution loop.
+ *
+ * Waits for start signal, updates sensors, and executes team strategy (yellow or orange)
+ * based on configuration.
+ */
 void loop() {
 
   if (run_step == false) {
@@ -903,6 +1186,12 @@ void loop() {
   }
 }
 
+/**
+ * @brief Strategy execution for the yellow team.
+ *
+ * Implements a multi-stage state machine (controlled by `flag`) to navigate the field,
+ * find objectives using sensor feedback, and perform actions.
+ */
 void yello_team() {
   if ((distance_L < 110 or distance_L >= 500) and flag == 0 and lai == 0 ) {
     PIDL1();
@@ -1563,6 +1852,12 @@ if (digitalRead(get_openmv)==1 and flag == 39) {
     
 }
 
+/**
+ * @brief Strategy execution for the orange team.
+ *
+ * Implements a multi-stage state machine (controlled by `flag`) to navigate the field,
+ * find objectives using sensor feedback, and perform actions.
+ */
 void orange_team() {
   if ((distance_R < 150 or distance_R >= 500 ) and flag == 0 and lai == 0) {
     PIDR1();

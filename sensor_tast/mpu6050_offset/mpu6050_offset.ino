@@ -1,3 +1,12 @@
+/**
+ * @file mpu6050_offset.ino
+ * @brief Calibration sketch for MPU6050.
+ *
+ * This sketch calculates the offsets for the MPU6050 accelerometer and gyroscope
+ * to achieve 0 values (or 16384 for Z accel) when the sensor is stationary and flat.
+ * It can optionally write these offsets to EEPROM.
+ */
+
 // I2Cdev and MPU6050 must be installed as libraries
 #include "I2Cdev.h"
 #include "MPU6050.h"
@@ -36,6 +45,13 @@ unsigned int loopcount=0;
 
 
 ///////////////////////////////////   SETUP   ////////////////////////////////////
+/**
+ * @brief Setup function.
+ *
+ * Initializes I2C, Serial, and the MPU6050.
+ * Waits for user input to start calibration.
+ * Resets existing offsets and configures ranges.
+ */
 void setup() {
   // join I2C bus (I2Cdev library doesn't do this automatically)
   Wire.begin();
@@ -90,6 +106,14 @@ void setup() {
 }
 
 ///////////////////////////////////   LOOP   ////////////////////////////////////
+/**
+ * @brief Main loop.
+ *
+ * Implements a state machine for the calibration process:
+ * 0: Initial reading of sensors.
+ * 1: Calculate offsets iteratively until converged or timeout.
+ * 2: Display results and offer to save to EEPROM.
+ */
 void loop() {
   
   bool CalibResult=false;
@@ -235,6 +259,12 @@ void loop() {
 }
 
 ///////////////////////////////////   FUNCTIONS   ////////////////////////////////////
+/**
+ * @brief Reads sensor data and calculates the mean.
+ *
+ * Takes `buffersize` samples from the MPU6050 and averages them.
+ * Discards the first `discardfirstmeas` readings to allow sensor stabilization.
+ */
 void meansensors(){
   long i=0,buff_ax=0,buff_ay=0,buff_az=0,buff_gx=0,buff_gy=0,buff_gz=0;
   
@@ -271,6 +301,13 @@ void meansensors(){
   Serial.println(mean_gz);
 }
 
+/**
+ * @brief Calibration routine.
+ *
+ * Iteratively adjusts offsets until sensor readings fall within the specified deadzones.
+ *
+ * @return true if calibration succeeded within 20 loops, false otherwise.
+ */
 bool calibration(){
   ax_offset=-mean_ax/accel_offset_divisor;
   ay_offset=-mean_ay/accel_offset_divisor;

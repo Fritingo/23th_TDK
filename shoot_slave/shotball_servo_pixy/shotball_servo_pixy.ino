@@ -1,3 +1,12 @@
+/**
+ * @file shotball_servo_pixy.ino
+ * @brief Controls the ball shooting and sorting mechanism.
+ *
+ * This sketch handles ball classification using a Pixy2 camera, controls servos for
+ * diverting balls (sorting), and manages the shooting mechanism (stirring and feeding balls).
+ * It also controls ultrasonic sensor orientation servos.
+ */
+
 #include <Servo.h>
 #include <Pixy2.h>
 
@@ -48,19 +57,43 @@ unsigned long is_team_color_time = 0;
 unsigned long shotservo_time = 0;
 
 //----------func-------------
+
+/**
+ * @brief Sets ultrasonic servos to 90/0 degrees relative (facing forward/side).
+ *
+ * Sets Left servo to 15 and Right servo to 180.
+ */
 void LRservo90() {
   sonic_servoL.write(15);
   sonic_servoR.write(180);
 }
+
+/**
+ * @brief Sets ultrasonic servos to 180/90 degrees relative.
+ *
+ * Sets Left servo to 105 and Right servo to 90.
+ */
 void LRservo180() {
   sonic_servoL.write(105);
   sonic_servoR.write(90);
 }
+
+/**
+ * @brief Sets ultrasonic servos to 135 degrees relative.
+ *
+ * Sets Left servo to 60 and Right servo to 135.
+ */
 void LRservo135() {
   sonic_servoL.write(60);
   sonic_servoR.write(135);
 }
+
 //-----------setup------------
+/**
+ * @brief Setup function.
+ *
+ * Initializes pins, attaches servos, initializes Pixy2, and determines team color.
+ */
 void setup() {
 //  Serial.begin(115200);
   //-------output--------
@@ -102,6 +135,16 @@ void setup() {
   }
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Handles:
+ * 1. Ball Classification: Using Pixy2 to identify team balls and controlling the diverter servo (`classification_over_servo`).
+ * 2. Shooting Logic:
+ *    - 10 Point Shot: Triggered by `shot_ball_plus_pin`. Feeds balls using `shotball_servo`.
+ *    - 3 Point Shot: Triggered by `is_shot_pin`.
+ * 3. Sensor Servo Control: Adjusts ultrasonic sensor orientation based on `angle90` pin.
+ */
 void loop() {
   //-------check_start------
   //  if (is_start == false) {

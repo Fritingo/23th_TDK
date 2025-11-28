@@ -1,3 +1,12 @@
+/**
+ * @file shotball_test.ino
+ * @brief Logic test sketch for robot movement and shooting.
+ *
+ * This sketch tests the integration of MPU6050-based PID movement (Omnidirectional)
+ * and KS103 distance sensors for a specific sequence of actions (moving to a position and shooting).
+ * It includes PID control logic for forward, backward, left, and right movements while maintaining heading.
+ */
+
 #include <MPU6050_6Axis_MotionApps20.h>
 #include "Wire.h"
 
@@ -75,6 +84,11 @@ int flag = 0;
 long pidtest_time;
 int lai = 0;
 
+/**
+ * @brief PID control for rightward movement.
+ *
+ * Adjusts motor speeds based on heading error to maintain straight line motion to the right.
+ */
 void PIDR() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
@@ -109,6 +123,11 @@ void PIDR() {
   }
 }
 
+/**
+ * @brief PID control for rightward movement (variant 1).
+ *
+ * Tighter threshold for correction (1 degree).
+ */
 void PIDR1() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
@@ -143,6 +162,11 @@ void PIDR1() {
   }
 }
 
+/**
+ * @brief PID control for leftward movement.
+ *
+ * Adjusts motor speeds based on heading error to maintain straight line motion to the left.
+ */
 void PIDL() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
@@ -177,6 +201,11 @@ void PIDL() {
   }
 }
 
+/**
+ * @brief PID control for leftward movement (variant 1).
+ *
+ * Tighter threshold for correction (1 degree).
+ */
 void PIDL1() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
@@ -211,6 +240,11 @@ void PIDL1() {
   }
 }
 
+/**
+ * @brief PID control for forward movement.
+ *
+ * Adjusts motor speeds based on heading error to maintain straight line motion forward.
+ */
 void PIDF() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
@@ -245,6 +279,11 @@ void PIDF() {
   }
 }
 
+/**
+ * @brief PID control for forward movement (variant 1).
+ *
+ * Tighter threshold for correction (1 degree).
+ */
 void PIDF1() {
   e = relative_yaw;
   e1 = abs(relative_yaw);
@@ -280,6 +319,9 @@ void PIDF1() {
 }
 
 
+/**
+ * @brief Rotates robot right using calculated speed.
+ */
 void RightAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -295,6 +337,9 @@ void RightAround() {
   analogWrite(en4, speed_LI);
 }
 
+/**
+ * @brief Rotates robot left using calculated speed.
+ */
 void LeftAround() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -310,6 +355,9 @@ void LeftAround() {
   analogWrite(en4, speed_LI);
 }
 
+/**
+ * @brief Rotates/moves forward-around.
+ */
 void ForwardAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -325,6 +373,9 @@ void ForwardAround() {
   analogWrite(en3, speed_LI1);
 }
 
+/**
+ * @brief Rotates/moves backward-around.
+ */
 void BackAround() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -340,6 +391,9 @@ void BackAround() {
   analogWrite(en3, speed_RI1);
 }
 
+/**
+ * @brief Moves robot rightward using base speed.
+ */
 void Rightward() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -355,6 +409,9 @@ void Rightward() {
   analogWrite(en4, speed_n);
 }
 
+/**
+ * @brief Rotates robot right using fixed speed 80.
+ */
 void RightAround1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -370,6 +427,9 @@ void RightAround1() {
   analogWrite(en4, 80);
 }
 
+/**
+ * @brief Rotates robot left using fixed speed 80.
+ */
 void LeftAround1() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
@@ -385,6 +445,9 @@ void LeftAround1() {
   analogWrite(en4, 80);
 }
 
+/**
+ * @brief Moves robot leftward using base speed.
+ */
 void Leftward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -400,6 +463,9 @@ void Leftward() {
   analogWrite(en4, speed_n);
 }
 
+/**
+ * @brief Moves robot leftward using fixed speed 60.
+ */
 void Leftward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -414,6 +480,10 @@ void Leftward1() {
   analogWrite(en3, 60);
   analogWrite(en4, 60);
 }
+
+/**
+ * @brief Moves robot forward using fixed speed 160.
+ */
 void Forward() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -429,6 +499,9 @@ void Forward() {
   analogWrite(en4, 160);
 }
 
+/**
+ * @brief Moves robot forward using base speed `speed_n1`.
+ */
 void Forward1() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
@@ -444,6 +517,9 @@ void Forward1() {
   analogWrite(en4, speed_n1);
 }
 //---------------------
+/**
+ * @brief Stops all motors.
+ */
 void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
@@ -470,10 +546,16 @@ float yaw = -1.0;
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 
+/**
+ * @brief Interrupt Service Routine for MPU6050.
+ */
 void dmpDataReady() {
   mpuInterrupt = true;
 }
 
+/**
+ * @brief Initializes MPU6050 with DMP.
+ */
 void mpu6050_setup() {
   float first_yaw = 0;
   int counter_ready = 0;
@@ -575,6 +657,9 @@ void mpu6050_setup() {
   }
 }
 
+/**
+ * @brief Updates MPU6050 data and relative yaw.
+ */
 void mpu6050_update() {
   if (mpuInterrupt) {
     // reset interrupt flag and get INT_STATUS byte
@@ -620,6 +705,9 @@ void mpu6050_update() {
   }
 }
 
+/**
+ * @brief Checks if MPU data is ready (non-blocking).
+ */
 bool mpu6050_getyaw() {
   if (!mpuInterrupt && fifoCount < packetSize) {
     return true;
@@ -629,6 +717,9 @@ bool mpu6050_getyaw() {
   }
 }
 
+/**
+ * @brief Configures a KS103 sensor via I2C.
+ */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
   Wire.write(byte(0x02));
@@ -637,6 +728,9 @@ void setting_ks103(byte addr, byte command) {
   delay(1000);
 }
 
+/**
+ * @brief Updates distance readings from KS103 sensors (non-blocking).
+ */
 void ks103_update() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_L);
@@ -687,21 +781,36 @@ void ks103_update() {
   }
 }
 
+/**
+ * @brief Resets servo control pins to HIGH.
+ */
 void servo_reset() {
   digitalWrite(angle90, HIGH);
   digitalWrite(angle180, HIGH);
   digitalWrite(angle135, HIGH);
 }
 
+/**
+ * @brief Sets status indicator to Green.
+ */
 void led_green() {
   digitalWrite(Buzzer1, HIGH);
   digitalWrite(Buzzer2, LOW);
 }
+
+/**
+ * @brief Sets status indicator to Red.
+ */
 void led_red() {
   digitalWrite(Buzzer1, LOW);
   digitalWrite(Buzzer2, HIGH);
 }
 
+/**
+ * @brief Setup function.
+ *
+ * Initializes hardware, sensors, and state.
+ */
 void setup() {
   pinMode(is_shot_pin, OUTPUT);
   digitalWrite(is_shot_pin, HIGH);
@@ -759,6 +868,13 @@ void setup() {
   digitalWrite(sweepball_pin, HIGH);
 
 }
+
+/**
+ * @brief Main loop.
+ *
+ * Executes a sequence of movements (using flag 29, 30...) when triggered by start button.
+ * Uses PID to control movement direction and distance sensors to trigger transitions.
+ */
 void loop() {
   if (run_step == false) {
     if (digitalRead(start_bt_pin) == HIGH) {
@@ -823,5 +939,4 @@ void loop() {
       digitalWrite(angle90, LOW);
     }
   }
-
 }

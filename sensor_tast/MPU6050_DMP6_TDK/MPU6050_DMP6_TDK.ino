@@ -1,3 +1,11 @@
+/**
+ * @file MPU6050_DMP6_TDK.ino
+ * @brief Demonstration of MPU6050 DMP (Digital Motion Processor) usage.
+ *
+ * This sketch initializes the MPU6050 6-axis IMU, configures the DMP, and reads
+ * the Yaw, Pitch, and Roll angles via I2C. It uses interrupts to synchronize data reading.
+ */
+
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 #include "Wire.h"
@@ -21,10 +29,22 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 
+/**
+ * @brief Interrupt Service Routine (ISR) for MPU6050.
+ *
+ * Sets the `mpuInterrupt` flag to true when the MPU signals data readiness.
+ */
 void dmpDataReady() {
   mpuInterrupt = true;
 }
 
+/**
+ * @brief Setup function for MPU6050.
+ *
+ * Initializes I2C, Serial, and the MPU6050 device.
+ * Configures the DMP (Digital Motion Processor) and calibration offsets.
+ * Enables interrupts and verifies connection.
+ */
 void mpu6050_setup() {
   // join I2C bus (I2Cdev library doesn't do this automatically)
   Wire.begin();
@@ -82,6 +102,12 @@ void mpu6050_setup() {
   }
 }
 
+/**
+ * @brief Reads data from MPU6050 FIFO and updates orientation variables.
+ *
+ * Checks for overflow or data readiness. Reads the FIFO buffer,
+ * calculates Quaternion and Gravity vectors, and derives Yaw, Pitch, and Roll angles.
+ */
 void mpu6050_update() {
   // reset interrupt flag and get INT_STATUS byte
   mpuInterrupt = false;
@@ -116,10 +142,20 @@ void mpu6050_update() {
   }
 }
 
+/**
+ * @brief Main setup.
+ *
+ * Calls `mpu6050_setup()`.
+ */
 void setup() {
   mpu6050_setup();
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Constantly updates the MPU6050 readings and prints the Yaw angle to Serial.
+ */
 void loop() {
   if (dmpReady) {
     mpu6050_update();
