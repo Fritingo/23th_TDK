@@ -1,3 +1,16 @@
+/**
+ * @file shotball_ks103.ino
+ * @brief Complex robot control logic with KS103 sensors and game strategy.
+ *
+ * This sketch implements a substantial part of the robot's logic for a competition.
+ * It integrates:
+ * - KS103 ultrasonic sensors for distance measurement.
+ * - Pixy2 camera for object detection (colors).
+ * - Servos for ball handling (sorting, shooting) and sensor orientation.
+ * - Digital outputs for motor control signals (likely interfacing with another controller via `move_A`, `move_B`, etc.).
+ * - State machines for "Yellow" and "Orange" team strategies.
+ */
+
 #include <Servo.h>
 #include <Pixy2.h>
 #include "Wire.h"
@@ -63,6 +76,13 @@ unsigned long pidtest_time = 0;
 
 bool ten_ball = false;
 //----------func-------------
+
+/**
+ * @brief Configures a KS103 sensor.
+ *
+ * @param addr I2C address.
+ * @param command Configuration command.
+ */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
   Wire.write(byte(0x02));
@@ -71,6 +91,12 @@ void setting_ks103(byte addr, byte command) {
   delay(1000);
 }
 
+/**
+ * @brief Updates distance readings from KS103 sensors.
+ *
+ * Non-blocking state machine to cycle through Left and Right sensor readings.
+ * Updates `distance_L` and `distance_R`.
+ */
 void ks103_update() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_L);
@@ -121,19 +147,37 @@ void ks103_update() {
   }
 }
 
+/**
+ * @brief Orients sensor servos to 90/0 degrees (relative).
+ */
 void LRservo90() {
   sonic_servoL.write(15);
   sonic_servoR.write(180);
 }
+
+/**
+ * @brief Orients sensor servos to 180/90 degrees (relative).
+ */
 void LRservo180() {
   sonic_servoL.write(105);
   sonic_servoR.write(90);
 }
+
+/**
+ * @brief Orients sensor servos to 135 degrees (relative).
+ */
 void LRservo135() {
   sonic_servoL.write(60);
   sonic_servoR.write(135);
 }
+
 //-----------setup------------
+/**
+ * @brief Setup function.
+ *
+ * Initializes I2C, pins, servos, and Pixy2.
+ * Reads team color from switch.
+ */
 void setup() {
   Wire.begin();
   setting_ks103(KS103_L, 0x75);
@@ -186,6 +230,15 @@ void setup() {
   }
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Manages high-level game logic:
+ * - Starting the sequence based on `open_game` input.
+ * - Ball classification and sorting.
+ * - Shot execution (10-point and 3-point logic).
+ * - Executing the appropriate team strategy (`yello_team` or `orange_team`).
+ */
 void loop() {
   ks103_update();
   //-------check_start------
@@ -310,6 +363,12 @@ void loop() {
 
 }
 
+/**
+ * @brief Strategy state machine for the Yellow team.
+ *
+ * Uses `flag` to progress through game stages (movement, scanning, shooting).
+ * Controls movement pins (`move_A`, `move_B`, `move_slow`) and sensor servos based on distance readings and timing.
+ */
 void yello_team() {
   if (distance_L < 110 and flag == 0 and lai == 0) {
     digitalWrite(move_A, HIGH);
@@ -938,6 +997,11 @@ void yello_team() {
 
 }
 
+/**
+ * @brief Strategy state machine for the Orange team.
+ *
+ * Similar to `yello_team` but adapted for the symmetric side of the field.
+ */
 void orange_team() {
   if (distance_R < 150 and flag == 0 and lai == 0) {
     digitalWrite(move_A, LOW);
@@ -1358,7 +1422,7 @@ void orange_team() {
 
   //--------find_plus----------
   if (flag == 27) {
-    if (millis() - pidtest_time < 1000) {
+    if (millis() - pidtest_time < 800) {
       digitalWrite(move_A, HIGH);
       digitalWrite(move_B, HIGH);
     }
@@ -1505,4 +1569,5 @@ void orange_team() {
       digitalWrite(is_shot_pin, LOW);//射球
     }
   }
+
 }
