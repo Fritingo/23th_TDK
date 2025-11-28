@@ -1,3 +1,13 @@
+/**
+ * @file gyro_test.ino
+ * @brief Test sketch for MPU6050 gyroscope and omnidirectional motor control.
+ *
+ * This sketch demonstrates integrating the MPU6050 gyroscope (using MPU6050_tockn library)
+ * with an IR remote control to drive an omnidirectional robot.
+ * It includes functions for movement (forward, backward, left, right, rotate) and
+ * gyroscope-based angle correction.
+ */
+
 #include <MPU6050_tockn.h>
 #include <IRremote.h>
 
@@ -30,7 +40,266 @@ const int en4 = 5;
 float orignal_z;
 //MeGyro gyro;
 
+/**
+ * @brief Stops all motors.
+ */
+void Motor_init()
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, LOW);
+}
 
+/**
+ * @brief Gradually increases motor speed (soft start).
+ *
+ * @param Speed Target speed (0-255).
+ */
+void Motor_start(int Speed)
+{
+  initial = millis();
+  for (int i = 1; i <= Speed / 10 ; i++)
+  {
+    do
+    {
+      mpu6050.update();
+      current = millis();
+      analogWrite(en1, i * 10);
+      analogWrite(en2, i * 10);
+      analogWrite(en3, i * 10);
+      analogWrite(en4, i * 10);
+    } while (current - initial < 100);
+    initial = millis();
+  }
+}
+
+/**
+ * @brief Gradually decreases motor speed (soft stop).
+ *
+ * @param Speed Starting speed to decrease from.
+ */
+void Motor_brakes(int Speed)
+{
+  initial = millis();
+  for (int i = Speed / 10; i >= 0 ; i--)
+  {
+    do
+    {
+      mpu6050.update();
+      current = millis();
+      analogWrite(en1, i * 10);
+      analogWrite(en2, i * 10);
+      analogWrite(en3, i * 10);
+      analogWrite(en4, i * 10);
+    } while (current - initial < 100);
+    initial = millis();
+  }
+  Motor_init();
+}
+
+/**
+ * @brief Runs motors at full specified speed for a duration.
+ *
+ * @param Speed Motor speed (0-255).
+ * @param Time Duration in milliseconds.
+ */
+void Motor_full_work(int Speed, int Time)
+{
+  unsigned long motor_full_start = millis();
+  unsigned long motor_full_now = millis();
+  do {
+    mpu6050.update();
+    analogWrite(en1, Speed);
+    analogWrite(en2, Speed);
+    analogWrite(en3, Speed);
+    analogWrite(en4, Speed);
+    motor_full_now = millis();
+  } while (motor_full_now - motor_full_start < Time);
+
+}
+
+/**
+ * @brief Moves the robot forward.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
+void m_type_Forward(int Speed, int Time)
+{
+  mpu6050.update();
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_full_work(Speed, Time);
+  Motor_brakes(Speed);
+}
+
+/**
+ * @brief Moves the robot backward.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
+void m_type_Backward(int Speed, int Time)
+{
+  mpu6050.update();
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  Motor_full_work(Speed, Time);
+  Motor_brakes(Speed);
+}
+
+/**
+ * @brief Moves the robot to the right.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
+void m_type_Rightward(int Speed, int Time)
+{
+  mpu6050.update();
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_full_work(Speed, Time);
+  Motor_brakes(Speed);
+}
+
+/**
+ * @brief Moves the robot to the left.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
+void m_type_Leftward(int Speed, int Time)
+{
+  mpu6050.update();
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  Motor_full_work(Speed, Time);
+  Motor_brakes(Speed);
+}
+
+/**
+ * @brief Rotates the robot counter-clockwise (Left Around).
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
+void m_type_LeftAround(int Speed, int Time)
+{
+  mpu6050.update();
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in5, HIGH);
+  digitalWrite(in6, LOW);
+  digitalWrite(in7, LOW);
+  digitalWrite(in8, HIGH);
+  Motor_start(Speed);
+  Motor_full_work(Speed, Time);
+  Motor_brakes(Speed);
+}
+
+/**
+ * @brief Rotates the robot clockwise (Right Around).
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
+void m_type_RightAround(int Speed, int Time)
+{
+  mpu6050.update();
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, HIGH);
+  digitalWrite(in7, HIGH);
+  digitalWrite(in8, LOW);
+  Motor_start(Speed);
+  Motor_full_work(Speed, Time);
+  Motor_brakes(Speed);
+}
+
+/**
+ * @brief Corrects the robot's angle to 0 degrees using the gyroscope.
+ *
+ * Rotates left or right until the angle Z is within +/- 5 degrees of 0.
+ */
+void m_type_correction_angle()
+{
+  do
+  {
+    mpu6050.update();
+    if (mpu6050.getGyroAngleZ() > 5.0 && mpu6050.getGyroAngleZ() < 180.0)
+    {
+      Serial.println(">50;<180");
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_LeftAround(50, 0);
+    } else if (mpu6050.getGyroAngleZ() < -5.0 && mpu6050.getGyroAngleZ() > -180.0)
+    {
+      Serial.println("<-5;>-180");
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_RightAround(50, 0);
+
+    } else if (mpu6050.getGyroAngleZ() > 180.0)
+    {
+      Serial.println(">180");
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_RightAround(50, 0);
+
+    } else if (mpu6050.getGyroAngleZ() < -180.0)
+    {
+      Serial.println( mpu6050.getGyroAngleZ());
+      m_type_LeftAround(50, 0);
+
+    }
+  } while (mpu6050.getGyroAngleZ() < -5.0 || mpu6050.getGyroAngleZ() > 5.0);
+
+  Serial.println("GoGoGo");
+  m_type_Forward(50, 0);
+
+}
+
+/**
+ * @brief Setup function.
+ *
+ * Initializes pins, Serial, IR receiver, MPU6050, and performs gyro calibration.
+ */
 void setup() {
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
@@ -59,6 +328,21 @@ void setup() {
   Serial.println( mpu6050.getGyroAngleZ());
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Listens for IR commands to drive the robot.
+ * Commands include:
+ * - 0: Stop
+ * - 1: Forward
+ * - 2: Backward
+ * - 3: Leftward
+ * - 4: Rightward
+ * - 5: Right Around (Rotate)
+ * - 6: Left Around (Rotate)
+ * - 7: Correct Angle
+ * - 8: Brake
+ */
 void loop() {
   mpu6050.update();
   //  Serial.println( mpu6050.getGyroAngleZ());
@@ -147,190 +431,7 @@ void loop() {
 
 
 }
-void Motor_init()
-{
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, LOW);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, LOW);
-  digitalWrite(in7, LOW);
-  digitalWrite(in8, LOW);
-}
-void Motor_start(int Speed)
-{
-  initial = millis();
-  for (int i = 1; i <= Speed / 10 ; i++)
-  {
-    do
-    {
-      mpu6050.update();
-      current = millis();
-      analogWrite(en1, i * 10);
-      analogWrite(en2, i * 10);
-      analogWrite(en3, i * 10);
-      analogWrite(en4, i * 10);
-    } while (current - initial < 100);
-    initial = millis();
-  }
-}
-void Motor_brakes(int Speed)
-{
-  initial = millis();
-  for (int i = Speed / 10; i >= 0 ; i--)
-  {
-    do
-    {
-      mpu6050.update();
-      current = millis();
-      analogWrite(en1, i * 10);
-      analogWrite(en2, i * 10);
-      analogWrite(en3, i * 10);
-      analogWrite(en4, i * 10);
-    } while (current - initial < 100);
-    initial = millis();
-  }
-  Motor_init();
-}
-void Motor_full_work(int Speed, int Time)
-{
-  unsigned long motor_full_start = millis();
-  unsigned long motor_full_now = millis();
-  do {
-    mpu6050.update();
-    analogWrite(en1, Speed);
-    analogWrite(en2, Speed);
-    analogWrite(en3, Speed);
-    analogWrite(en4, Speed);
-    motor_full_now = millis();
-  } while (motor_full_now - motor_full_start < Time);
 
-}
-void m_type_Forward(int Speed, int Time)
-{
-  mpu6050.update();
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW);
-  digitalWrite(in5, HIGH);
-  digitalWrite(in6, LOW);
-  digitalWrite(in7, HIGH);
-  digitalWrite(in8, LOW);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
-}
-void m_type_Backward(int Speed, int Time)
-{
-  mpu6050.update();
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, HIGH);
-  digitalWrite(in7, LOW);
-  digitalWrite(in8, HIGH);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
-}
-void m_type_Rightward(int Speed, int Time)
-{
-  mpu6050.update();
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, HIGH);
-  digitalWrite(in7, HIGH);
-  digitalWrite(in8, LOW);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
-}
-void m_type_Leftward(int Speed, int Time)
-{
-  mpu6050.update();
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW);
-  digitalWrite(in5, HIGH);
-  digitalWrite(in6, LOW);
-  digitalWrite(in7, LOW);
-  digitalWrite(in8, HIGH);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
-}
-void m_type_LeftAround(int Speed, int Time)
-{
-  mpu6050.update();
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
-  digitalWrite(in5, HIGH);
-  digitalWrite(in6, LOW);
-  digitalWrite(in7, LOW);
-  digitalWrite(in8, HIGH);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
-}
-void m_type_RightAround(int Speed, int Time)
-{
-  mpu6050.update();
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW);
-  digitalWrite(in5, LOW);
-  digitalWrite(in6, HIGH);
-  digitalWrite(in7, HIGH);
-  digitalWrite(in8, LOW);
-  Motor_start(Speed);
-  Motor_full_work(Speed, Time);
-  Motor_brakes(Speed);
-}
-void m_type_correction_angle()
-{
-  do
-  {
-    mpu6050.update();
-    if (mpu6050.getGyroAngleZ() > 5.0 && mpu6050.getGyroAngleZ() < 180.0)
-    {
-      Serial.println(">50;<180");
-      Serial.println( mpu6050.getGyroAngleZ());
-      m_type_LeftAround(50, 0);
-    } else if (mpu6050.getGyroAngleZ() < -5.0 && mpu6050.getGyroAngleZ() > -180.0)
-    {
-      Serial.println("<-5;>-180");
-      Serial.println( mpu6050.getGyroAngleZ());
-      m_type_RightAround(50, 0);
-
-    } else if (mpu6050.getGyroAngleZ() > 180.0)
-    {
-      Serial.println(">180");
-      Serial.println( mpu6050.getGyroAngleZ());
-      m_type_RightAround(50, 0);
-
-    } else if (mpu6050.getGyroAngleZ() < -180.0)
-    {
-      Serial.println( mpu6050.getGyroAngleZ());
-      m_type_LeftAround(50, 0);
-
-    }
-  } while (mpu6050.getGyroAngleZ() < -5.0 || mpu6050.getGyroAngleZ() > 5.0);
-
-  Serial.println("GoGoGo");
-  m_type_Forward(50, 0);
-
-}
 void Motor1_Forward(int Speed)
 {
   digitalWrite(in1, HIGH);

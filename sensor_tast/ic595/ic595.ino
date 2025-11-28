@@ -1,3 +1,11 @@
+/**
+ * @file ic595.ino
+ * @brief 7-segment display counter using 74HC595 shift register.
+ *
+ * This sketch demonstrates how to control a 7-segment display using a 74HC595 shift register.
+ * It iterates through numbers 0-9 and letters A-F.
+ */
+
 /* 
     使用 74HC595 與七段顯示器製作倒數功能
     1 = LED on, 0 = LED off, in this order:
@@ -28,6 +36,11 @@ byte seven_seg_digits[17] = { B00000001,  // = "."
                               B10001110  // = F
                             };
 
+/**
+ * @brief Setup function.
+ *
+ * Configures the control pins (data, latch, clock) as outputs.
+ */
 void setup() {
   // 將 latchPin, clockPin, dataPin 設置為輸出
   pinMode(latchPin, OUTPUT);
@@ -35,7 +48,13 @@ void setup() {
   pinMode(dataPin, OUTPUT);
 }
 
-// 在七段顯示器上顯示指定的一個數字
+/**
+ * @brief Displays a digit/character on the 7-segment display.
+ *
+ * Shifts out the bit pattern corresponding to the given index in `seven_seg_digits`.
+ *
+ * @param digit Index of the digit/character to display (0-16).
+ */
 void sevenSegWrite(byte digit) {
   // 送資料前要先把 latchPin 拉成低電位
   digitalWrite(latchPin, LOW);
@@ -47,6 +66,11 @@ void sevenSegWrite(byte digit) {
   digitalWrite(latchPin, HIGH);
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Cycles through the `seven_seg_digits` array, displaying each for 500ms.
+ */
 void loop() {
   // 依陣列順序顯示
   for (byte digit = 1; digit < 17; digit++) {

@@ -1,3 +1,13 @@
+/**
+ * @file infrared_motor.ino
+ * @brief IR-controlled motor drive test.
+ *
+ * This sketch allows controlling an omnidirectional robot using an IR remote.
+ * It includes functions for various movements (forward, backward, strafe, rotate)
+ * and soft-start/soft-stop mechanisms.
+ * Note: The main loop currently overrides IR control with a continuous forward command.
+ */
+
 #include <IRremote.h>
 
 int RECV_PIN = 11; // 使用數位腳位2接收紅外線訊號
@@ -31,6 +41,13 @@ const int IR_turns_sensor = 37;
 const int collect_ball_pin = 35;
 const int pullup_ball_pin = 36;
 const int shot_ball_pin = 34;
+
+/**
+ * @brief Setup function.
+ *
+ * Initializes pins for motors and ball handling mechanisms.
+ * Starts Serial and IR receiver.
+ */
 void setup() {
     pinMode(collect_ball_pin, OUTPUT);
   pinMode(pullup_ball_pin, OUTPUT);
@@ -57,6 +74,12 @@ void setup() {
 
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Currently runs `m_type_Forward`.
+ * Contains commented-out code for IR remote control logic.
+ */
 void loop() {
 m_type_Forward(100,10000);
 //
@@ -137,6 +160,10 @@ m_type_Forward(100,10000);
 
 
 }
+
+/**
+ * @brief Stops all motors.
+ */
 void Motor_init()
 {
   digitalWrite(in1, LOW);
@@ -148,6 +175,12 @@ void Motor_init()
   digitalWrite(in7, LOW);
   digitalWrite(in8, LOW);
 }
+
+/**
+ * @brief Soft start for motors.
+ *
+ * @param Speed Target speed.
+ */
 void Motor_start(int Speed)
 {
   initial = millis();
@@ -164,6 +197,12 @@ void Motor_start(int Speed)
     initial = millis();
   }
 }
+
+/**
+ * @brief Soft stop for motors.
+ *
+ * @param Speed Starting speed.
+ */
 void Motor_brakes(int Speed)
 {
   initial = millis();
@@ -181,6 +220,13 @@ void Motor_brakes(int Speed)
   }
   Motor_init();
 }
+
+/**
+ * @brief Runs motors at full speed for a duration.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
 void Motor_full_work(int Speed, int Time)
 {
   unsigned long motor_full_start = millis();
@@ -194,6 +240,13 @@ void Motor_full_work(int Speed, int Time)
   } while (motor_full_now - motor_full_start < Time);
 
 }
+
+/**
+ * @brief Moves robot forward.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration (unused in current impl for full work).
+ */
 void m_type_Forward(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
@@ -208,6 +261,13 @@ void m_type_Forward(int Speed, int Time)
 //  Motor_full_work(Speed, Time);
 //  Motor_brakes(Speed);
 }
+
+/**
+ * @brief Moves robot backward.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
 void m_type_Backward(int Speed, int Time)
 {
   digitalWrite(in1, LOW);
@@ -222,6 +282,13 @@ void m_type_Backward(int Speed, int Time)
   Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
+
+/**
+ * @brief Moves robot rightward.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
 void m_type_Rightward(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
@@ -236,6 +303,13 @@ void m_type_Rightward(int Speed, int Time)
   Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
+
+/**
+ * @brief Moves robot leftward.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
 void m_type_Leftward(int Speed, int Time)
 {
   digitalWrite(in1, LOW);
@@ -250,6 +324,13 @@ void m_type_Leftward(int Speed, int Time)
   Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
+
+/**
+ * @brief Rotates robot left.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
 void m_type_LeftAround(int Speed, int Time)
 {
   digitalWrite(in1, HIGH);
@@ -264,6 +345,13 @@ void m_type_LeftAround(int Speed, int Time)
   //  Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
+
+/**
+ * @brief Rotates robot right.
+ *
+ * @param Speed Motor speed.
+ * @param Time Duration.
+ */
 void m_type_RightAround(int Speed, int Time)
 {
   digitalWrite(in1, LOW);
@@ -278,6 +366,11 @@ void m_type_RightAround(int Speed, int Time)
   //  Motor_full_work(Speed, Time);
   Motor_brakes(Speed);
 }
+
+/**
+ * @brief Moves motor 1 forward.
+ * @param Speed PWM speed.
+ */
 void Motor1_Forward(int Speed)
 {
   digitalWrite(in1, HIGH);
@@ -285,17 +378,30 @@ void Motor1_Forward(int Speed)
   analogWrite(en1, Speed);
 }
 
+/**
+ * @brief Moves motor 1 backward.
+ * @param Speed PWM speed.
+ */
 void Motor1_Backward(int Speed)
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   analogWrite(en1, Speed);
 }
+
+/**
+ * @brief Stops motor 1.
+ */
 void Motor1_Brake()
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
 }
+
+/**
+ * @brief Moves motor 2 forward.
+ * @param Speed PWM speed.
+ */
 void Motor2_Forward(int Speed)
 {
   digitalWrite(in3, HIGH);
@@ -303,23 +409,41 @@ void Motor2_Forward(int Speed)
   analogWrite(en2, Speed);
 }
 
+/**
+ * @brief Moves motor 2 backward.
+ * @param Speed PWM speed.
+ */
 void Motor2_Backward(int Speed)
 {
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
   analogWrite(en2, Speed);
 }
+
+/**
+ * @brief Stops motor 2.
+ */
 void Motor2_Brake()
 {
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);
 }
+
+/**
+ * @brief Moves motor 3 forward.
+ * @param Speed PWM speed.
+ */
 void Motor3_Forward(int Speed)
 {
   digitalWrite(in5, HIGH);
   digitalWrite(in6, LOW);
   analogWrite(en3, Speed);
 }
+
+/**
+ * @brief Moves motor 4 forward.
+ * @param Speed PWM speed.
+ */
 void Motor4_Forward(int Speed)
 {
   digitalWrite(in7, HIGH);

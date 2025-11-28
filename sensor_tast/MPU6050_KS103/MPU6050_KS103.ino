@@ -1,3 +1,12 @@
+/**
+ * @file MPU6050_KS103.ino
+ * @brief Integration test for MPU6050 IMU and KS103 ultrasonic sensors.
+ *
+ * This sketch demonstrates reading orientation data from the MPU6050 using DMP
+ * and distance data from two KS103 ultrasonic sensors via I2C.
+ * It calculates relative yaw and handles the I2C communication timing for the sensors.
+ */
+
 #include <MPU6050_6Axis_MotionApps20.h>
 #include "Wire.h"
 
@@ -62,10 +71,16 @@ float yaw = -1.0;
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 
+/**
+ * @brief Interrupt Service Routine (ISR) for MPU6050.
+ */
 void dmpDataReady() {
   mpuInterrupt = true;
 }
 
+/**
+ * @brief Stops all motors.
+ */
 void Motor_reset() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
@@ -76,6 +91,14 @@ void Motor_reset() {
   digitalWrite(in7, LOW);
   digitalWrite(in8, LOW);
 }
+
+/**
+ * @brief Initializes and calibrates the MPU6050.
+ *
+ * Sets up I2C, DMP, and calibration offsets.
+ * Waits for the sensor to stabilize before setting `gyro_ready` to true.
+ * Uses buzzer to indicate status (LOW on success).
+ */
 void mpu6050_setup() {
   float first_yaw = 0;
   int counter_ready = 0;
@@ -177,6 +200,11 @@ void mpu6050_setup() {
   }
 }
 
+/**
+ * @brief Updates MPU6050 data.
+ *
+ * Reads FIFO buffer, calculates yaw, and updates `relative_yaw` (normalized to +/- 180 degrees).
+ */
 void mpu6050_update() {
   if (mpuInterrupt) {
     // reset interrupt flag and get INT_STATUS byte
@@ -222,6 +250,11 @@ void mpu6050_update() {
   }
 }
 
+/**
+ * @brief Checks if MPU data is ready without blocking.
+ *
+ * @return True if data is potentially ready or buffer not full, false if update was called.
+ */
 bool mpu6050_getyaw() {
   if (!mpuInterrupt && fifoCount < packetSize) {
     return true;
@@ -231,6 +264,12 @@ bool mpu6050_getyaw() {
   }
 }
 
+/**
+ * @brief Sends a command to a KS103 sensor via I2C.
+ *
+ * @param addr Sensor address.
+ * @param command Command byte.
+ */
 void setting_ks103(byte addr, byte command) {
   Wire.beginTransmission(addr);
   Wire.write(byte(0x02));
@@ -239,6 +278,12 @@ void setting_ks103(byte addr, byte command) {
   delay(1000);
 }
 
+/**
+ * @brief State machine to update KS103 sensor readings.
+ *
+ * Sequentially triggers and reads Left and Right ultrasonic sensors.
+ * Updates `distance_L` and `distance_R`.
+ */
 void ks103_update() {
   if (ks103_state == 0) {
     Wire.beginTransmission(KS103_L);
@@ -289,6 +334,12 @@ void ks103_update() {
   }
 }
 
+/**
+ * @brief Setup function.
+ *
+ * Configures pins, I2C, Serial, and KS103 sensors.
+ * Initializes MPU6050 and motors.
+ */
 void setup() {
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
@@ -335,6 +386,12 @@ void setup() {
 //   servo_test_time = millis();
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Updates KS103 and MPU6050 readings.
+ * Prints relative yaw and distances to Serial.
+ */
 void loop() {
 //    if(millis()-servo_test_time<2000){
 //    sonic_servoL.write(105);

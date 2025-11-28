@@ -1,3 +1,12 @@
+/**
+ * @file motor_driver.ino
+ * @brief Basic motor driver test sketch.
+ *
+ * This sketch initializes the motor driver pins and tests individual motors.
+ * It contains helper functions to drive each of the 4 motors forward/backward.
+ * IR code is commented out but structure remains for remote control integration.
+ */
+
 //#include <IRremote.h>
 
 int RECV_PIN = 12; // 使用數位腳位2接收紅外線訊號
@@ -21,6 +30,13 @@ const int en4 = 10;
 const int collect_ball_pin = 35;
 const int pullup_ball_pin = 36;
 const int shot_ball_pin = 34;
+
+/**
+ * @brief Setup function.
+ *
+ * Initializes output pins for motors and ball mechanism control.
+ * Starts Serial communication.
+ */
 void setup() {
   pinMode(collect_ball_pin, OUTPUT);
   pinMode(pullup_ball_pin, OUTPUT);
@@ -49,6 +65,12 @@ void setup() {
 
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Tests specific motors by calling their forward functions.
+ * Currently configured to run Motor 4 forward at low speed.
+ */
 void loop() {
   
 //  Motor_init();
@@ -134,6 +156,10 @@ void loop() {
 
 
 }
+
+/**
+ * @brief Stops all motors.
+ */
 void Motor_init()
 {
   digitalWrite(in1, LOW);
@@ -145,6 +171,12 @@ void Motor_init()
   digitalWrite(in7, LOW);
   digitalWrite(in8, LOW);
 }
+
+/**
+ * @brief Drives Motor 1 forward.
+ *
+ * @param Speed PWM speed (0-255).
+ */
 void Motor1_Forward(int Speed)
 {
   digitalWrite(in1, HIGH);
@@ -152,17 +184,32 @@ void Motor1_Forward(int Speed)
   analogWrite(en1, Speed);
 }
 
+/**
+ * @brief Drives Motor 1 backward.
+ *
+ * @param Speed PWM speed (0-255).
+ */
 void Motor1_Backward(int Speed)
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   analogWrite(en1, Speed);
 }
+
+/**
+ * @brief Stops Motor 1.
+ */
 void Motor1_Brake()
 {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
 }
+
+/**
+ * @brief Drives Motor 2 forward.
+ *
+ * @param Speed PWM speed (0-255).
+ */
 void Motor2_Forward(int Speed)
 {
   digitalWrite(in3, HIGH);
@@ -170,23 +217,44 @@ void Motor2_Forward(int Speed)
   analogWrite(en2, Speed);
 }
 
+/**
+ * @brief Drives Motor 2 backward.
+ *
+ * @param Speed PWM speed (0-255).
+ */
 void Motor2_Backward(int Speed)
 {
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
   analogWrite(en2, Speed);
 }
+
+/**
+ * @brief Stops Motor 2.
+ */
 void Motor2_Brake()
 {
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);
 }
+
+/**
+ * @brief Drives Motor 3 forward.
+ *
+ * @param Speed PWM speed (0-255).
+ */
 void Motor3_Forward(int Speed)
 {
   digitalWrite(in5, HIGH);
   digitalWrite(in6, LOW);
   analogWrite(en3, Speed);
 }
+
+/**
+ * @brief Drives Motor 4 forward.
+ *
+ * @param Speed PWM speed (0-255).
+ */
 void Motor4_Forward(int Speed)
 {
   digitalWrite(in7, HIGH);
