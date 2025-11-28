@@ -1,3 +1,11 @@
+/**
+ * @file keypad_ic595.ino
+ * @brief Keypad input displayed on 7-segment display via shift register.
+ *
+ * This sketch reads input from a 4x4 keypad and displays the corresponding
+ * hexadecimal character (0-9, A-F) on a 7-segment display driven by a 74HC595 shift register.
+ */
+
 #include <Keypad.h>    // 引用Keypad程式庫
 
 #define KEY_ROWS 4 // 按鍵模組的列數
@@ -42,6 +50,11 @@ byte rowPins[KEY_ROWS] = {9, 8, 7, 6}; // 按鍵模組，列1~4接腳。
 // 初始化Keypad物件。語法：Keypad(makeKeymap(按鍵字元的二維陣列), 模組列接腳, 模組行接腳, 模組列數, 模組行數)
 Keypad myKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, KEY_ROWS, KEY_COLS);
 
+/**
+ * @brief Setup function.
+ *
+ * Initializes Serial and sets shift register control pins as outputs.
+ */
 void setup() {
   Serial.begin(9600);
   pinMode(latchPin, OUTPUT);
@@ -49,12 +62,23 @@ void setup() {
   pinMode(dataPin, OUTPUT);
 }
 
+/**
+ * @brief Writes a digit to the 7-segment display via shift register.
+ *
+ * @param digit Index of the digit to display in `seven_seg_digits`.
+ */
 void sevenSegWrite(byte digit) {
   digitalWrite(latchPin, LOW);
   shiftOut(dataPin, clockPin, LSBFIRST, seven_seg_digits[digit]);
   digitalWrite(latchPin, HIGH);
 }
 
+/**
+ * @brief Main loop.
+ *
+ * Checks for key presses. Converts the key character (ASCII) to an index for the display array.
+ * Updates the display with the pressed key.
+ */
 void loop() {
   // 透過Keypad物件的getKey()方法讀取按鍵的字元
   int key = myKeypad.getKey();
